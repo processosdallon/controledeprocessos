@@ -105,6 +105,14 @@
   .hist-obs strong { color: #2d6a3f; }
   .btn-del { background: #ffeaea; color: #c0392b; border: 1px solid #e0b0b0; padding: 3px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; margin-left: 10px; }
   .btn-del:hover { background: #c0392b; color: white; }
+
+  /* COLUNA AUTORIA */
+  .td-autor { font-size: 10px; color: #888; white-space: nowrap; }
+  .tag-autor { display: inline-block; background: #e8f5e0; color: #2d6a3f; border: 1px solid #a8d44d; border-radius: 10px; padding: 1px 7px; font-size: 10px; font-weight: bold; }
+  .card.ativo .tag-autor { background: #d4f0a0; color: #1e4d2b; border-color: #5a9e2f; }
+  .sem-autor { color: #ccc; }
+  .card:not(.ativo) .td-autor { color: #5a9e2f; }
+  .card:not(.ativo) .tag-autor { background: #1a3d25; color: #a8d44d; border-color: #2d6a3f; }
   .footer { text-align: center; margin-top: 28px; font-size: 11px; color: #aaa; }
 </style>
 </head>
@@ -179,16 +187,22 @@
     const linhas = etapas.map(e => {
       const ini = dados[`${prefix}_${e.key}`] || '';
       const fim = dados[`${prefix}_${e.key2}`] || '';
-      return `<tr class="${ini||fim?'preenchida':''}">
+      // Pega o autor mais recente entre ini e fim
+      const autorIni = dados[`${prefix}_${e.key}_autor`] || '';
+      const autorFim = dados[`${prefix}_${e.key2}_autor`] || '';
+      const autor = autorFim || autorIni || '';
+      const preenchida = ini || fim;
+      return `<tr class="${preenchida?'preenchida':''}">
         <td class="etapa">${e.label}</td>
         <td class="${ini?'valor':'vazio'}">${ini||'—'}</td>
         <td class="${fim?'valor':'vazio'}">${fim||'—'}</td>
+        <td class="td-autor">${autor ? `<span class="tag-autor">✏️ ${autor}</span>` : '<span class="sem-autor">—</span>'}</td>
       </tr>`;
     }).join('');
     return `<div class="card ${ativo}">
       <div class="card-header"><h2>Lote: ${lote}${ativo ? '<span class="badge-andamento">● EM ANDAMENTO</span>' : ''}</h2><span class="info">Panela: ${panela}</span></div>
-      <table><thead><tr><th>Etapa</th><th>Início</th><th>Fim</th></tr></thead><tbody>${linhas}</tbody></table>
-      <div class="obs-box"><strong>OBS:</strong><span>${obs||'<em style="color:#444">—</em>'}</span></div>
+      <table><thead><tr><th>Etapa</th><th>Início</th><th>Fim</th><th>Última Edição</th></tr></thead><tbody>${linhas}</tbody></table>
+      <div class="obs-box"><strong>OBS:</strong><span>${obs||'<em style="color:#bbb">—</em>'}</span></div>
     </div>`;
   }
 
