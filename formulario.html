@@ -40,6 +40,16 @@
   .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #2d6a3f; color: white; padding: 10px 24px; border-radius: 6px; font-size: 13px; display: none; z-index: 999; }
   @media print { .btn-container,.status-bar,.secao-titulo,.btn-concluido,.usuario-bar,#tela-login { display: none; } body { background: white; padding: 5px; } }
 
+  /* SETUP - linha de alerta */
+  .setup-row { background: #fff5f5 !important; }
+  .setup-row td { border-color: #e88 !important; }
+  .setup-row.ativo-setup { background: #ffe0e0 !important; }
+  .setup-row.ativo-setup td { border-color: #c00 !important; }
+  .setup-row.ativo-setup .etapa-label { background: #ffcccc !important; color: #900 !important; font-weight: bold; }
+  .setup-select { width: 100%; border: none; background: transparent; font-size: 11px; font-family: Arial; color: #111; outline: none; padding: 2px; cursor: pointer; }
+  .setup-select option { background: #fff; color: #111; }
+  .setup-row.ativo-setup .setup-select { color: #900; font-weight: bold; }
+
   /* LOGIN */
   #tela-login { position: fixed; inset: 0; background: #fff; display: flex; align-items: center; justify-content: center; z-index: 9999; }
   .login-box { background: #fff; border: 2px solid #a8d44d; border-radius: 10px; padding: 36px 40px; width: 320px; text-align: center; }
@@ -157,6 +167,18 @@
       <tr><td class="etapa-label">2ª Limpeza Final (T. Médio: 2:15h)</td><td><input type="time" data-field="a1_limpeza2_ini"><span class="autoria" data-autor="a1_limpeza2_ini"></span></td><td><input type="time" data-field="a1_limpeza2_fim"><span class="autoria" data-autor="a1_limpeza2_fim"></span></td></tr>
       <tr><td class="etapa-label">Agregar Metais (T. Médio: 3:00h)</td><td><input type="time" data-field="a1_metais_ini"><span class="autoria" data-autor="a1_metais_ini"></span></td><td><input type="time" data-field="a1_metais_fim"><span class="autoria" data-autor="a1_metais_fim"></span></td></tr>
       <tr><td class="etapa-label">Lingotamento</td><td><input type="time" data-field="a1_lingot_ini"><span class="autoria" data-autor="a1_lingot_ini"></span></td><td><input type="time" data-field="a1_lingot_fim"><span class="autoria" data-autor="a1_lingot_fim"></span></td></tr>
+      <tr class="setup-row" id="setup-row-a1">
+        <td class="etapa-label">Setup
+          <select data-field="a1_setup_motivo" class="setup-select" onchange="atualizarSetupRow('a1', this.value)">
+            <option value=""> </option>
+            <option value="Corrigindo Teores">Corrigindo Teores</option>
+            <option value="Subindo temperatura">Subindo temperatura</option>
+            <option value="Abaixando temperatura">Abaixando temperatura</option>
+          </select>
+        </td>
+        <td><input type="time" data-field="a1_setup_ini"><span class="autoria" data-autor="a1_setup_ini"></span></td>
+        <td><input type="time" data-field="a1_setup_fim"><span class="autoria" data-autor="a1_setup_fim"></span></td>
+      </tr>
     </tbody>
   </table>
   <div class="obs-section"><div class="obs-label">OBS:</div>
@@ -226,6 +248,18 @@
       <tr><td class="etapa-label">2ª Limpeza Final (T. Médio: 2:15h)</td><td><input type="time" data-field="a2_limpeza2_ini"><span class="autoria" data-autor="a2_limpeza2_ini"></span></td><td><input type="time" data-field="a2_limpeza2_fim"><span class="autoria" data-autor="a2_limpeza2_fim"></span></td></tr>
       <tr><td class="etapa-label">Agregar Metais (T. Médio: 3:00h)</td><td><input type="time" data-field="a2_metais_ini"><span class="autoria" data-autor="a2_metais_ini"></span></td><td><input type="time" data-field="a2_metais_fim"><span class="autoria" data-autor="a2_metais_fim"></span></td></tr>
       <tr><td class="etapa-label">Lingotamento</td><td><input type="time" data-field="a2_lingot_ini"><span class="autoria" data-autor="a2_lingot_ini"></span></td><td><input type="time" data-field="a2_lingot_fim"><span class="autoria" data-autor="a2_lingot_fim"></span></td></tr>
+      <tr class="setup-row" id="setup-row-a2">
+        <td class="etapa-label">Setup
+          <select data-field="a2_setup_motivo" class="setup-select" onchange="atualizarSetupRow('a2', this.value)">
+            <option value=""> </option>
+            <option value="Corrigindo Teores">Corrigindo Teores</option>
+            <option value="Subindo temperatura">Subindo temperatura</option>
+            <option value="Abaixando temperatura">Abaixando temperatura</option>
+          </select>
+        </td>
+        <td><input type="time" data-field="a2_setup_ini"><span class="autoria" data-autor="a2_setup_ini"></span></td>
+        <td><input type="time" data-field="a2_setup_fim"><span class="autoria" data-autor="a2_setup_fim"></span></td>
+      </tr>
     </tbody>
   </table>
   <div class="obs-section"><div class="obs-label">OBS:</div>
@@ -295,6 +329,18 @@
       <tr><td class="etapa-label">2ª Limpeza Final (T. Médio: 2:15h)</td><td><input type="time" data-field="a3_limpeza2_ini"><span class="autoria" data-autor="a3_limpeza2_ini"></span></td><td><input type="time" data-field="a3_limpeza2_fim"><span class="autoria" data-autor="a3_limpeza2_fim"></span></td></tr>
       <tr><td class="etapa-label">Agregar Metais (T. Médio: 3:00h)</td><td><input type="time" data-field="a3_metais_ini"><span class="autoria" data-autor="a3_metais_ini"></span></td><td><input type="time" data-field="a3_metais_fim"><span class="autoria" data-autor="a3_metais_fim"></span></td></tr>
       <tr><td class="etapa-label">Lingotamento</td><td><input type="time" data-field="a3_lingot_ini"><span class="autoria" data-autor="a3_lingot_ini"></span></td><td><input type="time" data-field="a3_lingot_fim"><span class="autoria" data-autor="a3_lingot_fim"></span></td></tr>
+      <tr class="setup-row" id="setup-row-a3">
+        <td class="etapa-label">Setup
+          <select data-field="a3_setup_motivo" class="setup-select" onchange="atualizarSetupRow('a3', this.value)">
+            <option value=""> </option>
+            <option value="Corrigindo Teores">Corrigindo Teores</option>
+            <option value="Subindo temperatura">Subindo temperatura</option>
+            <option value="Abaixando temperatura">Abaixando temperatura</option>
+          </select>
+        </td>
+        <td><input type="time" data-field="a3_setup_ini"><span class="autoria" data-autor="a3_setup_ini"></span></td>
+        <td><input type="time" data-field="a3_setup_fim"><span class="autoria" data-autor="a3_setup_fim"></span></td>
+      </tr>
     </tbody>
   </table>
   <div class="obs-section"><div class="obs-label">OBS:</div>
@@ -364,6 +410,18 @@
       <tr><td class="etapa-label">2ª Limpeza Final (T. Médio: 2:15h)</td><td><input type="time" data-field="a4_limpeza2_ini"><span class="autoria" data-autor="a4_limpeza2_ini"></span></td><td><input type="time" data-field="a4_limpeza2_fim"><span class="autoria" data-autor="a4_limpeza2_fim"></span></td></tr>
       <tr><td class="etapa-label">Agregar Metais (T. Médio: 3:00h)</td><td><input type="time" data-field="a4_metais_ini"><span class="autoria" data-autor="a4_metais_ini"></span></td><td><input type="time" data-field="a4_metais_fim"><span class="autoria" data-autor="a4_metais_fim"></span></td></tr>
       <tr><td class="etapa-label">Lingotamento</td><td><input type="time" data-field="a4_lingot_ini"><span class="autoria" data-autor="a4_lingot_ini"></span></td><td><input type="time" data-field="a4_lingot_fim"><span class="autoria" data-autor="a4_lingot_fim"></span></td></tr>
+      <tr class="setup-row" id="setup-row-a4">
+        <td class="etapa-label">Setup
+          <select data-field="a4_setup_motivo" class="setup-select" onchange="atualizarSetupRow('a4', this.value)">
+            <option value=""> </option>
+            <option value="Corrigindo Teores">Corrigindo Teores</option>
+            <option value="Subindo temperatura">Subindo temperatura</option>
+            <option value="Abaixando temperatura">Abaixando temperatura</option>
+          </select>
+        </td>
+        <td><input type="time" data-field="a4_setup_ini"><span class="autoria" data-autor="a4_setup_ini"></span></td>
+        <td><input type="time" data-field="a4_setup_fim"><span class="autoria" data-autor="a4_setup_fim"></span></td>
+      </tr>
     </tbody>
   </table>
   <div class="obs-section"><div class="obs-label">OBS:</div>
@@ -433,6 +491,18 @@
       <tr><td class="etapa-label">2ª Limpeza Final (T. Médio: 2:15h)</td><td><input type="time" data-field="a5_limpeza2_ini"><span class="autoria" data-autor="a5_limpeza2_ini"></span></td><td><input type="time" data-field="a5_limpeza2_fim"><span class="autoria" data-autor="a5_limpeza2_fim"></span></td></tr>
       <tr><td class="etapa-label">Agregar Metais (T. Médio: 3:00h)</td><td><input type="time" data-field="a5_metais_ini"><span class="autoria" data-autor="a5_metais_ini"></span></td><td><input type="time" data-field="a5_metais_fim"><span class="autoria" data-autor="a5_metais_fim"></span></td></tr>
       <tr><td class="etapa-label">Lingotamento</td><td><input type="time" data-field="a5_lingot_ini"><span class="autoria" data-autor="a5_lingot_ini"></span></td><td><input type="time" data-field="a5_lingot_fim"><span class="autoria" data-autor="a5_lingot_fim"></span></td></tr>
+      <tr class="setup-row" id="setup-row-a5">
+        <td class="etapa-label">Setup
+          <select data-field="a5_setup_motivo" class="setup-select" onchange="atualizarSetupRow('a5', this.value)">
+            <option value=""> </option>
+            <option value="Corrigindo Teores">Corrigindo Teores</option>
+            <option value="Subindo temperatura">Subindo temperatura</option>
+            <option value="Abaixando temperatura">Abaixando temperatura</option>
+          </select>
+        </td>
+        <td><input type="time" data-field="a5_setup_ini"><span class="autoria" data-autor="a5_setup_ini"></span></td>
+        <td><input type="time" data-field="a5_setup_fim"><span class="autoria" data-autor="a5_setup_fim"></span></td>
+      </tr>
     </tbody>
   </table>
   <div class="obs-section"><div class="obs-label">OBS:</div>
@@ -502,6 +572,18 @@
       <tr><td class="etapa-label">2ª Limpeza Final (T. Médio: 2:15h)</td><td><input type="time" data-field="a6_limpeza2_ini"><span class="autoria" data-autor="a6_limpeza2_ini"></span></td><td><input type="time" data-field="a6_limpeza2_fim"><span class="autoria" data-autor="a6_limpeza2_fim"></span></td></tr>
       <tr><td class="etapa-label">Agregar Metais (T. Médio: 3:00h)</td><td><input type="time" data-field="a6_metais_ini"><span class="autoria" data-autor="a6_metais_ini"></span></td><td><input type="time" data-field="a6_metais_fim"><span class="autoria" data-autor="a6_metais_fim"></span></td></tr>
       <tr><td class="etapa-label">Lingotamento</td><td><input type="time" data-field="a6_lingot_ini"><span class="autoria" data-autor="a6_lingot_ini"></span></td><td><input type="time" data-field="a6_lingot_fim"><span class="autoria" data-autor="a6_lingot_fim"></span></td></tr>
+      <tr class="setup-row" id="setup-row-a6">
+        <td class="etapa-label">Setup
+          <select data-field="a6_setup_motivo" class="setup-select" onchange="atualizarSetupRow('a6', this.value)">
+            <option value=""> </option>
+            <option value="Corrigindo Teores">Corrigindo Teores</option>
+            <option value="Subindo temperatura">Subindo temperatura</option>
+            <option value="Abaixando temperatura">Abaixando temperatura</option>
+          </select>
+        </td>
+        <td><input type="time" data-field="a6_setup_ini"><span class="autoria" data-autor="a6_setup_ini"></span></td>
+        <td><input type="time" data-field="a6_setup_fim"><span class="autoria" data-autor="a6_setup_fim"></span></td>
+      </tr>
     </tbody>
   </table>
   <div class="obs-section"><div class="obs-label">OBS:</div>
@@ -571,6 +653,18 @@
       <tr><td class="etapa-label">2ª Limpeza Final (T. Médio: 2:15h)</td><td><input type="time" data-field="a7_limpeza2_ini"><span class="autoria" data-autor="a7_limpeza2_ini"></span></td><td><input type="time" data-field="a7_limpeza2_fim"><span class="autoria" data-autor="a7_limpeza2_fim"></span></td></tr>
       <tr><td class="etapa-label">Agregar Metais (T. Médio: 3:00h)</td><td><input type="time" data-field="a7_metais_ini"><span class="autoria" data-autor="a7_metais_ini"></span></td><td><input type="time" data-field="a7_metais_fim"><span class="autoria" data-autor="a7_metais_fim"></span></td></tr>
       <tr><td class="etapa-label">Lingotamento</td><td><input type="time" data-field="a7_lingot_ini"><span class="autoria" data-autor="a7_lingot_ini"></span></td><td><input type="time" data-field="a7_lingot_fim"><span class="autoria" data-autor="a7_lingot_fim"></span></td></tr>
+      <tr class="setup-row" id="setup-row-a7">
+        <td class="etapa-label">Setup
+          <select data-field="a7_setup_motivo" class="setup-select" onchange="atualizarSetupRow('a7', this.value)">
+            <option value=""> </option>
+            <option value="Corrigindo Teores">Corrigindo Teores</option>
+            <option value="Subindo temperatura">Subindo temperatura</option>
+            <option value="Abaixando temperatura">Abaixando temperatura</option>
+          </select>
+        </td>
+        <td><input type="time" data-field="a7_setup_ini"><span class="autoria" data-autor="a7_setup_ini"></span></td>
+        <td><input type="time" data-field="a7_setup_fim"><span class="autoria" data-autor="a7_setup_fim"></span></td>
+      </tr>
     </tbody>
   </table>
   <div class="obs-section"><div class="obs-label">OBS:</div>
@@ -640,6 +734,18 @@
       <tr><td class="etapa-label">2ª Limpeza Final (T. Médio: 2:15h)</td><td><input type="time" data-field="a8_limpeza2_ini"><span class="autoria" data-autor="a8_limpeza2_ini"></span></td><td><input type="time" data-field="a8_limpeza2_fim"><span class="autoria" data-autor="a8_limpeza2_fim"></span></td></tr>
       <tr><td class="etapa-label">Agregar Metais (T. Médio: 3:00h)</td><td><input type="time" data-field="a8_metais_ini"><span class="autoria" data-autor="a8_metais_ini"></span></td><td><input type="time" data-field="a8_metais_fim"><span class="autoria" data-autor="a8_metais_fim"></span></td></tr>
       <tr><td class="etapa-label">Lingotamento</td><td><input type="time" data-field="a8_lingot_ini"><span class="autoria" data-autor="a8_lingot_ini"></span></td><td><input type="time" data-field="a8_lingot_fim"><span class="autoria" data-autor="a8_lingot_fim"></span></td></tr>
+      <tr class="setup-row" id="setup-row-a8">
+        <td class="etapa-label">Setup
+          <select data-field="a8_setup_motivo" class="setup-select" onchange="atualizarSetupRow('a8', this.value)">
+            <option value=""> </option>
+            <option value="Corrigindo Teores">Corrigindo Teores</option>
+            <option value="Subindo temperatura">Subindo temperatura</option>
+            <option value="Abaixando temperatura">Abaixando temperatura</option>
+          </select>
+        </td>
+        <td><input type="time" data-field="a8_setup_ini"><span class="autoria" data-autor="a8_setup_ini"></span></td>
+        <td><input type="time" data-field="a8_setup_fim"><span class="autoria" data-autor="a8_setup_fim"></span></td>
+      </tr>
     </tbody>
   </table>
   <div class="obs-section"><div class="obs-label">OBS:</div>
@@ -709,6 +815,18 @@
       <tr><td class="etapa-label">Limpeza com Carvão (T. Médio: 2:30h)</td><td><input type="time" data-field="b1_carvao_ini"><span class="autoria" data-autor="b1_carvao_ini"></span></td><td><input type="time" data-field="b1_carvao_fim"><span class="autoria" data-autor="b1_carvao_fim"></span></td></tr>
       <tr><td class="etapa-label">Agregar Metais (T. Médio: 2:00h)</td><td><input type="time" data-field="b1_metais_ini"><span class="autoria" data-autor="b1_metais_ini"></span></td><td><input type="time" data-field="b1_metais_fim"><span class="autoria" data-autor="b1_metais_fim"></span></td></tr>
       <tr><td class="etapa-label">Lingotamento</td><td><input type="time" data-field="b1_lingot_ini"><span class="autoria" data-autor="b1_lingot_ini"></span></td><td><input type="time" data-field="b1_lingot_fim"><span class="autoria" data-autor="b1_lingot_fim"></span></td></tr>
+      <tr class="setup-row" id="setup-row-b1">
+        <td class="etapa-label">Setup
+          <select data-field="b1_setup_motivo" class="setup-select" onchange="atualizarSetupRow('b1', this.value)">
+            <option value=""> </option>
+            <option value="Corrigindo Teores">Corrigindo Teores</option>
+            <option value="Subindo temperatura">Subindo temperatura</option>
+            <option value="Abaixando temperatura">Abaixando temperatura</option>
+          </select>
+        </td>
+        <td><input type="time" data-field="b1_setup_ini"><span class="autoria" data-autor="b1_setup_ini"></span></td>
+        <td><input type="time" data-field="b1_setup_fim"><span class="autoria" data-autor="b1_setup_fim"></span></td>
+      </tr>
     </tbody>
   </table>
   <div class="obs-section"><div class="obs-label">OBS:</div>
@@ -775,6 +893,18 @@
       <tr><td class="etapa-label">Limpeza com Carvão (T. Médio: 2:30h)</td><td><input type="time" data-field="b2_carvao_ini"><span class="autoria" data-autor="b2_carvao_ini"></span></td><td><input type="time" data-field="b2_carvao_fim"><span class="autoria" data-autor="b2_carvao_fim"></span></td></tr>
       <tr><td class="etapa-label">Agregar Metais (T. Médio: 2:00h)</td><td><input type="time" data-field="b2_metais_ini"><span class="autoria" data-autor="b2_metais_ini"></span></td><td><input type="time" data-field="b2_metais_fim"><span class="autoria" data-autor="b2_metais_fim"></span></td></tr>
       <tr><td class="etapa-label">Lingotamento</td><td><input type="time" data-field="b2_lingot_ini"><span class="autoria" data-autor="b2_lingot_ini"></span></td><td><input type="time" data-field="b2_lingot_fim"><span class="autoria" data-autor="b2_lingot_fim"></span></td></tr>
+      <tr class="setup-row" id="setup-row-b2">
+        <td class="etapa-label">Setup
+          <select data-field="b2_setup_motivo" class="setup-select" onchange="atualizarSetupRow('b2', this.value)">
+            <option value=""> </option>
+            <option value="Corrigindo Teores">Corrigindo Teores</option>
+            <option value="Subindo temperatura">Subindo temperatura</option>
+            <option value="Abaixando temperatura">Abaixando temperatura</option>
+          </select>
+        </td>
+        <td><input type="time" data-field="b2_setup_ini"><span class="autoria" data-autor="b2_setup_ini"></span></td>
+        <td><input type="time" data-field="b2_setup_fim"><span class="autoria" data-autor="b2_setup_fim"></span></td>
+      </tr>
     </tbody>
   </table>
   <div class="obs-section"><div class="obs-label">OBS:</div>
@@ -841,6 +971,35 @@
     }
   };
 
+
+  // Highlight linha Setup quando preenchida
+  window.atualizarSetupRow = (prefix, valor) => {
+    const row = document.getElementById('setup-row-' + prefix);
+    if (!row) return;
+    if (valor) {
+      row.classList.add('ativo-setup');
+    } else {
+      // Limpa destaque e zera campos de hora ao selecionar em branco
+      row.classList.remove('ativo-setup');
+      const ini = document.querySelector(`[data-field="${prefix}_setup_ini"]`);
+      const fim = document.querySelector(`[data-field="${prefix}_setup_fim"]`);
+      if (ini) ini.value = '';
+      if (fim) fim.value = '';
+    }
+  };
+
+  // Ao carregar dados do Firebase, verificar setup já preenchido
+  function verificarSetupsAtivos(dados) {
+    const prefixos = ['a1','a2','a3','a4','a5','a6','a7','a8','b1','b2'];
+    prefixos.forEach(p => {
+      const motivo = dados[p + '_setup_motivo'] || '';
+      const row = document.getElementById('setup-row-' + p);
+      if (!row) return;
+      if (motivo) row.classList.add('ativo-setup');
+      else row.classList.remove('ativo-setup');
+    });
+  }
+
   window.fazerLogout = () => {
     localStorage.removeItem('sessao_cp');
     document.getElementById('tela-login').style.display = 'flex';
@@ -878,6 +1037,7 @@
     statusTxt.textContent = '🟢 Conectado — atualizações em tempo real ativas';
     if (ignorarUpdate) return;
     const dados = snapshot.val() || {};
+    verificarSetupsAtivos(dados);
     document.querySelectorAll('[data-field]').forEach(el => {
       const key = el.dataset.field;
       const val = dados[key] || '';
