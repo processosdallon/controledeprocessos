@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel de Monitoramento</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; font-size: 13px; background: #1a1a2e; color: #eee; padding: 20px; }
+  h1 { text-align: center; font-size: 18px; color: #fff; margin-bottom: 4px; letter-spacing: 2px; }
+  .subtitle { text-align: center; font-size: 12px; color: #aaa; margin-bottom: 14px; }
+  .status-bar { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px; font-size: 12px; color: #aaa; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: #555; display: inline-block; }
+  .dot.connected { background: #28a745; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .atualizado { font-size: 11px; color: #555; text-align: center; margin-bottom: 18px; }
+  .secao-titulo { color: #7ecff5; font-size: 13px; font-weight: bold; margin: 20px auto 10px; max-width: 1200px; border-bottom: 1px solid #0f3460; padding-bottom: 6px; }
+  .grid-8 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; max-width: 1200px; margin: 0 auto 10px; }
+  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; max-width: 1200px; margin: 0 auto; }
+  @media(max-width: 900px) { .grid-8 { grid-template-columns: repeat(2, 1fr); } }
+  @media(max-width: 500px) { .grid-8, .grid-2 { grid-template-columns: 1fr; } }
+  .card { background: #16213e; border: 1px solid #0f3460; border-radius: 8px; overflow: hidden; }
+  .card-header { background: #0f3460; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; }
+  .card-header h2 { font-size: 12px; color: #e0e0e0; font-weight: bold; }
+  .card-header .info { font-size: 10px; color: #7ecff5; }
+  table { width: 100%; border-collapse: collapse; }
+  th { font-size: 10px; color: #7ecff5; text-align: left; padding: 4px 8px; border-bottom: 1px solid #0f3460; background: #0d2a4a; }
+  td { padding: 4px 8px; font-size: 11px; border-bottom: 1px solid #1e3a5f; }
+  td.etapa { color: #ccc; }
+  td.valor { color: #fff; font-weight: bold; }
+  td.vazio { color: #444; font-style: italic; }
+  tr.preenchida td.etapa { color: #7dffb3; }
+  .obs-box { padding: 8px 12px; border-top: 1px solid #0f3460; font-size: 11px; min-height: 32px; }
+  .obs-box strong { color: #7ecff5; display: block; margin-bottom: 2px; font-size: 10px; }
+
+  /* HISTÓRICO */
+  .hist-secao { max-width: 1200px; margin: 28px auto 0; }
+  .hist-titulo { color: #ffd700; font-size: 15px; font-weight: bold; border-bottom: 1px solid #444; padding-bottom: 8px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
+  .hist-vazio { color: #555; font-style: italic; text-align: center; padding: 20px; }
+  .hist-item { background: #16213e; border: 1px solid #2a3f6f; border-radius: 8px; margin-bottom: 12px; overflow: hidden; }
+  .hist-header { background: #1a3a6e; padding: 8px 14px; display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+  .hist-header .hl { font-size: 13px; font-weight: bold; color: #fff; }
+  .hist-header .hp { font-size: 12px; color: #7ecff5; }
+  .hist-header .ht { font-size: 11px; color: #aaa; margin-left: auto; }
+  .hist-header .htipo { font-size: 10px; background: #0f3460; color: #7ecff5; padding: 2px 8px; border-radius: 10px; }
+  .hist-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  .hist-table th { background: #0d2040; color: #7ecff5; padding: 4px 10px; text-align: left; border-bottom: 1px solid #1e3a5f; }
+  .hist-table td { padding: 4px 10px; border-bottom: 1px solid #1a2e50; color: #ccc; }
+  .hist-table td.v { color: #fff; font-weight: bold; }
+  .hist-table td.vz { color: #444; font-style: italic; }
+  .hist-obs { padding: 6px 14px; font-size: 11px; color: #aaa; border-top: 1px solid #1e3a5f; }
+  .hist-obs strong { color: #7ecff5; }
+  .btn-del { background: #7c1a1a; color: #ffaaaa; border: none; padding: 3px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; margin-left: 10px; }
+  .btn-del:hover { background: #a82020; }
+  .footer { text-align: center; margin-top: 28px; font-size: 11px; color: #555; }
+</style>
+</head>
+<body>
+<h1>📊 PAINEL DE MONITORAMENTO</h1>
+<p class="subtitle">Controle de Processo — Tempo Real</p>
+<div class="status-bar"><span class="dot" id="dot"></span><span id="status-txt">Conectando...</span></div>
+<p class="atualizado" id="atualizado"></p>
+
+<div class="secao-titulo">▶ BLOCO SUPERIOR (em andamento)</div>
+<div class="grid-8" id="grid-sup"></div>
+
+<div class="secao-titulo">▶ BLOCO INFERIOR (em andamento)</div>
+<div class="grid-2" id="grid-inf"></div>
+
+<div class="hist-secao">
+  <div class="hist-titulo">
+    <span>📋 Histórico de Lotes Concluídos</span>
+    <span id="hist-count" style="font-size:12px;color:#aaa;"></span>
+  </div>
+  <div id="historico-lista"><div class="hist-vazio">Nenhum lote concluído ainda.</div></div>
+</div>
+
+<div class="footer">Atualização automática em tempo real</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyANqyG0Jrs67fGFlAjBwI2_3v_gT2NIZ5A",
+    authDomain: "acompanhamento-de-rotina.firebaseapp.com",
+    databaseURL: "https://acompanhamento-de-rotina-default-rtdb.firebaseio.com",
+    projectId: "acompanhamento-de-rotina",
+    storageBucket: "acompanhamento-de-rotina.firebasestorage.app",
+    messagingSenderId: "616867001415",
+    appId: "1:616867001415:web:8bd3f886c3bf89a0beed62",
+    measurementId: "G-WSCX7YQ23E"
+  };
+
+  const etapasSup = [
+    {key:'desest_ini', key2:'desest_fim', label:'Desest'},
+    {key:'lanca_ini', key2:'lanca_fim', label:'Lança'},
+    {key:'desant1_ini', key2:'desant1_fim', label:'1ª Desant. S/S'},
+    {key:'decup_ini', key2:'decup_fim', label:'Decup. S/P/E'},
+    {key:'transf_ini', key2:'transf_fim', label:'Transferência'},
+    {key:'desant2_ini', key2:'desant2_fim', label:'2ª Desant. S/S'},
+    {key:'limpeza1_ini', key2:'limpeza1_fim', label:'Limpeza Final'},
+    {key:'transf2_ini', key2:'transf2_fim', label:'2ª Transf.'},
+    {key:'limpeza2_ini', key2:'limpeza2_fim', label:'2ª Limpeza Final'},
+    {key:'metais_ini', key2:'metais_fim', label:'Agregar Metais'},
+    {key:'lingot_ini', key2:'lingot_fim', label:'Lingotamento'},
+  ];
+
+  const etapasInf = [
+    {key:'limp1_ini', key2:'limp1_fim', label:'1ª Limpeza'},
+    {key:'enxofre_ini', key2:'enxofre_fim', label:'Dec. Com Enxofre'},
+    {key:'desest_ini', key2:'desest_fim', label:'Desestanhação'},
+    {key:'transf_ini', key2:'transf_fim', label:'Transferência'},
+    {key:'soda_ini', key2:'soda_fim', label:'Limpeza com Soda'},
+    {key:'carvao_ini', key2:'carvao_fim', label:'Limpeza com Carvão'},
+    {key:'metais_ini', key2:'metais_fim', label:'Agregar Metais'},
+    {key:'lingot_ini', key2:'lingot_fim', label:'Lingotamento'},
+  ];
+
+  function renderCard(prefix, dados, num, etapas) {
+    const lote = dados[`${prefix}_lote`] || '—';
+    const panela = dados[`${prefix}_panela`] || '—';
+    const obs = dados[`${prefix}_obs`] || '';
+    const linhas = etapas.map(e => {
+      const ini = dados[`${prefix}_${e.key}`] || '';
+      const fim = dados[`${prefix}_${e.key2}`] || '';
+      return `<tr class="${ini||fim?'preenchida':''}">
+        <td class="etapa">${e.label}</td>
+        <td class="${ini?'valor':'vazio'}">${ini||'—'}</td>
+        <td class="${fim?'valor':'vazio'}">${fim||'—'}</td>
+      </tr>`;
+    }).join('');
+    return `<div class="card">
+      <div class="card-header"><h2>Nº ${num} — ${lote}</h2><span class="info">Panela: ${panela}</span></div>
+      <table><thead><tr><th>Etapa</th><th>Início</th><th>Fim</th></tr></thead><tbody>${linhas}</tbody></table>
+      <div class="obs-box"><strong>OBS:</strong><span>${obs||'<em style="color:#444">—</em>'}</span></div>
+    </div>`;
+  }
+
+  function renderHistorico(key, reg, db) {
+    const etapas = reg.tipo === 'superior' ? etapasSup : etapasInf;
+    const linhas = etapas.map(e => {
+      const ini = reg[e.key] || '';
+      const fim = reg[e.key2] || '';
+      return `<tr>
+        <td>${e.label}</td>
+        <td class="${ini?'v':'vz'}">${ini||'—'}</td>
+        <td class="${fim?'v':'vz'}">${fim||'—'}</td>
+      </tr>`;
+    }).join('');
+    return `<div class="hist-item">
+      <div class="hist-header">
+        <span class="hl">Lote: ${reg.lote||'—'}</span>
+        <span class="hp">Panela: ${reg.panela||'—'}</span>
+        <span class="htipo">${reg.tipo === 'superior' ? 'Bloco Superior' : 'Bloco Inferior'}</span>
+        <span class="ht">Concluído em: ${reg.concluidoEm}</span>
+        <button class="btn-del" onclick="deletarHistorico('${key}')">✕ Remover</button>
+      </div>
+      <table class="hist-table">
+        <thead><tr><th>Etapa</th><th>Início</th><th>Previsão de Fim</th></tr></thead>
+        <tbody>${linhas}</tbody>
+      </table>
+      <div class="hist-obs"><strong>OBS:</strong> ${reg.obs||'—'}</div>
+    </div>`;
+  }
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  onValue(ref(db, 'formulario/dados'), (snapshot) => {
+    document.getElementById('dot').className = 'dot connected';
+    document.getElementById('status-txt').textContent = '🟢 Conectado — tempo real ativo';
+    document.getElementById('atualizado').textContent = `Última atualização: ${new Date().toLocaleTimeString('pt-BR')}`;
+    const d = snapshot.val() || {};
+    let sup = '';
+    for (let i = 1; i <= 8; i++) sup += renderCard(`a${i}`, d, i, etapasSup);
+    document.getElementById('grid-sup').innerHTML = sup;
+    let inf = '';
+    for (let i = 1; i <= 2; i++) inf += renderCard(`b${i}`, d, i, etapasInf);
+    document.getElementById('grid-inf').innerHTML = inf;
+  }, () => {
+    document.getElementById('dot').className = 'dot';
+    document.getElementById('status-txt').textContent = '🔴 Sem conexão';
+  });
+
+  onValue(ref(db, 'historico'), (snapshot) => {
+    const lista = document.getElementById('historico-lista');
+    const count = document.getElementById('hist-count');
+    const dados = snapshot.val();
+    if (!dados) {
+      lista.innerHTML = '<div class="hist-vazio">Nenhum lote concluído ainda.</div>';
+      count.textContent = '';
+      return;
+    }
+    const entries = Object.entries(dados).reverse();
+    count.textContent = `${entries.length} lote(s) no histórico`;
+    lista.innerHTML = entries.map(([key, reg]) => renderHistorico(key, reg, db)).join('');
+  });
+
+  window.deletarHistorico = (key) => {
+    if (!confirm('Remover este registro do histórico?')) return;
+    remove(ref(db, `historico/${key}`));
+  };
+</script>
+</body>
+</html>
