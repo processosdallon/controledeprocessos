@@ -64,10 +64,10 @@
 <div class="status-bar"><span class="dot" id="dot"></span><span id="status-txt">Conectando...</span></div>
 <p class="atualizado" id="atualizado"></p>
 
-<div class="secao-titulo">▶ BLOCO SUPERIOR (em andamento)</div>
+<div class="secao-titulo">▶ PANELAS DE PURO/CÁLCIO (em andamento)</div>
 <div class="grid-8" id="grid-sup"></div>
 
-<div class="secao-titulo">▶ BLOCO INFERIOR (em andamento)</div>
+<div class="secao-titulo">▶ BLOCO PANELAS DE SB/SN (em andamento)</div>
 <div class="grid-2" id="grid-inf"></div>
 
 <div class="hist-secao">
@@ -135,7 +135,7 @@
       </tr>`;
     }).join('');
     return `<div class="card ${ativo}">
-      <div class="card-header"><h2>Nº ${num} — ${lote}</h2><span class="info">Panela: ${panela}</span></div>
+      <div class="card-header"><h2> — ${lote}</h2><span class="info">Panela: ${panela}</span></div>
       <table><thead><tr><th>Etapa</th><th>Início</th><th>Fim</th></tr></thead><tbody>${linhas}</tbody></table>
       <div class="obs-box"><strong>OBS:</strong><span>${obs||'<em style="color:#444">—</em>'}</span></div>
     </div>`;
