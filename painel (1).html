@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel de Monitoramento</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; font-size: 13px; background: #1a1a2e; color: #eee; padding: 20px; }
+  h1 { text-align: center; font-size: 18px; color: #fff; margin-bottom: 4px; letter-spacing: 2px; }
+  .subtitle { text-align: center; font-size: 12px; color: #aaa; margin-bottom: 14px; }
+  .status-bar { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px; font-size: 12px; color: #aaa; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: #555; display: inline-block; }
+  .dot.connected { background: #28a745; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .atualizado { font-size: 11px; color: #555; text-align: center; margin-bottom: 18px; }
+  .secao-titulo { color: #7ecff5; font-size: 13px; font-weight: bold; margin: 20px 0 10px; max-width: 1100px; margin-left: auto; margin-right: auto; border-bottom: 1px solid #0f3460; padding-bottom: 6px; }
+  .grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; max-width: 1100px; margin: 0 auto 10px; }
+  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; max-width: 1100px; margin: 0 auto; }
+  @media(max-width: 900px) { .grid-5 { grid-template-columns: repeat(2, 1fr); } }
+  @media(max-width: 500px) { .grid-5, .grid-2 { grid-template-columns: 1fr; } }
+  .card { background: #16213e; border: 1px solid #0f3460; border-radius: 8px; overflow: hidden; }
+  .card-header { background: #0f3460; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; }
+  .card-header h2 { font-size: 12px; color: #e0e0e0; font-weight: bold; }
+  .card-header .info { font-size: 10px; color: #7ecff5; }
+  table { width: 100%; border-collapse: collapse; }
+  th { font-size: 10px; color: #7ecff5; text-align: left; padding: 4px 8px; border-bottom: 1px solid #0f3460; background: #0d2a4a; }
+  td { padding: 4px 8px; font-size: 11px; border-bottom: 1px solid #1e3a5f; }
+  td.etapa { color: #ccc; }
+  td.valor { color: #fff; font-weight: bold; }
+  td.vazio { color: #444; font-style: italic; }
+  tr.preenchida td.etapa { color: #7dffb3; }
+  .obs-box { padding: 8px 12px; border-top: 1px solid #0f3460; font-size: 11px; min-height: 36px; }
+  .obs-box strong { color: #7ecff5; display: block; margin-bottom: 2px; font-size: 10px; }
+  .footer { text-align: center; margin-top: 24px; font-size: 11px; color: #555; }
+</style>
+</head>
+<body>
+<h1>📊 PAINEL DE MONITORAMENTO</h1>
+<p class="subtitle">Controle de Processo — Tempo Real</p>
+<div class="status-bar"><span class="dot" id="dot"></span><span id="status-txt">Conectando...</span></div>
+<p class="atualizado" id="atualizado"></p>
+
+<div class="secao-titulo">▶ BLOCO SUPERIOR</div>
+<div class="grid-5" id="grid-sup"></div>
+
+<div class="secao-titulo">▶ BLOCO INFERIOR</div>
+<div class="grid-2" id="grid-inf"></div>
+
+<div class="footer">Atualização automática em tempo real</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyANqyG0Jrs67fGFlAjBwI2_3v_gT2NIZ5A",
+    authDomain: "acompanhamento-de-rotina.firebaseapp.com",
+    databaseURL: "https://acompanhamento-de-rotina-default-rtdb.firebaseio.com",
+    projectId: "acompanhamento-de-rotina",
+    storageBucket: "acompanhamento-de-rotina.firebasestorage.app",
+    messagingSenderId: "616867001415",
+    appId: "1:616867001415:web:8bd3f886c3bf89a0beed62",
+    measurementId: "G-WSCX7YQ23E"
+  };
+
+  const etapasSup = [
+    {key:'desest', label:'Desest'},
+    {key:'lanca', label:'Lança'},
+    {key:'desant1', label:'1ª Desant. S/S'},
+    {key:'decup', label:'Decup. S/P/E'},
+    {key:'transf', label:'Transferência'},
+    {key:'desant2', label:'2ª Desant. S/S'},
+    {key:'limpeza1', label:'Limpeza Final'},
+    {key:'transf2', label:'2ª Transf.'},
+    {key:'limpeza2', label:'2ª Limpeza Final'},
+    {key:'metais', label:'Agregar Metais'},
+    {key:'lingot', label:'Lingotamento'},
+  ];
+
+  const etapasInf = [
+    {key:'limp1', label:'1ª Limpeza'},
+    {key:'enxofre', label:'Dec. Com Enxofre'},
+    {key:'desest', label:'Desestanhação'},
+    {key:'transf', label:'Transferência'},
+    {key:'soda', label:'Limpeza com Soda'},
+    {key:'carvao', label:'Limpeza com Carvão'},
+    {key:'metais', label:'Agregar Metais'},
+    {key:'lingot', label:'Lingotamento'},
+  ];
+
+  function renderCard(prefix, dados, num, etapas) {
+    const lote = dados[`${prefix}_lote`] || '—';
+    const panela = dados[`${prefix}_panela`] || '—';
+    const obs = dados[`${prefix}_obs`] || '';
+    const linhas = etapas.map(e => {
+      const ini = dados[`${prefix}_${e.key}_ini`] || '';
+      const fim = dados[`${prefix}_${e.key}_fim`] || '';
+      return `<tr class="${ini||fim?'preenchida':''}">
+        <td class="etapa">${e.label}</td>
+        <td class="${ini?'valor':'vazio'}">${ini||'—'}</td>
+        <td class="${fim?'valor':'vazio'}">${fim||'—'}</td>
+      </tr>`;
+    }).join('');
+    return `<div class="card">
+      <div class="card-header">
+        <h2>Nº ${num} — ${lote}</h2>
+        <span class="info">Panela: ${panela}</span>
+      </div>
+      <table>
+        <thead><tr><th>Etapa</th><th>Início</th><th>Fim</th></tr></thead>
+        <tbody>${linhas}</tbody>
+      </table>
+      <div class="obs-box"><strong>OBS:</strong><span>${obs||'<em style="color:#444">—</em>'}</span></div>
+    </div>`;
+  }
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const dbRef = ref(db, 'formulario/dados');
+
+  onValue(dbRef, (snapshot) => {
+    document.getElementById('dot').className = 'dot connected';
+    document.getElementById('status-txt').textContent = '🟢 Conectado — tempo real ativo';
+    document.getElementById('atualizado').textContent = `Última atualização: ${new Date().toLocaleTimeString('pt-BR')}`;
+    const d = snapshot.val() || {};
+    let sup = '';
+    for (let i = 1; i <= 5; i++) sup += renderCard(`a${i}`, d, i, etapasSup);
+    document.getElementById('grid-sup').innerHTML = sup;
+    let inf = '';
+    for (let i = 1; i <= 2; i++) inf += renderCard(`b${i}`, d, i, etapasInf);
+    document.getElementById('grid-inf').innerHTML = inf;
+  }, () => {
+    document.getElementById('dot').className = 'dot';
+    document.getElementById('status-txt').textContent = '🔴 Sem conexão';
+  });
+</script>
+</body>
+</html>

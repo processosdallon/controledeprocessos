@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Controle de Processo</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; font-size: 13px; background: #f5f5f5; padding: 20px; color: #111; }
+  h1 { text-align: center; font-size: 16px; margin-bottom: 6px; color: #222; letter-spacing: 1px; }
+  .subtitle { text-align: center; font-size: 12px; color: #888; margin-bottom: 20px; }
+  .status-bar { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 16px; font-size: 12px; color: #555; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: #ccc; display: inline-block; }
+  .dot.connected { background: #28a745; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+  .secao-titulo { text-align: center; font-size: 13px; font-weight: bold; color: #444; max-width: 720px; margin: 24px auto 8px; border-bottom: 2px solid #aaa; padding-bottom: 4px; }
+  .bloco { background: #fff; border: 1.5px solid #333; margin-bottom: 24px; max-width: 720px; margin-left: auto; margin-right: auto; }
+  .bloco-header { background: #ccc; display: flex; align-items: center; gap: 16px; padding: 6px 10px; border-bottom: 1px solid #555; font-weight: bold; font-size: 13px; }
+  .bloco-header label { margin-right: 4px; }
+  .bloco-header input[type="text"] { border: none; border-bottom: 1px solid #888; background: transparent; font-size: 13px; font-family: Arial; color: #111; outline: none; padding: 1px 4px; }
+  .bloco-header .campo-lote { width: 140px; }
+  .bloco-header .campo-panela { width: 80px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { border: 1px solid #555; padding: 5px 8px; text-align: left; }
+  th { background: #ddd; font-weight: bold; font-size: 12px; color: #333; }
+  .etapa-label { background: #eee; font-size: 12px; color: #222; width: 55%; }
+  input[type="time"], textarea {
+    width: 100%; border: none; background: transparent; font-size: 12px;
+    font-family: Arial; color: #111; outline: none; padding: 2px;
+  }
+  input[type="time"] { cursor: pointer; }
+  input.changed, textarea.changed { background: #fffbe6; transition: background 1s; }
+  .obs-section { border-top: 2px solid #333; padding: 6px 8px; }
+  .obs-label { font-weight: bold; font-size: 12px; margin-bottom: 4px; }
+  textarea { resize: none; padding: 4px; }
+  .btn-container { text-align: center; margin: 10px 0 30px; max-width: 720px; margin-left: auto; margin-right: auto; }
+  button { color: white; border: none; padding: 10px 32px; font-size: 14px; border-radius: 4px; cursor: pointer; margin: 0 8px; }
+  .btn-limpar { background: #dc3545; }
+  .btn-limpar:hover { background: #a71d2a; }
+  .btn-imprimir { background: #444; }
+  .btn-imprimir:hover { background: #222; }
+  @media print { .btn-container,.status-bar,.secao-titulo { display: none; } body { background: white; padding: 5px; } }
+</style>
+</head>
+<body>
+
+<h1>CONTROLE DE PROCESSO</h1>
+<p class="subtitle">Dados sincronizados em tempo real</p>
+<div class="status-bar">
+  <span class="dot" id="dot"></span>
+  <span id="status-txt">Conectando...</span>
+</div>
+
+<div id="formPrincipal">
+
+<div class="secao-titulo">▶ BLOCO SUPERIOR (5 quadros)</div>
+
+<!-- BLOCO SUPERIOR 1 -->
+<div class="bloco">
+  <div class="bloco-header">
+    <span><label>Lote:</label><input type="text" class="campo-lote" data-field="a1_lote" placeholder="Ex: L-001"></span>
+    <span><label>Panela:</label><input type="text" class="campo-panela" data-field="a1_panela" placeholder="P-01"></span>
+  </div>
+  <table>
+    <thead><tr><th style="width:55%">Etapa</th><th style="width:22%">Início</th><th style="width:23%">Previsão de Fim</th></tr></thead>
+    <tbody>
+      <tr><td class="etapa-label">Desest (T. Médio: 1:50)</td><td><input type="time" data-field="a1_desest_ini"></td><td><input type="time" data-field="a1_desest_fim"></td></tr>
+      <tr><td class="etapa-label">Lança (T. Médio: 4:00h)</td><td><input type="time" data-field="a1_lanca_ini"></td><td><input type="time" data-field="a1_lanca_fim"></td></tr>
+      <tr><td class="etapa-label">1ª Desant. S/S (T. Médio: 1:30h)</td><td><input type="time" data-field="a1_desant1_ini"></td><td><input type="time" data-field="a1_desant1_fim"></td></tr>
+      <tr><td class="etapa-label">Decup. S/P/E (T. Médio: 2:10h)</td><td><input type="time" data-field="a1_decup_ini"></td><td><input type="time" data-field="a1_decup_fim"></td></tr>
+      <tr><td class="etapa-label">Transferência (T. Médio: 00:40h)</td><td><input type="time" data-field="a1_transf_ini"></td><td><input type="time" data-field="a1_transf_fim"></td></tr>
+      <tr><td class="etapa-label">2ª Desant. S/S (T. Médio: 5:30h)</td><td><input type="time" data-field="a1_desant2_ini"></td><td><input type="time" data-field="a1_desant2_fim"></td></tr>
+      <tr><td class="etapa-label">Limpeza Final (T. Médio: 1:30h)</td><td><input type="time" data-field="a1_limpeza1_ini"></td><td><input type="time" data-field="a1_limpeza1_fim"></td></tr>
+      <tr><td class="etapa-label">2ª Transf. (T. Médio: 00:40h)</td><td><input type="time" data-field="a1_transf2_ini"></td><td><input type="time" data-field="a1_transf2_fim"></td></tr>
+      <tr><td class="etapa-label">2ª Limpeza Final (T. Médio: 2:15h)</td><td><input type="time" data-field="a1_limpeza2_ini"></td><td><input type="time" data-field="a1_limpeza2_fim"></td></tr>
+      <tr><td class="etapa-label">Agregar Metais (T. Médio: 3:00h)</td><td><input type="time" data-field="a1_metais_ini"></td><td><input type="time" data-field="a1_metais_fim"></td></tr>
+      <tr><td class="etapa-label">Lingotamento</td><td><input type="time" data-field="a1_lingot_ini"></td><td><input type="time" data-field="a1_lingot_fim"></td></tr>
+    </tbody>
+  </table>
+  <div class="obs-section"><div class="obs-label">OBS:</div>
+    <textarea data-field="a1_obs" rows="3" style="width:100%;border-top:1px solid #999;" placeholder="Observações..."></textarea>
+  </div>
+</div>
+
+<!-- BLOCO SUPERIOR 2 -->
+<div class="bloco">
+  <div class="bloco-header">
+    <span><label>Lote:</label><input type="text" class="campo-lote" data-field="a2_lote" placeholder="Ex: L-002"></span>
+    <span><label>Panela:</label><input type="text" class="campo-panela" data-field="a2_panela" placeholder="P-02"></span>
+  </div>
+  <table>
+    <thead><tr><th style="width:55%">Etapa</th><th style="width:22%">Início</th><th style="width:23%">Previsão de Fim</th></tr></thead>
+    <tbody>
+      <tr><td class="etapa-label">Desest (T. Médio: 1:50)</td><td><input type="time" data-field="a2_desest_ini"></td><td><input type="time" data-field="a2_desest_fim"></td></tr>
+      <tr><td class="etapa-label">Lança (T. Médio: 4:00h)</td><td><input type="time" data-field="a2_lanca_ini"></td><td><input type="time" data-field="a2_lanca_fim"></td></tr>
+      <tr><td class="etapa-label">1ª Desant. S/S (T. Médio: 1:30h)</td><td><input type="time" data-field="a2_desant1_ini"></td><td><input type="time" data-field="a2_desant1_fim"></td></tr>
+      <tr><td class="etapa-label">Decup. S/P/E (T. Médio: 2:10h)</td><td><input type="time" data-field="a2_decup_ini"></td><td><input type="time" data-field="a2_decup_fim"></td></tr>
+      <tr><td class="etapa-label">Transferência (T. Médio: 00:40h)</td><td><input type="time" data-field="a2_transf_ini"></td><td><input type="time" data-field="a2_transf_fim"></td></tr>
+      <tr><td class="etapa-label">2ª Desant. S/S (T. Médio: 5:30h)</td><td><input type="time" data-field="a2_desant2_ini"></td><td><input type="time" data-field="a2_desant2_fim"></td></tr>
+      <tr><td class="etapa-label">Limpeza Final (T. Médio: 1:30h)</td><td><input type="time" data-field="a2_limpeza1_ini"></td><td><input type="time" data-field="a2_limpeza1_fim"></td></tr>
+      <tr><td class="etapa-label">2ª Transf. (T. Médio: 00:40h)</td><td><input type="time" data-field="a2_transf2_ini"></td><td><input type="time" data-field="a2_transf2_fim"></td></tr>
+      <tr><td class="etapa-label">2ª Limpeza Final (T. Médio: 2:15h)</td><td><input type="time" data-field="a2_limpeza2_ini"></td><td><input type="time" data-field="a2_limpeza2_fim"></td></tr>
+      <tr><td class="etapa-label">Agregar Metais (T. Médio: 3:00h)</td><td><input type="time" data-field="a2_metais_ini"></td><td><input type="time" data-field="a2_metais_fim"></td></tr>
+      <tr><td class="etapa-label">Lingotamento</td><td><input type="time" data-field="a2_lingot_ini"></td><td><input type="time" data-field="a2_lingot_fim"></td></tr>
+    </tbody>
+  </table>
+  <div class="obs-section"><div class="obs-label">OBS:</div>
+    <textarea data-field="a2_obs" rows="3" style="width:100%;border-top:1px solid #999;" placeholder="Observações..."></textarea>
+  </div>
+</div>
+
+<!-- BLOCO SUPERIOR 3 -->
+<div class="bloco">
+  <div class="bloco-header">
+    <span><label>Lote:</label><input type="text" class="campo-lote" data-field="a3_lote" placeholder="Ex: L-003"></span>
+    <span><label>Panela:</label><input type="text" class="campo-panela" data-field="a3_panela" placeholder="P-03"></span>
+  </div>
+  <table>
+    <thead><tr><th style="width:55%">Etapa</th><th style="width:22%">Início</th><th style="width:23%">Previsão de Fim</th></tr></thead>
+    <tbody>
+      <tr><td class="etapa-label">Desest (T. Médio: 1:50)</td><td><input type="time" data-field="a3_desest_ini"></td><td><input type="time" data-field="a3_desest_fim"></td></tr>
+      <tr><td class="etapa-label">Lança (T. Médio: 4:00h)</td><td><input type="time" data-field="a3_lanca_ini"></td><td><input type="time" data-field="a3_lanca_fim"></td></tr>
+      <tr><td class="etapa-label">1ª Desant. S/S (T. Médio: 1:30h)</td><td><input type="time" data-field="a3_desant1_ini"></td><td><input type="time" data-field="a3_desant1_fim"></td></tr>
+      <tr><td class="etapa-label">Decup. S/P/E (T. Médio: 2:10h)</td><td><input type="time" data-field="a3_decup_ini"></td><td><input type="time" data-field="a3_decup_fim"></td></tr>
+      <tr><td class="etapa-label">Transferência (T. Médio: 00:40h)</td><td><input type="time" data-field="a3_transf_ini"></td><td><input type="time" data-field="a3_transf_fim"></td></tr>
+      <tr><td class="etapa-label">2ª Desant. S/S (T. Médio: 5:30h)</td><td><input type="time" data-field="a3_desant2_ini"></td><td><input type="time" data-field="a3_desant2_fim"></td></tr>
+      <tr><td class="etapa-label">Limpeza Final (T. Médio: 1:30h)</td><td><input type="time" data-field="a3_limpeza1_ini"></td><td><input type="time" data-field="a3_limpeza1_fim"></td></tr>
+      <tr><td class="etapa-label">2ª Transf. (T. Médio: 00:40h)</td><td><input type="time" data-field="a3_transf2_ini"></td><td><input type="time" data-field="a3_transf2_fim"></td></tr>
+      <tr><td class="etapa-label">2ª Limpeza Final (T. Médio: 2:15h)</td><td><input type="time" data-field="a3_limpeza2_ini"></td><td><input type="time" data-field="a3_limpeza2_fim"></td></tr>
+      <tr><td class="etapa-label">Agregar Metais (T. Médio: 3:00h)</td><td><input type="time" data-field="a3_metais_ini"></td><td><input type="time" data-field="a3_metais_fim"></td></tr>
+      <tr><td class="etapa-label">Lingotamento</td><td><input type="time" data-field="a3_lingot_ini"></td><td><input type="time" data-field="a3_lingot_fim"></td></tr>
+    </tbody>
+  </table>
+  <div class="obs-section"><div class="obs-label">OBS:</div>
+    <textarea data-field="a3_obs" rows="3" style="width:100%;border-top:1px solid #999;" placeholder="Observações..."></textarea>
+  </div>
+</div>
+
+<!-- BLOCO SUPERIOR 4 -->
+<div class="bloco">
+  <div class="bloco-header">
+    <span><label>Lote:</label><input type="text" class="campo-lote" data-field="a4_lote" placeholder="Ex: L-004"></span>
+    <span><label>Panela:</label><input type="text" class="campo-panela" data-field="a4_panela" placeholder="P-04"></span>
+  </div>
+  <table>
+    <thead><tr><th style="width:55%">Etapa</th><th style="width:22%">Início</th><th style="width:23%">Previsão de Fim</th></tr></thead>
+    <tbody>
+      <tr><td class="etapa-label">Desest (T. Médio: 1:50)</td><td><input type="time" data-field="a4_desest_ini"></td><td><input type="time" data-field="a4_desest_fim"></td></tr>
+      <tr><td class="etapa-label">Lança (T. Médio: 4:00h)</td><td><input type="time" data-field="a4_lanca_ini"></td><td><input type="time" data-field="a4_lanca_fim"></td></tr>
+      <tr><td class="etapa-label">1ª Desant. S/S (T. Médio: 1:30h)</td><td><input type="time" data-field="a4_desant1_ini"></td><td><input type="time" data-field="a4_desant1_fim"></td></tr>
+      <tr><td class="etapa-label">Decup. S/P/E (T. Médio: 2:10h)</td><td><input type="time" data-field="a4_decup_ini"></td><td><input type="time" data-field="a4_decup_fim"></td></tr>
+      <tr><td class="etapa-label">Transferência (T. Médio: 00:40h)</td><td><input type="time" data-field="a4_transf_ini"></td><td><input type="time" data-field="a4_transf_fim"></td></tr>
+      <tr><td class="etapa-label">2ª Desant. S/S (T. Médio: 5:30h)</td><td><input type="time" data-field="a4_desant2_ini"></td><td><input type="time" data-field="a4_desant2_fim"></td></tr>
+      <tr><td class="etapa-label">Limpeza Final (T. Médio: 1:30h)</td><td><input type="time" data-field="a4_limpeza1_ini"></td><td><input type="time" data-field="a4_limpeza1_fim"></td></tr>
+      <tr><td class="etapa-label">2ª Transf. (T. Médio: 00:40h)</td><td><input type="time" data-field="a4_transf2_ini"></td><td><input type="time" data-field="a4_transf2_fim"></td></tr>
+      <tr><td class="etapa-label">2ª Limpeza Final (T. Médio: 2:15h)</td><td><input type="time" data-field="a4_limpeza2_ini"></td><td><input type="time" data-field="a4_limpeza2_fim"></td></tr>
+      <tr><td class="etapa-label">Agregar Metais (T. Médio: 3:00h)</td><td><input type="time" data-field="a4_metais_ini"></td><td><input type="time" data-field="a4_metais_fim"></td></tr>
+      <tr><td class="etapa-label">Lingotamento</td><td><input type="time" data-field="a4_lingot_ini"></td><td><input type="time" data-field="a4_lingot_fim"></td></tr>
+    </tbody>
+  </table>
+  <div class="obs-section"><div class="obs-label">OBS:</div>
+    <textarea data-field="a4_obs" rows="3" style="width:100%;border-top:1px solid #999;" placeholder="Observações..."></textarea>
+  </div>
+</div>
+
+<!-- BLOCO SUPERIOR 5 -->
+<div class="bloco">
+  <div class="bloco-header">
+    <span><label>Lote:</label><input type="text" class="campo-lote" data-field="a5_lote" placeholder="Ex: L-005"></span>
+    <span><label>Panela:</label><input type="text" class="campo-panela" data-field="a5_panela" placeholder="P-05"></span>
+  </div>
+  <table>
+    <thead><tr><th style="width:55%">Etapa</th><th style="width:22%">Início</th><th style="width:23%">Previsão de Fim</th></tr></thead>
+    <tbody>
+      <tr><td class="etapa-label">Desest (T. Médio: 1:50)</td><td><input type="time" data-field="a5_desest_ini"></td><td><input type="time" data-field="a5_desest_fim"></td></tr>
+      <tr><td class="etapa-label">Lança (T. Médio: 4:00h)</td><td><input type="time" data-field="a5_lanca_ini"></td><td><input type="time" data-field="a5_lanca_fim"></td></tr>
+      <tr><td class="etapa-label">1ª Desant. S/S (T. Médio: 1:30h)</td><td><input type="time" data-field="a5_desant1_ini"></td><td><input type="time" data-field="a5_desant1_fim"></td></tr>
+      <tr><td class="etapa-label">Decup. S/P/E (T. Médio: 2:10h)</td><td><input type="time" data-field="a5_decup_ini"></td><td><input type="time" data-field="a5_decup_fim"></td></tr>
+      <tr><td class="etapa-label">Transferência (T. Médio: 00:40h)</td><td><input type="time" data-field="a5_transf_ini"></td><td><input type="time" data-field="a5_transf_fim"></td></tr>
+      <tr><td class="etapa-label">2ª Desant. S/S (T. Médio: 5:30h)</td><td><input type="time" data-field="a5_desant2_ini"></td><td><input type="time" data-field="a5_desant2_fim"></td></tr>
+      <tr><td class="etapa-label">Limpeza Final (T. Médio: 1:30h)</td><td><input type="time" data-field="a5_limpeza1_ini"></td><td><input type="time" data-field="a5_limpeza1_fim"></td></tr>
+      <tr><td class="etapa-label">2ª Transf. (T. Médio: 00:40h)</td><td><input type="time" data-field="a5_transf2_ini"></td><td><input type="time" data-field="a5_transf2_fim"></td></tr>
+      <tr><td class="etapa-label">2ª Limpeza Final (T. Médio: 2:15h)</td><td><input type="time" data-field="a5_limpeza2_ini"></td><td><input type="time" data-field="a5_limpeza2_fim"></td></tr>
+      <tr><td class="etapa-label">Agregar Metais (T. Médio: 3:00h)</td><td><input type="time" data-field="a5_metais_ini"></td><td><input type="time" data-field="a5_metais_fim"></td></tr>
+      <tr><td class="etapa-label">Lingotamento</td><td><input type="time" data-field="a5_lingot_ini"></td><td><input type="time" data-field="a5_lingot_fim"></td></tr>
+    </tbody>
+  </table>
+  <div class="obs-section"><div class="obs-label">OBS:</div>
+    <textarea data-field="a5_obs" rows="3" style="width:100%;border-top:1px solid #999;" placeholder="Observações..."></textarea>
+  </div>
+</div>
+
+<!-- SEÇÃO INFERIOR -->
+<div class="secao-titulo">▶ BLOCO INFERIOR (2 quadros)</div>
+
+<!-- BLOCO INFERIOR 1 -->
+<div class="bloco">
+  <div class="bloco-header">
+    <span><label>Lote:</label><input type="text" class="campo-lote" data-field="b1_lote" placeholder="Ex: L-001"></span>
+    <span><label>Panela:</label><input type="text" class="campo-panela" data-field="b1_panela" placeholder="P-01"></span>
+  </div>
+  <table>
+    <thead><tr><th style="width:55%">Etapa</th><th style="width:22%">Início</th><th style="width:23%">Previsão de Fim</th></tr></thead>
+    <tbody>
+      <tr><td class="etapa-label">1ª Limpeza (T. Médio: 1:00h)</td><td><input type="time" data-field="b1_limp1_ini"></td><td><input type="time" data-field="b1_limp1_fim"></td></tr>
+      <tr><td class="etapa-label">Dec. Com Enxofre (T. Médio: 2:50h)</td><td><input type="time" data-field="b1_enxofre_ini"></td><td><input type="time" data-field="b1_enxofre_fim"></td></tr>
+      <tr><td class="etapa-label">Desestanhação (T. Médio: 3:00h)</td><td><input type="time" data-field="b1_desest_ini"></td><td><input type="time" data-field="b1_desest_fim"></td></tr>
+      <tr><td class="etapa-label">Transferência (T. Médio: 00:40h)</td><td><input type="time" data-field="b1_transf_ini"></td><td><input type="time" data-field="b1_transf_fim"></td></tr>
+      <tr><td class="etapa-label">Limpeza com Soda (T. Médio: 2:30h)</td><td><input type="time" data-field="b1_soda_ini"></td><td><input type="time" data-field="b1_soda_fim"></td></tr>
+      <tr><td class="etapa-label">Limpeza com Carvão (T. Médio: 2:30h)</td><td><input type="time" data-field="b1_carvao_ini"></td><td><input type="time" data-field="b1_carvao_fim"></td></tr>
+      <tr><td class="etapa-label">Agregar Metais (T. Médio: 2:00h)</td><td><input type="time" data-field="b1_metais_ini"></td><td><input type="time" data-field="b1_metais_fim"></td></tr>
+      <tr><td class="etapa-label">Lingotamento</td><td><input type="time" data-field="b1_lingot_ini"></td><td><input type="time" data-field="b1_lingot_fim"></td></tr>
+    </tbody>
+  </table>
+  <div class="obs-section"><div class="obs-label">OBS:</div>
+    <textarea data-field="b1_obs" rows="3" style="width:100%;border-top:1px solid #999;" placeholder="Observações..."></textarea>
+  </div>
+</div>
+
+<!-- BLOCO INFERIOR 2 -->
+<div class="bloco">
+  <div class="bloco-header">
+    <span><label>Lote:</label><input type="text" class="campo-lote" data-field="b2_lote" placeholder="Ex: L-002"></span>
+    <span><label>Panela:</label><input type="text" class="campo-panela" data-field="b2_panela" placeholder="P-02"></span>
+  </div>
+  <table>
+    <thead><tr><th style="width:55%">Etapa</th><th style="width:22%">Início</th><th style="width:23%">Previsão de Fim</th></tr></thead>
+    <tbody>
+      <tr><td class="etapa-label">1ª Limpeza (T. Médio: 1:00h)</td><td><input type="time" data-field="b2_limp1_ini"></td><td><input type="time" data-field="b2_limp1_fim"></td></tr>
+      <tr><td class="etapa-label">Dec. Com Enxofre (T. Médio: 2:50h)</td><td><input type="time" data-field="b2_enxofre_ini"></td><td><input type="time" data-field="b2_enxofre_fim"></td></tr>
+      <tr><td class="etapa-label">Desestanhação (T. Médio: 3:00h)</td><td><input type="time" data-field="b2_desest_ini"></td><td><input type="time" data-field="b2_desest_fim"></td></tr>
+      <tr><td class="etapa-label">Transferência (T. Médio: 00:40h)</td><td><input type="time" data-field="b2_transf_ini"></td><td><input type="time" data-field="b2_transf_fim"></td></tr>
+      <tr><td class="etapa-label">Limpeza com Soda (T. Médio: 2:30h)</td><td><input type="time" data-field="b2_soda_ini"></td><td><input type="time" data-field="b2_soda_fim"></td></tr>
+      <tr><td class="etapa-label">Limpeza com Carvão (T. Médio: 2:30h)</td><td><input type="time" data-field="b2_carvao_ini"></td><td><input type="time" data-field="b2_carvao_fim"></td></tr>
+      <tr><td class="etapa-label">Agregar Metais (T. Médio: 2:00h)</td><td><input type="time" data-field="b2_metais_ini"></td><td><input type="time" data-field="b2_metais_fim"></td></tr>
+      <tr><td class="etapa-label">Lingotamento</td><td><input type="time" data-field="b2_lingot_ini"></td><td><input type="time" data-field="b2_lingot_fim"></td></tr>
+    </tbody>
+  </table>
+  <div class="obs-section"><div class="obs-label">OBS:</div>
+    <textarea data-field="b2_obs" rows="3" style="width:100%;border-top:1px solid #999;" placeholder="Observações..."></textarea>
+  </div>
+</div>
+
+<div class="btn-container">
+  <button class="btn-limpar" onclick="limparTudo()">🗑 Limpar Tudo</button>
+  <button class="btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
+</div>
+
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, onValue, set, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyANqyG0Jrs67fGFlAjBwI2_3v_gT2NIZ5A",
+    authDomain: "acompanhamento-de-rotina.firebaseapp.com",
+    databaseURL: "https://acompanhamento-de-rotina-default-rtdb.firebaseio.com",
+    projectId: "acompanhamento-de-rotina",
+    storageBucket: "acompanhamento-de-rotina.firebasestorage.app",
+    messagingSenderId: "616867001415",
+    appId: "1:616867001415:web:8bd3f886c3bf89a0beed62",
+    measurementId: "G-WSCX7YQ23E"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const dbRef = ref(db, 'formulario/dados');
+  const dot = document.getElementById('dot');
+  const statusTxt = document.getElementById('status-txt');
+  let ignorarUpdate = false;
+
+  onValue(dbRef, (snapshot) => {
+    dot.className = 'dot connected';
+    statusTxt.textContent = '🟢 Conectado — atualizações em tempo real ativas';
+    if (ignorarUpdate) return;
+    const dados = snapshot.val() || {};
+    document.querySelectorAll('[data-field]').forEach(el => {
+      const val = dados[el.dataset.field] || '';
+      if (el.value !== val) {
+        el.value = val;
+        el.classList.add('changed');
+        setTimeout(() => el.classList.remove('changed'), 1200);
+      }
+    });
+  }, () => {
+    dot.className = 'dot';
+    statusTxt.textContent = '🔴 Sem conexão — verifique o Firebase';
+  });
+
+  const timers = {};
+  document.querySelectorAll('[data-field]').forEach(el => {
+    el.addEventListener('input', () => {
+      const key = el.dataset.field;
+      clearTimeout(timers[key]);
+      timers[key] = setTimeout(() => {
+        ignorarUpdate = true;
+        const dados = {};
+        document.querySelectorAll('[data-field]').forEach(e => {
+          if (e.value) dados[e.dataset.field] = e.value;
+        });
+        set(dbRef, dados).finally(() => setTimeout(() => { ignorarUpdate = false; }, 500));
+      }, 600);
+    });
+  });
+
+  window.limparTudo = () => {
+    if (!confirm('Tem certeza que deseja limpar TODOS os dados?')) return;
+    remove(dbRef).then(() => document.querySelectorAll('[data-field]').forEach(el => el.value = ''));
+  };
+</script>
+</body>
+</html>
