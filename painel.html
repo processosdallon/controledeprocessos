@@ -106,9 +106,14 @@
   .btn-del { background: #ffeaea; color: #c0392b; border: 1px solid #e0b0b0; padding: 3px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; margin-left: 10px; }
   .btn-del:hover { background: #c0392b; color: white; }
 
-  /* TAG LIGA */
-  .tag-liga { display: inline-block; background: #a8d44d; color: #1e4d2b; font-size: 9px; font-weight: bold; padding: 1px 7px; border-radius: 8px; white-space: nowrap; }
-  .card:not(.ativo) .tag-liga { background: #2d6a3f; color: #a8d44d; }
+
+  /* SETUP ALERT NO PAINEL */
+  .setup-alert { margin: 6px 8px; padding: 5px 10px; border-radius: 5px; font-size: 11px; font-weight: bold; background: #ffe0e0; color: #900; border: 1px solid #f00; display: flex; align-items: center; gap: 6px; }
+  .setup-alert span { animation: blink 1.2s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  /* LIGA BAR */
+  .liga-bar { background: #a8d44d; color: #1e4d2b; font-size: 11px; font-weight: bold; text-align: center; padding: 4px 8px; letter-spacing: 0.5px; }
+  .card:not(.ativo) .liga-bar { background: #2d6a3f; color: #a8d44d; }
 
   /* COLUNA AUTORIA */
   .td-autor { font-size: 10px; color: #888; white-space: nowrap; }
@@ -188,6 +193,9 @@
     const panela = dados[`${prefix}_panela`] || '—';
     const obs = dados[`${prefix}_obs`] || '';
     const liga = dados[`${prefix}_liga`] || '';
+    const setupMotivo = dados[`${prefix}_setup_motivo`] || '';
+    const setupIni = dados[`${prefix}_setup_ini`] || '';
+    const setupFim = dados[`${prefix}_setup_fim`] || '';
     const ativo = dados[`${prefix}_lote`] ? 'ativo' : '';
     const linhas = etapas.map(e => {
       const ini = dados[`${prefix}_${e.key}`] || '';
@@ -205,9 +213,11 @@
       </tr>`;
     }).join('');
     return `<div class="card ${ativo}">
-      <div class="card-header"><h2>Lote: ${lote}${ativo ? '<span class="badge-andamento">● EM ANDAMENTO</span>' : ''}</h2><div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;"><span class="info">Panela: ${panela}</span>${liga ? `<span class="tag-liga">${liga}</span>` : ''}</div></div>
+      ${liga ? `<div class="liga-bar">⚗️ LIGA: ${liga}</div>` : ''}
+      <div class="card-header"><h2>Lote: ${lote}${ativo ? '<span class="badge-andamento">● EM ANDAMENTO</span>' : ''}</h2><span class="info">Panela: ${panela}</span></div>
       <table><thead><tr><th>Etapa</th><th>Início</th><th>Fim</th><th>Última Edição</th></tr></thead><tbody>${linhas}</tbody></table>
       <div class="obs-box"><strong>OBS:</strong><span>${obs||'<em style="color:#bbb">—</em>'}</span></div>
+      ${setupMotivo ? `<div class="setup-alert"><span>⚠️</span> SETUP: ${setupMotivo}${setupIni ? ' | Início: '+setupIni : ''}${setupFim ? ' | Prev. Fim: '+setupFim : ''}</div>` : ''}
     </div>`;
   }
 
