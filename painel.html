@@ -135,7 +135,7 @@
       </tr>`;
     }).join('');
     return `<div class="card ${ativo}">
-      <div class="card-header"><h2> — ${lote}</h2><span class="info">Panela: ${panela}</span></div>
+      <div class="card-header"><h2>Lote — ${lote}</h2><span class="info">Panela: ${panela}</span></div>
       <table><thead><tr><th>Etapa</th><th>Início</th><th>Fim</th></tr></thead><tbody>${linhas}</tbody></table>
       <div class="obs-box"><strong>OBS:</strong><span>${obs||'<em style="color:#444">—</em>'}</span></div>
     </div>`;
