@@ -477,6 +477,17 @@
     statusTxt.textContent = '🔴 Sem conexão';
   });
 
+  // Cache local dos autores para não perder ao salvar
+  let cacheAutores = {};
+
+  // Carrega autores já existentes no Firebase ao conectar
+  onValue(dbRef, (snapshot) => {
+    const d = snapshot.val() || {};
+    Object.keys(d).forEach(k => {
+      if (k.endsWith('_autor')) cacheAutores[k] = d[k];
+    });
+  }, () => {});
+
   const timers = {};
   document.querySelectorAll('[data-field]').forEach(el => {
     el.addEventListener('input', () => {
@@ -487,12 +498,17 @@
       timers[key] = setTimeout(() => {
         ignorarUpdate = true;
         const dados = {};
+        // Salva todos os campos visíveis
         document.querySelectorAll('[data-field]').forEach(e => {
           if (e.value) dados[e.dataset.field] = e.value;
         });
-        // Salvar autoria: usuario + horário
+        // Restaura todos os autores já salvos
+        Object.assign(dados, cacheAutores);
+        // Salvar autoria do campo atual
         const agora = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
-        dados[key + '_autor'] = `${sessao.usuario.toUpperCase()} ${agora}`;
+        const autorValor = `${sessao.usuario.toUpperCase()} ${agora}`;
+        dados[key + '_autor'] = autorValor;
+        cacheAutores[key + '_autor'] = autorValor;
         set(dbRef, dados).finally(() => setTimeout(() => { ignorarUpdate = false; }, 500));
       }, 600);
     });
