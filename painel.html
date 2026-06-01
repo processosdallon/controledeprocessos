@@ -6,56 +6,106 @@
 <title>Painel de Monitoramento</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: Arial, sans-serif; font-size: 13px; background: #1a2e1a; color: #eee; padding: 20px; }
-  h1 { text-align: center; font-size: 18px; color: #fff; margin-bottom: 4px; letter-spacing: 2px; }
-  .subtitle { text-align: center; font-size: 12px; color: #aaa; margin-bottom: 14px; }
-  .status-bar { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px; font-size: 12px; color: #aaa; }
-  .dot { width: 9px; height: 9px; border-radius: 50%; background: #555; display: inline-block; }
+  body { font-family: Arial, sans-serif; font-size: 13px; background: #f5f5f5; color: #111; padding: 20px; }
+  h1 { text-align: center; font-size: 18px; color: #1e4d2b; margin-bottom: 4px; letter-spacing: 2px; }
+  .subtitle { text-align: center; font-size: 12px; color: #5a9e2f; margin-bottom: 14px; }
+  .status-bar { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px; font-size: 12px; color: #555; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: #ccc; display: inline-block; }
   .dot.connected { background: #5a9e2f; animation: pulse 2s infinite; }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-  .atualizado { font-size: 11px; color: #555; text-align: center; margin-bottom: 18px; }
-  .secao-titulo { color: #a8d44d; font-size: 13px; font-weight: bold; margin: 20px auto 10px; max-width: 1200px; border-bottom: 1px solid #2d6a3f; padding-bottom: 6px; }
+  .atualizado { font-size: 11px; color: #888; text-align: center; margin-bottom: 18px; }
+
+  /* TÍTULOS DE SEÇÃO */
+  .secao-titulo { 
+    font-size: 14px; font-weight: bold; color: #fff; 
+    background: #1e4d2b; padding: 8px 16px; border-radius: 6px;
+    max-width: 1200px; margin: 20px auto 12px; 
+    letter-spacing: 1px;
+  }
+
+  /* GRIDS */
   .grid-8 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; max-width: 1200px; margin: 0 auto 10px; }
   .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; max-width: 1200px; margin: 0 auto; }
   @media(max-width: 900px) { .grid-8 { grid-template-columns: repeat(2, 1fr); } }
   @media(max-width: 500px) { .grid-8, .grid-2 { grid-template-columns: 1fr; } }
-  .card { background: #16213e; border: 1px solid #2d6a3f; border-radius: 8px; overflow: hidden; }
-  .card.ativo { border: 1.5px solid #a8d44d; box-shadow: 0 0 8px #a8d44d50; }
-  .card-header { background: #1e4d2b; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; }
-  .card.ativo .card-header { background: #2d7a3f; }
-  .card-header h2 { font-size: 12px; color: #e0e0e0; font-weight: bold; }
-  .card-header .info { font-size: 10px; color: #a8d44d; }
-  .card.ativo .card-header .info { color: #d4f5a0; }
+
+  /* CARD VAZIO (sem lote) — verde escuro */
+  .card { 
+    background: #1e4d2b; 
+    border: 1.5px solid #2d6a3f; 
+    border-radius: 8px; overflow: hidden; 
+    opacity: 0.75;
+  }
+  .card-header { 
+    background: #163d21; 
+    padding: 8px 12px; 
+    display: flex; justify-content: space-between; align-items: center; 
+    border-bottom: 1px solid #2d6a3f;
+  }
+  .card-header h2 { font-size: 12px; color: #a8d44d; font-weight: bold; }
+  .card-header .info { font-size: 10px; color: #7ab830; }
   table { width: 100%; border-collapse: collapse; }
-  th { font-size: 10px; color: #a8d44d; text-align: left; padding: 4px 8px; border-bottom: 1px solid #2d6a3f; background: #0a2015; }
-  td { padding: 4px 8px; font-size: 11px; border-bottom: 1px solid #1a3a20; }
-  td.etapa { color: #ccc; }
+  th { font-size: 10px; color: #a8d44d; text-align: left; padding: 4px 8px; border-bottom: 1px solid #2d6a3f; background: #163d21; }
+  td { padding: 4px 8px; font-size: 11px; border-bottom: 1px solid #2a5c36; color: #7ab830; }
+  td.etapa { color: #7ab830; }
   td.valor { color: #fff; font-weight: bold; }
-  td.vazio { color: #444; font-style: italic; }
-  tr.preenchida td.etapa { color: #a8d44d; }
-  .obs-box { padding: 8px 12px; border-top: 1px solid #2d6a3f; font-size: 11px; min-height: 32px; }
+  td.vazio { color: #3a6b45; font-style: italic; }
+  .obs-box { padding: 8px 12px; border-top: 1px solid #2d6a3f; font-size: 11px; min-height: 32px; color: #7ab830; }
   .obs-box strong { color: #a8d44d; display: block; margin-bottom: 2px; font-size: 10px; }
+
+  /* CARD ATIVO (com lote) — verde claro, destaque total */
+  .card.ativo { 
+    background: #f0faf0; 
+    border: 2px solid #5a9e2f; 
+    border-radius: 8px; overflow: hidden;
+    opacity: 1;
+    box-shadow: 0 3px 12px #5a9e2f33;
+  }
+  .card.ativo .card-header { 
+    background: #2d7a3f; 
+    border-bottom: 2px solid #a8d44d;
+  }
+  .card.ativo .card-header h2 { color: #fff; font-size: 13px; }
+  .card.ativo .card-header .info { color: #d4f5a0; }
+  .card.ativo th { background: #e8f7e8; color: #1e4d2b; border-bottom: 1px solid #a8d44d; font-weight: bold; }
+  .card.ativo td { border-bottom: 1px solid #c8e8c8; color: #333; }
+  .card.ativo td.etapa { color: #1e4d2b; font-weight: normal; }
+  .card.ativo td.valor { color: #1e4d2b; font-weight: bold; }
+  .card.ativo td.vazio { color: #bbb; font-style: italic; }
+  .card.ativo .obs-box { color: #333; border-top: 1px solid #a8d44d; background: #f8fff8; }
+  .card.ativo .obs-box strong { color: #2d7a3f; }
+
+  /* LINHA PREENCHIDA NO CARD ATIVO */
+  .card.ativo tr.preenchida { background: #d4f0d4; }
+  .card.ativo tr.preenchida td.etapa { color: #1e4d2b; font-weight: bold; }
+
+  /* BADGE EM ANDAMENTO */
+  .badge-andamento {
+    display: inline-block; background: #a8d44d; color: #1e4d2b;
+    font-size: 9px; font-weight: bold; padding: 1px 6px; border-radius: 8px;
+    margin-left: 6px; vertical-align: middle; letter-spacing: 0.5px;
+  }
 
   /* HISTÓRICO */
   .hist-secao { max-width: 1200px; margin: 28px auto 0; }
-  .hist-titulo { color: #a8d44d; font-size: 15px; font-weight: bold; border-bottom: 1px solid #444; padding-bottom: 8px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
-  .hist-vazio { color: #555; font-style: italic; text-align: center; padding: 20px; }
-  .hist-item { background: #0f2218; border: 1px solid #2d6a3f; border-radius: 8px; margin-bottom: 12px; overflow: hidden; }
+  .hist-titulo { color: #1e4d2b; font-size: 15px; font-weight: bold; border-bottom: 2px solid #a8d44d; padding-bottom: 8px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
+  .hist-vazio { color: #aaa; font-style: italic; text-align: center; padding: 20px; }
+  .hist-item { background: #fff; border: 1px solid #a8d44d; border-radius: 8px; margin-bottom: 12px; overflow: hidden; box-shadow: 0 1px 4px #0001; }
   .hist-header { background: #1e4d2b; padding: 8px 14px; display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
   .hist-header .hl { font-size: 13px; font-weight: bold; color: #fff; }
   .hist-header .hp { font-size: 12px; color: #a8d44d; }
-  .hist-header .ht { font-size: 11px; color: #aaa; margin-left: auto; }
+  .hist-header .ht { font-size: 11px; color: #c8e8a0; margin-left: auto; }
   .hist-header .htipo { font-size: 10px; background: #2d6a3f; color: #a8d44d; padding: 2px 8px; border-radius: 10px; }
   .hist-table { width: 100%; border-collapse: collapse; font-size: 11px; }
-  .hist-table th { background: #0a2015; color: #a8d44d; padding: 4px 10px; text-align: left; border-bottom: 1px solid #1a3a20; }
-  .hist-table td { padding: 4px 10px; border-bottom: 1px solid #1a3a20; color: #ccc; }
-  .hist-table td.v { color: #fff; font-weight: bold; }
-  .hist-table td.vz { color: #444; font-style: italic; }
-  .hist-obs { padding: 6px 14px; font-size: 11px; color: #aaa; border-top: 1px solid #1a3a20; }
-  .hist-obs strong { color: #a8d44d; }
-  .btn-del { background: #3a1a00; color: #ffcc88; border: none; padding: 3px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; margin-left: 10px; }
-  .btn-del:hover { background: #a82020; }
-  .footer { text-align: center; margin-top: 28px; font-size: 11px; color: #555; }
+  .hist-table th { background: #f0faf0; color: #1e4d2b; padding: 4px 10px; text-align: left; border-bottom: 1px solid #a8d44d; font-weight: bold; }
+  .hist-table td { padding: 4px 10px; border-bottom: 1px solid #e0f0e0; color: #333; }
+  .hist-table td.v { color: #1e4d2b; font-weight: bold; }
+  .hist-table td.vz { color: #bbb; font-style: italic; }
+  .hist-obs { padding: 6px 14px; font-size: 11px; color: #555; border-top: 1px solid #e0f0e0; background: #f8fff8; }
+  .hist-obs strong { color: #2d6a3f; }
+  .btn-del { background: #ffeaea; color: #c0392b; border: 1px solid #e0b0b0; padding: 3px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; margin-left: 10px; }
+  .btn-del:hover { background: #c0392b; color: white; }
+  .footer { text-align: center; margin-top: 28px; font-size: 11px; color: #aaa; }
 </style>
 </head>
 <body>
@@ -136,7 +186,7 @@
       </tr>`;
     }).join('');
     return `<div class="card ${ativo}">
-      <div class="card-header"><h2>Lote: ${lote}</h2><span class="info">Panela: ${panela}</span></div>
+      <div class="card-header"><h2>Lote: ${lote}${ativo ? '<span class="badge-andamento">● EM ANDAMENTO</span>' : ''}</h2><span class="info">Panela: ${panela}</span></div>
       <table><thead><tr><th>Etapa</th><th>Início</th><th>Fim</th></tr></thead><tbody>${linhas}</tbody></table>
       <div class="obs-box"><strong>OBS:</strong><span>${obs||'<em style="color:#444">—</em>'}</span></div>
     </div>`;
