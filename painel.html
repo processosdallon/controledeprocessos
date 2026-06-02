@@ -223,27 +223,41 @@
 
   function renderHistorico(key, reg, db) {
     const etapas = reg.tipo === 'superior' ? etapasSup : etapasInf;
+    const liga = reg.liga || '';
     const linhas = etapas.map(e => {
       const ini = reg[e.key] || '';
       const fim = reg[e.key2] || '';
+      // Autores salvos no histórico com chave sem prefix (ex: desest_ini_autor)
+      const autorIni = reg[e.key + '_autor'] || '';
+      const autorFim = reg[e.key2 + '_autor'] || '';
+      const autor = autorFim || autorIni || '';
       return `<tr>
         <td>${e.label}</td>
         <td class="${ini?'v':'vz'}">${ini||'—'}</td>
         <td class="${fim?'v':'vz'}">${fim||'—'}</td>
+        <td class="td-autor">${autor ? `<span class="tag-autor">✏️ ${autor}</span>` : '<span class="sem-autor">—</span>'}</td>
       </tr>`;
     }).join('');
+    // Setup
+    const setupMotivo = reg.setup_motivo || '';
+    const setupIni = reg.setup_ini || '';
+    const setupFim = reg.setup_fim || '';
+    const setupHtml = setupMotivo ? `<div style="padding:6px 14px;background:#fff5f5;border-top:1px solid #f5c0c0;font-size:11px;color:#900;"><strong>⚠️ Setup:</strong> ${setupMotivo}${setupIni?' | Início: '+setupIni:''}${setupFim?' | Fim: '+setupFim:''}</div>` : '';
+
     return `<div class="hist-item">
       <div class="hist-header">
         <span class="hl">Lote: ${reg.lote||'—'}</span>
         <span class="hp">Panela: ${reg.panela||'—'}</span>
-        <span class="htipo">${reg.tipo === 'superior' ? 'Bloco Superior' : 'Bloco Inferior'}</span>
+        ${liga ? `<span class="htipo">⚗️ ${liga}</span>` : ''}
+        <span class="htipo">${reg.tipo === 'superior' ? 'PURO/CÁLCIO' : 'SB/SN'}</span>
         <span class="ht">Concluído em: ${reg.concluidoEm}</span>
         <button class="btn-del" onclick="deletarHistorico('${key}')">✕ Remover</button>
       </div>
       <table class="hist-table">
-        <thead><tr><th>Etapa</th><th>Início</th><th>Previsão de Fim</th></tr></thead>
+        <thead><tr><th>Etapa</th><th>Início</th><th>Previsão de Fim</th><th>Última Edição</th></tr></thead>
         <tbody>${linhas}</tbody>
       </table>
+      ${setupHtml}
       <div class="hist-obs"><strong>OBS:</strong> ${reg.obs||'—'}</div>
     </div>`;
   }
