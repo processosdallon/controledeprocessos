@@ -174,7 +174,7 @@
             <option value="Corrigindo Teores">Corrigindo Teores</option>
             <option value="Subindo temperatura">Subindo temperatura</option>
             <option value="Abaixando temperatura">Abaixando temperatura</option>
-            <option value="Equipamento em Manutenção">Equipamento em Manutenção</option>
+            <option value="Equipamento em Manutencao">Equipamento em Manutenção</option>
           </select>
         </td>
         <td><input type="time" data-field="a1_setup_ini"><span class="autoria" data-autor="a1_setup_ini"></span></td>
@@ -256,7 +256,7 @@
             <option value="Corrigindo Teores">Corrigindo Teores</option>
             <option value="Subindo temperatura">Subindo temperatura</option>
             <option value="Abaixando temperatura">Abaixando temperatura</option>
-            <option value="Equipamento em Manutenção">Equipamento em Manutenção</option>
+            <option value="Equipamento em Manutencao">Equipamento em Manutenção</option>
           </select>
         </td>
         <td><input type="time" data-field="a2_setup_ini"><span class="autoria" data-autor="a2_setup_ini"></span></td>
@@ -338,7 +338,7 @@
             <option value="Corrigindo Teores">Corrigindo Teores</option>
             <option value="Subindo temperatura">Subindo temperatura</option>
             <option value="Abaixando temperatura">Abaixando temperatura</option>
-            <option value="Equipamento em Manutenção">Equipamento em Manutenção</option>
+            <option value="Equipamento em Manutencao">Equipamento em Manutenção</option>
           </select>
         </td>
         <td><input type="time" data-field="a3_setup_ini"><span class="autoria" data-autor="a3_setup_ini"></span></td>
@@ -420,7 +420,7 @@
             <option value="Corrigindo Teores">Corrigindo Teores</option>
             <option value="Subindo temperatura">Subindo temperatura</option>
             <option value="Abaixando temperatura">Abaixando temperatura</option>
-            <option value="Equipamento em Manutenção">Equipamento em Manutenção</option>
+            <option value="Equipamento em Manutencao">Equipamento em Manutenção</option>
           </select>
         </td>
         <td><input type="time" data-field="a4_setup_ini"><span class="autoria" data-autor="a4_setup_ini"></span></td>
@@ -502,7 +502,7 @@
             <option value="Corrigindo Teores">Corrigindo Teores</option>
             <option value="Subindo temperatura">Subindo temperatura</option>
             <option value="Abaixando temperatura">Abaixando temperatura</option>
-            <option value="Equipamento em Manutenção">Equipamento em Manutenção</option>
+            <option value="Equipamento em Manutencao">Equipamento em Manutenção</option>
           </select>
         </td>
         <td><input type="time" data-field="a5_setup_ini"><span class="autoria" data-autor="a5_setup_ini"></span></td>
@@ -584,7 +584,7 @@
             <option value="Corrigindo Teores">Corrigindo Teores</option>
             <option value="Subindo temperatura">Subindo temperatura</option>
             <option value="Abaixando temperatura">Abaixando temperatura</option>
-            <option value="Equipamento em Manutenção">Equipamento em Manutenção</option>
+            <option value="Equipamento em Manutencao">Equipamento em Manutenção</option>
           </select>
         </td>
         <td><input type="time" data-field="a6_setup_ini"><span class="autoria" data-autor="a6_setup_ini"></span></td>
@@ -666,7 +666,7 @@
             <option value="Corrigindo Teores">Corrigindo Teores</option>
             <option value="Subindo temperatura">Subindo temperatura</option>
             <option value="Abaixando temperatura">Abaixando temperatura</option>
-            <option value="Equipamento em Manutenção">Equipamento em Manutenção</option>
+            <option value="Equipamento em Manutencao">Equipamento em Manutenção</option>
           </select>
         </td>
         <td><input type="time" data-field="a7_setup_ini"><span class="autoria" data-autor="a7_setup_ini"></span></td>
@@ -748,7 +748,7 @@
             <option value="Corrigindo Teores">Corrigindo Teores</option>
             <option value="Subindo temperatura">Subindo temperatura</option>
             <option value="Abaixando temperatura">Abaixando temperatura</option>
-            <option value="Equipamento em Manutenção">Equipamento em Manutenção</option>
+            <option value="Equipamento em Manutencao">Equipamento em Manutenção</option>
           </select>
         </td>
         <td><input type="time" data-field="a8_setup_ini"><span class="autoria" data-autor="a8_setup_ini"></span></td>
@@ -830,7 +830,7 @@
             <option value="Corrigindo Teores">Corrigindo Teores</option>
             <option value="Subindo temperatura">Subindo temperatura</option>
             <option value="Abaixando temperatura">Abaixando temperatura</option>
-            <option value="Equipamento em Manutenção">Equipamento em Manutenção</option>
+            <option value="Equipamento em Manutencao">Equipamento em Manutenção</option>
           </select>
         </td>
         <td><input type="time" data-field="b1_setup_ini"><span class="autoria" data-autor="b1_setup_ini"></span></td>
@@ -909,7 +909,7 @@
             <option value="Corrigindo Teores">Corrigindo Teores</option>
             <option value="Subindo temperatura">Subindo temperatura</option>
             <option value="Abaixando temperatura">Abaixando temperatura</option>
-            <option value="Equipamento em Manutenção">Equipamento em Manutenção</option>
+            <option value="Equipamento em Manutencao">Equipamento em Manutenção</option>
           </select>
         </td>
         <td><input type="time" data-field="b2_setup_ini"><span class="autoria" data-autor="b2_setup_ini"></span></td>
@@ -1042,24 +1042,32 @@
   const statusTxt = document.getElementById('status-txt');
   let ignorarUpdate = false;
 
+  // Cache completo do Firebase (campos + autores)
+  let cacheFirebase = {};
+
   onValue(dbRef, (snapshot) => {
     dot.className = 'dot connected';
     statusTxt.textContent = '🟢 Conectado — atualizações em tempo real ativas';
+
+    // Sempre atualiza o cache completo com tudo que está no Firebase
+    cacheFirebase = snapshot.val() || {};
+
     if (ignorarUpdate) return;
-    const dados = snapshot.val() || {};
-    verificarSetupsAtivos(dados);
+
+    verificarSetupsAtivos(cacheFirebase);
+
     document.querySelectorAll('[data-field]').forEach(el => {
       const key = el.dataset.field;
-      const val = dados[key] || '';
+      const val = cacheFirebase[key] || '';
       if (el.value !== val) {
         el.value = val;
         el.classList.add('changed');
         setTimeout(() => el.classList.remove('changed'), 1200);
       }
-      // Atualizar autoria
+      // Atualizar autoria na tela
       const autorEl = document.querySelector(`.autoria[data-autor="${key}"]`);
       if (autorEl) {
-        const info = dados[key + '_autor'];
+        const info = cacheFirebase[key + '_autor'];
         autorEl.textContent = info ? `✏️ ${info}` : '';
       }
     });
@@ -1067,17 +1075,6 @@
     dot.className = 'dot';
     statusTxt.textContent = '🔴 Sem conexão';
   });
-
-  // Cache local dos autores para não perder ao salvar
-  let cacheAutores = {};
-
-  // Carrega autores já existentes no Firebase ao conectar
-  onValue(dbRef, (snapshot) => {
-    const d = snapshot.val() || {};
-    Object.keys(d).forEach(k => {
-      if (k.endsWith('_autor')) cacheAutores[k] = d[k];
-    });
-  }, () => {});
 
   const timers = {};
   document.querySelectorAll('[data-field]').forEach(el => {
@@ -1089,42 +1086,69 @@
       clearTimeout(timers[key]);
       timers[key] = setTimeout(() => {
         ignorarUpdate = true;
-        const dados = {};
-        // Salva todos os campos visíveis
-        document.querySelectorAll('[data-field]').forEach(e => {
-          if (e.value) dados[e.dataset.field] = e.value;
-        });
-        // Restaura todos os autores já salvos
-        Object.assign(dados, cacheAutores);
-        // Salvar autoria do campo atual
-        const agora = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+
+        // Parte do cache atual do Firebase como base (preserva tudo)
+        const dados = Object.assign({}, cacheFirebase);
+
+        // Atualiza somente o campo editado
+        if (el.value) {
+          dados[key] = el.value;
+        } else {
+          delete dados[key];
+        }
+
+        // Registra autoria do campo editado
+        const agora = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
         const autorValor = `${sessao.usuario.toUpperCase()} ${agora}`;
         dados[key + '_autor'] = autorValor;
-        cacheAutores[key + '_autor'] = autorValor;
+        cacheFirebase[key + '_autor'] = autorValor;
+
         set(dbRef, dados).finally(() => setTimeout(() => { ignorarUpdate = false; }, 500));
       }, 600);
     });
   });
 
   window.concluirLote = (prefix, tipo) => {
-    const campos = document.querySelectorAll(`[data-field^="${prefix}_"]`);
+    if (!cacheFirebase[prefix + '_lote']) { alert('Preencha o Lote antes de concluir!'); return; }
+    if (!confirm(`Concluir e limpar o lote "${cacheFirebase[prefix + '_lote']}"?`)) return;
+
+    // Monta registro completo: campos visíveis + todos os autores do prefix
     const registro = { tipo, concluidoEm: new Date().toLocaleString('pt-BR') };
-    campos.forEach(el => { registro[el.dataset.field.replace(prefix + '_', '')] = el.value || ''; });
-    if (!registro.lote) { alert('Preencha o Lote antes de concluir!'); return; }
-    if (!confirm(`Concluir e limpar o lote "${registro.lote}"?`)) return;
+
+    // Salva todos os campos e autores desse prefix no histórico
+    Object.keys(cacheFirebase).forEach(k => {
+      if (k.startsWith(prefix + '_')) {
+        registro[k.replace(prefix + '_', '')] = cacheFirebase[k];
+      }
+    });
 
     push(historicoRef, registro).then(() => {
-      // Limpa campos do formulário no Firebase
       ignorarUpdate = true;
-      const snapshot_dados = {};
-      document.querySelectorAll('[data-field]').forEach(e => {
-        if (!e.dataset.field.startsWith(prefix + '_') && e.value) {
-          snapshot_dados[e.dataset.field] = e.value;
+
+      // Remove todos os campos e autores desse prefix do Firebase
+      const dadosRestantes = {};
+      Object.keys(cacheFirebase).forEach(k => {
+        if (!k.startsWith(prefix + '_')) {
+          dadosRestantes[k] = cacheFirebase[k];
         }
       });
-      set(dbRef, snapshot_dados).finally(() => setTimeout(() => { ignorarUpdate = false; }, 500));
-      // Limpa campos na tela
-      campos.forEach(el => el.value = '');
+
+      set(dbRef, dadosRestantes).finally(() => {
+        // Limpa cache local do prefix
+        Object.keys(cacheFirebase).forEach(k => {
+          if (k.startsWith(prefix + '_')) delete cacheFirebase[k];
+        });
+        setTimeout(() => { ignorarUpdate = false; }, 500);
+      });
+
+      // Limpa campos na tela (incluindo selects e liga)
+      document.querySelectorAll(`[data-field^="${prefix}_"]`).forEach(el => el.value = '');
+      // Limpa autoria na tela
+      document.querySelectorAll(`.autoria[data-autor^="${prefix}_"]`).forEach(el => el.textContent = '');
+      // Remove destaque setup
+      const row = document.getElementById('setup-row-' + prefix);
+      if (row) row.classList.remove('ativo-setup');
+
       // Toast
       const toast = document.getElementById('toast');
       toast.style.display = 'block';
@@ -1134,7 +1158,11 @@
 
   window.limparTudo = () => {
     if (!confirm('Tem certeza que deseja limpar TODOS os dados?')) return;
-    remove(dbRef).then(() => document.querySelectorAll('[data-field]').forEach(el => el.value = ''));
+    remove(dbRef).then(() => {
+      cacheFirebase = {};
+      document.querySelectorAll('[data-field]').forEach(el => el.value = '');
+      document.querySelectorAll('.autoria').forEach(el => el.textContent = '');
+    });
   };
 </script>
 </body>
