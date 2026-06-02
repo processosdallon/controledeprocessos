@@ -90,12 +90,18 @@
   .hist-secao { max-width: 1200px; margin: 28px auto 0; }
   .hist-titulo { color: #1e4d2b; font-size: 15px; font-weight: bold; border-bottom: 2px solid #a8d44d; padding-bottom: 8px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
   .hist-vazio { color: #aaa; font-style: italic; text-align: center; padding: 20px; }
-  .hist-item { background: #fff; border: 1px solid #a8d44d; border-radius: 8px; margin-bottom: 12px; overflow: hidden; box-shadow: 0 1px 4px #0001; }
-  .hist-header { background: #1e4d2b; padding: 8px 14px; display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
-  .hist-header .hl { font-size: 13px; font-weight: bold; color: #fff; }
-  .hist-header .hp { font-size: 12px; color: #a8d44d; }
-  .hist-header .ht { font-size: 11px; color: #c8e8a0; margin-left: auto; }
-  .hist-header .htipo { font-size: 10px; background: #2d6a3f; color: #a8d44d; padding: 2px 8px; border-radius: 10px; }
+  /* ACORDEÃO HISTÓRICO */
+  .hist-item { background: #fff; border: 1px solid #a8d44d; border-radius: 8px; margin-bottom: 8px; overflow: hidden; box-shadow: 0 1px 4px #0001; }
+  .hist-toggle { background: #1e4d2b; padding: 10px 16px; display: flex; gap: 14px; align-items: center; flex-wrap: wrap; cursor: pointer; user-select: none; transition: background 0.2s; }
+  .hist-toggle:hover { background: #2d6a3f; }
+  .hist-toggle .hl { font-size: 13px; font-weight: bold; color: #fff; }
+  .hist-toggle .hp { font-size: 12px; color: #a8d44d; }
+  .hist-toggle .ht { font-size: 11px; color: #c8e8a0; margin-left: auto; }
+  .hist-toggle .htipo { font-size: 10px; background: #2d6a3f; color: #a8d44d; padding: 2px 8px; border-radius: 10px; border: 1px solid #a8d44d; }
+  .hist-toggle .seta { color: #a8d44d; font-size: 14px; margin-left: 6px; transition: transform 0.3s; }
+  .hist-toggle.aberto .seta { transform: rotate(180deg); }
+  .hist-corpo { display: none; }
+  .hist-corpo.aberto { display: block; }
   .hist-table { width: 100%; border-collapse: collapse; font-size: 11px; }
   .hist-table th { background: #f0faf0; color: #1e4d2b; padding: 4px 10px; text-align: left; border-bottom: 1px solid #a8d44d; font-weight: bold; }
   .hist-table td { padding: 4px 10px; border-bottom: 1px solid #e0f0e0; color: #333; }
@@ -103,7 +109,7 @@
   .hist-table td.vz { color: #bbb; font-style: italic; }
   .hist-obs { padding: 6px 14px; font-size: 11px; color: #555; border-top: 1px solid #e0f0e0; background: #f8fff8; }
   .hist-obs strong { color: #2d6a3f; }
-  .btn-del { background: #ffeaea; color: #c0392b; border: 1px solid #e0b0b0; padding: 3px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; margin-left: 10px; }
+  .btn-del { background: #ffeaea; color: #c0392b; border: 1px solid #e0b0b0; padding: 3px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; }
   .btn-del:hover { background: #c0392b; color: white; }
 
 
@@ -227,7 +233,6 @@
     const linhas = etapas.map(e => {
       const ini = reg[e.key] || '';
       const fim = reg[e.key2] || '';
-      // Autores salvos no histórico com chave sem prefix (ex: desest_ini_autor)
       const autorIni = reg[e.key + '_autor'] || '';
       const autorFim = reg[e.key2 + '_autor'] || '';
       const autor = autorFim || autorIni || '';
@@ -238,29 +243,39 @@
         <td class="td-autor">${autor ? `<span class="tag-autor">✏️ ${autor}</span>` : '<span class="sem-autor">—</span>'}</td>
       </tr>`;
     }).join('');
-    // Setup
     const setupMotivo = reg.setup_motivo || '';
     const setupIni = reg.setup_ini || '';
     const setupFim = reg.setup_fim || '';
     const setupHtml = setupMotivo ? `<div style="padding:6px 14px;background:#fff5f5;border-top:1px solid #f5c0c0;font-size:11px;color:#900;"><strong>⚠️ Setup:</strong> ${setupMotivo}${setupIni?' | Início: '+setupIni:''}${setupFim?' | Fim: '+setupFim:''}</div>` : '';
 
     return `<div class="hist-item">
-      <div class="hist-header">
+      <div class="hist-toggle" onclick="toggleHistorico('${key}')">
         <span class="hl">Lote: ${reg.lote||'—'}</span>
         <span class="hp">Panela: ${reg.panela||'—'}</span>
         ${liga ? `<span class="htipo">⚗️ ${liga}</span>` : ''}
         <span class="htipo">${reg.tipo === 'superior' ? 'PURO/CÁLCIO' : 'SB/SN'}</span>
         <span class="ht">Concluído em: ${reg.concluidoEm}</span>
-        <button class="btn-del" onclick="deletarHistorico('${key}')">✕ Remover</button>
+        <button class="btn-del" onclick="event.stopPropagation();deletarHistorico('${key}')">✕ Remover</button>
+        <span class="seta">▼</span>
       </div>
-      <table class="hist-table">
-        <thead><tr><th>Etapa</th><th>Início</th><th>Previsão de Fim</th><th>Última Edição</th></tr></thead>
-        <tbody>${linhas}</tbody>
-      </table>
-      ${setupHtml}
-      <div class="hist-obs"><strong>OBS:</strong> ${reg.obs||'—'}</div>
+      <div class="hist-corpo" id="corpo-${key}">
+        <table class="hist-table">
+          <thead><tr><th>Etapa</th><th>Início</th><th>Previsão de Fim</th><th>Última Edição</th></tr></thead>
+          <tbody>${linhas}</tbody>
+        </table>
+        ${setupHtml}
+        <div class="hist-obs"><strong>OBS:</strong> ${reg.obs||'—'}</div>
+      </div>
     </div>`;
   }
+
+  window.toggleHistorico = (key) => {
+    const toggle = document.querySelector(`[onclick="toggleHistorico('${key}')"]`);
+    const corpo = document.getElementById('corpo-' + key);
+    if (!toggle || !corpo) return;
+    toggle.classList.toggle('aberto');
+    corpo.classList.toggle('aberto');
+  };
 
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
