@@ -40,6 +40,32 @@
   .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #2d6a3f; color: white; padding: 10px 24px; border-radius: 6px; font-size: 13px; display: none; z-index: 999; }
   @media print { .btn-container,.status-bar,.secao-titulo,.btn-concluido,.usuario-bar,#tela-login { display: none; } body { background: white; padding: 5px; } }
 
+  /* CALCULADORA SB/SN */
+  .calc-box { border-top: 2px solid #1e4d2b; margin-top: 0; padding: 12px; background: #f8fff8; }
+  .calc-titulo { font-size: 13px; font-weight: bold; color: #1e4d2b; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .calc-config { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; align-items: flex-end; }
+  .calc-config label { font-size: 11px; color: #555; display: block; margin-bottom: 2px; }
+  .calc-config input { border: 1px solid #a8d44d; border-radius: 4px; padding: 4px 8px; font-size: 12px; width: 100px; outline: none; background: #fff; }
+  .calc-config input:focus { border-color: #1e4d2b; }
+  .lotes-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; font-size: 12px; }
+  .lotes-table th { background: #1e4d2b; color: #fff; padding: 5px 8px; text-align: left; font-size: 11px; }
+  .lotes-table td { border-bottom: 1px solid #d0e8d0; padding: 4px 6px; }
+  .lotes-table input { border: 1px solid #ccc; border-radius: 3px; padding: 3px 6px; font-size: 11px; width: 100%; outline: none; }
+  .lotes-table input:focus { border-color: #1e4d2b; }
+  .btn-add-lote { background: #2d7a3f; color: white; border: none; padding: 6px 14px; border-radius: 4px; font-size: 12px; cursor: pointer; margin-bottom: 10px; }
+  .btn-add-lote:hover { background: #1e4d2b; }
+  .btn-rm-lote { background: #ffeaea; color: #c00; border: 1px solid #f5c0c0; padding: 2px 8px; border-radius: 3px; font-size: 11px; cursor: pointer; }
+  .btn-rm-lote:hover { background: #c00; color: #fff; }
+  .calc-resultado { background: #1e4d2b; color: #fff; border-radius: 6px; padding: 10px 14px; font-size: 12px; margin-top: 6px; }
+  .calc-resultado .res-linha { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px solid #2d6a3f; }
+  .calc-resultado .res-linha:last-child { border-bottom: none; }
+  .calc-resultado .res-label { color: #a8d44d; }
+  .calc-resultado .res-valor { color: #fff; font-weight: bold; }
+  .calc-resultado .res-alerta { color: #ff9; font-size: 11px; margin-top: 6px; text-align: center; }
+  .margem-ok { color: #a8d44d !important; }
+  .margem-warn { color: #ffd700 !important; }
+  .margem-erro { color: #ff6b6b !important; }
+
   /* SETUP - linha de alerta */
   .setup-row { background: #fff5f5 !important; }
   .setup-row td { border-color: #e88 !important; }
@@ -841,7 +867,41 @@
   <div class="obs-section"><div class="obs-label">OBS:</div>
     <textarea data-field="b1_obs" rows="2" style="width:100%;border-top:1px solid #999;" placeholder="Observações..."></textarea>
   </div>
-  <button class="btn-concluido" onclick="concluirLote('b1','inferior')">✔ Lote Concluído</button>
+
+  <div class="calc-box" id="calc-b1">
+    <div class="calc-titulo">🧮 Calculadora de Liga — Sb/Sn</div>
+    <div class="calc-config">
+      <div>
+        <label>Capacidade da panela (t)</label>
+        <input type="number" id="b1_cap" value="48" step="0.1" min="1" oninput="calcular('b1')">
+      </div>
+      <div>
+        <label>Objetivo de Sb (%)</label>
+        <input type="number" id="b1_obj" value="3" step="0.1" min="0" max="100" oninput="calcular('b1')">
+      </div>
+      <div>
+        <label>% Sb do Bica Mole</label>
+        <input type="number" id="b1_bica" value="0.5" step="0.1" min="0" max="100" oninput="calcular('b1')">
+      </div>
+    </div>
+    <table class="lotes-table" id="b1_tabela">
+      <thead>
+        <tr>
+          <th style="width:30%">Lote</th>
+          <th style="width:25%">% Sb</th>
+          <th style="width:30%">Qtd Carregada (kg)</th>
+          <th style="width:15%"></th>
+        </tr>
+      </thead>
+      <tbody id="b1_lotes">
+      </tbody>
+    </table>
+    <button class="btn-add-lote" onclick="adicionarLote('b1')">+ Adicionar Lote</button>
+    <div class="calc-resultado" id="b1_resultado">
+      <div class="res-linha"><span class="res-label">Aguardando dados...</span></div>
+    </div>
+  </div>
+    <button class="btn-concluido" onclick="concluirLote('b1','inferior')">✔ Lote Concluído</button>
 </div>
 
 <div class="bloco" id="bloco-b2">
@@ -920,7 +980,41 @@
   <div class="obs-section"><div class="obs-label">OBS:</div>
     <textarea data-field="b2_obs" rows="2" style="width:100%;border-top:1px solid #999;" placeholder="Observações..."></textarea>
   </div>
-  <button class="btn-concluido" onclick="concluirLote('b2','inferior')">✔ Lote Concluído</button>
+
+  <div class="calc-box" id="calc-b2">
+    <div class="calc-titulo">🧮 Calculadora de Liga — Sb/Sn</div>
+    <div class="calc-config">
+      <div>
+        <label>Capacidade da panela (t)</label>
+        <input type="number" id="b2_cap" value="48" step="0.1" min="1" oninput="calcular('b2')">
+      </div>
+      <div>
+        <label>Objetivo de Sb (%)</label>
+        <input type="number" id="b2_obj" value="3" step="0.1" min="0" max="100" oninput="calcular('b2')">
+      </div>
+      <div>
+        <label>% Sb do Bica Mole</label>
+        <input type="number" id="b2_bica" value="0.5" step="0.1" min="0" max="100" oninput="calcular('b2')">
+      </div>
+    </div>
+    <table class="lotes-table" id="b2_tabela">
+      <thead>
+        <tr>
+          <th style="width:30%">Lote</th>
+          <th style="width:25%">% Sb</th>
+          <th style="width:30%">Qtd Carregada (kg)</th>
+          <th style="width:15%"></th>
+        </tr>
+      </thead>
+      <tbody id="b2_lotes">
+      </tbody>
+    </table>
+    <button class="btn-add-lote" onclick="adicionarLote('b2')">+ Adicionar Lote</button>
+    <div class="calc-resultado" id="b2_resultado">
+      <div class="res-linha"><span class="res-label">Aguardando dados...</span></div>
+    </div>
+  </div>
+    <button class="btn-concluido" onclick="concluirLote('b2','inferior')">✔ Lote Concluído</button>
 </div>
 
 <div class="btn-container">
@@ -1055,6 +1149,7 @@
     if (ignorarUpdate) return;
 
     verificarSetupsAtivos(cacheFirebase);
+    carregarCalculadora(cacheFirebase);
 
     document.querySelectorAll('[data-field]').forEach(el => {
       const key = el.dataset.field;
@@ -1143,6 +1238,17 @@
 
       // Limpa campos na tela (incluindo selects e liga)
       document.querySelectorAll(`[data-field^="${prefix}_"]`).forEach(el => el.value = '');
+      // Limpa calculadora se for bloco inferior
+      if (prefix === 'b1' || prefix === 'b2') {
+        calcState[prefix] = [];
+        const tbody = document.getElementById(prefix + '_lotes');
+        if (tbody) tbody.innerHTML = '';
+        const res = document.getElementById(prefix + '_resultado');
+        if (res) res.innerHTML = '<div class="res-linha"><span class="res-label">Adicione lotes para calcular</span></div>';
+        const capEl = document.getElementById(prefix + '_cap'); if (capEl) capEl.value = 48;
+        const objEl = document.getElementById(prefix + '_obj'); if (objEl) objEl.value = 3;
+        const bicaEl = document.getElementById(prefix + '_bica'); if (bicaEl) bicaEl.value = 0.5;
+      }
       // Limpa autoria na tela
       document.querySelectorAll(`.autoria[data-autor^="${prefix}_"]`).forEach(el => el.textContent = '');
       // Remove destaque setup
@@ -1155,6 +1261,162 @@
       setTimeout(() => toast.style.display = 'none', 3000);
     });
   };
+
+
+  // ── CALCULADORA SB/SN ──
+  const calcState = { b1: [], b2: [] };
+
+  window.adicionarLote = (p) => {
+    const idx = calcState[p].length;
+    calcState[p].push({ lote: '', sb: '', kg: '' });
+    const tbody = document.getElementById(p + '_lotes');
+    const tr = document.createElement('tr');
+    tr.id = p + '_row_' + idx;
+    tr.innerHTML = `
+      <td><input type="text" placeholder="Lote" oninput="atualizarLote('${p}',${idx},'lote',this.value)" value=""></td>
+      <td><input type="number" placeholder="ex: 4.5" step="0.01" min="0" max="100" oninput="atualizarLote('${p}',${idx},'sb',this.value)" value=""></td>
+      <td><input type="number" placeholder="ex: 5000" step="1" min="0" oninput="atualizarLote('${p}',${idx},'kg',this.value)" value=""></td>
+      <td><button class="btn-rm-lote" onclick="removerLote('${p}',${idx})">✕</button></td>`;
+    tbody.appendChild(tr);
+    salvarCalcFirebase(p);
+  };
+
+  window.atualizarLote = (p, idx, campo, val) => {
+    if (!calcState[p][idx]) return;
+    calcState[p][idx][campo] = val;
+    calcular(p);
+    salvarCalcFirebase(p);
+  };
+
+  window.removerLote = (p, idx) => {
+    calcState[p][idx] = null;
+    const row = document.getElementById(p + '_row_' + idx);
+    if (row) row.remove();
+    calcular(p);
+    salvarCalcFirebase(p);
+  };
+
+  window.calcular = (p) => {
+    const cap = parseFloat(document.getElementById(p + '_cap')?.value) || 48;
+    const obj = parseFloat(document.getElementById(p + '_obj')?.value) || 3;
+    const bicaSb = parseFloat(document.getElementById(p + '_bica')?.value) || 0.5;
+    const capKg = cap * 1000;
+
+    const lotes = calcState[p].filter(l => l && l.kg && l.sb !== '');
+    const totalKgLotes = lotes.reduce((s, l) => s + (parseFloat(l.kg) || 0), 0);
+    const totalSbKgLotes = lotes.reduce((s, l) => s + (parseFloat(l.kg) || 0) * (parseFloat(l.sb) || 0) / 100, 0);
+
+    const div = document.getElementById(p + '_resultado');
+    if (!div) return;
+
+    if (lotes.length === 0) {
+      div.innerHTML = '<div class="res-linha"><span class="res-label">Adicione lotes para calcular</span></div>';
+      return;
+    }
+
+    // Sb necessário total na panela = capKg * obj/100
+    const sbNecessarioTotal = capKg * obj / 100;
+    const sbFaltante = sbNecessarioTotal - totalSbKgLotes;
+    
+    // Bica mole necessário: sbFaltante = kgBica * bicaSb/100 + (capKg - totalKgLotes - kgBica) * 0
+    // Simplificando: kgBica = sbFaltante / (bicaSb/100)
+    // Mas bica também ocupa espaço: resolução da equação:
+    // totalSbKgLotes + kgBica*(bicaSb/100) = capKg * obj/100
+    // kgBica = (capKg*obj/100 - totalSbKgLotes) / (bicaSb/100)
+    let kgBica = 0;
+    if (bicaSb > 0) {
+      kgBica = (sbNecessarioTotal - totalSbKgLotes) / (bicaSb / 100);
+    }
+    kgBica = Math.max(0, kgBica);
+
+    const totalCarregado = totalKgLotes + kgBica;
+    const espacoRestante = capKg - totalCarregado;
+
+    // Sb atual com lotes carregados (sem bica ainda)
+    const sbAtualPercent = totalKgLotes > 0 ? (totalSbKgLotes / totalKgLotes) * 100 : 0;
+
+    // Sb final estimado
+    const sbFinalEstimado = totalCarregado > 0 ? ((totalSbKgLotes + kgBica * bicaSb / 100) / capKg) * 100 : 0;
+
+    const diffObj = sbFinalEstimado - obj;
+    const classMargem = Math.abs(diffObj) < 0.1 ? 'margem-ok' : Math.abs(diffObj) < 0.3 ? 'margem-warn' : 'margem-erro';
+
+    div.innerHTML = `
+      <div class="res-linha">
+        <span class="res-label">Total carregado (lotes)</span>
+        <span class="res-valor">${totalKgLotes.toLocaleString('pt-BR')} kg</span>
+      </div>
+      <div class="res-linha">
+        <span class="res-label">% Sb atual (lotes)</span>
+        <span class="res-valor">${sbAtualPercent.toFixed(2)}%</span>
+      </div>
+      <div class="res-linha">
+        <span class="res-label">Bica Mole a adicionar (${bicaSb}% Sb)</span>
+        <span class="res-valor" style="color:#a8d44d;font-size:14px;">${kgBica.toLocaleString('pt-BR', {maximumFractionDigits:0})} kg</span>
+      </div>
+      <div class="res-linha">
+        <span class="res-label">Total na panela após bica</span>
+        <span class="res-valor">${totalCarregado.toLocaleString('pt-BR', {maximumFractionDigits:0})} kg / ${capKg.toLocaleString('pt-BR')} kg</span>
+      </div>
+      <div class="res-linha">
+        <span class="res-label">% Sb final estimado</span>
+        <span class="res-valor ${classMargem}">${sbFinalEstimado.toFixed(2)}% (obj: ${obj}%)</span>
+      </div>
+      ${espacoRestante < 0 ? '<div class="res-alerta">⚠️ Atenção: carga ultrapassa capacidade da panela!</div>' : ''}
+    `;
+
+    // Salvar resultado no Firebase para o painel ver
+    salvarCalcFirebase(p);
+  };
+
+  window.salvarCalcFirebase = (p) => {
+    const cap = parseFloat(document.getElementById(p + '_cap')?.value) || 48;
+    const obj = parseFloat(document.getElementById(p + '_obj')?.value) || 3;
+    const bica = parseFloat(document.getElementById(p + '_bica')?.value) || 0.5;
+    const lotesFiltrados = calcState[p].filter(l => l && (l.lote || l.kg || l.sb !== ''));
+    
+    ignorarUpdate = true;
+    const dados = Object.assign({}, cacheFirebase);
+    dados[p + '_calc'] = JSON.stringify({ cap, obj, bica, lotes: lotesFiltrados });
+    cacheFirebase[p + '_calc'] = dados[p + '_calc'];
+    set(dbRef, dados).finally(() => setTimeout(() => { ignorarUpdate = false; }, 500));
+  };
+
+  // Carregar calculadora do Firebase ao conectar
+  function carregarCalculadora(dados) {
+    ['b1','b2'].forEach(p => {
+      const raw = dados[p + '_calc'];
+      if (!raw) return;
+      try {
+        const state = JSON.parse(raw);
+        // Restaurar config
+        const capEl = document.getElementById(p + '_cap');
+        const objEl = document.getElementById(p + '_obj');
+        const bicaEl = document.getElementById(p + '_bica');
+        if (capEl) capEl.value = state.cap;
+        if (objEl) objEl.value = state.obj;
+        if (bicaEl) bicaEl.value = state.bica;
+        // Restaurar lotes
+        const tbody = document.getElementById(p + '_lotes');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        calcState[p] = [];
+        (state.lotes || []).forEach((l, idx) => {
+          calcState[p].push(l);
+          const tr = document.createElement('tr');
+          tr.id = p + '_row_' + idx;
+          tr.innerHTML = `
+            <td><input type="text" placeholder="Lote" oninput="atualizarLote('${p}',${idx},'lote',this.value)" value="${l.lote||''}"></td>
+            <td><input type="number" placeholder="ex: 4.5" step="0.01" min="0" max="100" oninput="atualizarLote('${p}',${idx},'sb',this.value)" value="${l.sb||''}"></td>
+            <td><input type="number" placeholder="ex: 5000" step="1" min="0" oninput="atualizarLote('${p}',${idx},'kg',this.value)" value="${l.kg||''}"></td>
+            <td><button class="btn-rm-lote" onclick="removerLote('${p}',${idx})">✕</button></td>`;
+          tbody.appendChild(tr);
+        });
+        calcular(p);
+      } catch(e) { console.error('Erro ao carregar calculadora', e); }
+    });
+  }
+  // ── FIM CALCULADORA ──
 
   window.limparTudo = () => {
     if (!confirm('Tem certeza que deseja limpar TODOS os dados?')) return;
