@@ -1314,55 +1314,43 @@
       return;
     }
 
-    // Sb necessário total na panela = capKg * obj/100
-    const sbNecessarioTotal = capKg * obj / 100;
-    const sbFaltante = sbNecessarioTotal - totalSbKgLotes;
-    
-    // Bica mole necessário: sbFaltante = kgBica * bicaSb/100 + (capKg - totalKgLotes - kgBica) * 0
-    // Simplificando: kgBica = sbFaltante / (bicaSb/100)
-    // Mas bica também ocupa espaço: resolução da equação:
-    // totalSbKgLotes + kgBica*(bicaSb/100) = capKg * obj/100
-    // kgBica = (capKg*obj/100 - totalSbKgLotes) / (bicaSb/100)
-    let kgBica = 0;
-    if (bicaSb > 0) {
-      kgBica = (sbNecessarioTotal - totalSbKgLotes) / (bicaSb / 100);
-    }
-    kgBica = Math.max(0, kgBica);
-
+    // Bica mole SEMPRE completa o espaço restante da capacidade
+    const kgBica = Math.max(0, capKg - totalKgLotes);
     const totalCarregado = totalKgLotes + kgBica;
-    const espacoRestante = capKg - totalCarregado;
+    const ultrapassou = totalKgLotes > capKg;
 
-    // Sb atual com lotes carregados (sem bica ainda)
+    // % Sb atual apenas dos lotes sólidos inseridos
     const sbAtualPercent = totalKgLotes > 0 ? (totalSbKgLotes / totalKgLotes) * 100 : 0;
 
-    // Sb final estimado
-    const sbFinalEstimado = totalCarregado > 0 ? ((totalSbKgLotes + kgBica * bicaSb / 100) / capKg) * 100 : 0;
+    // % Sb final: (Sb dos lotes + Sb da bica mole) / capacidade total
+    const totalSbFinal = totalSbKgLotes + kgBica * (bicaSb / 100);
+    const sbFinalEstimado = capKg > 0 ? (totalSbFinal / capKg) * 100 : 0;
 
     const diffObj = sbFinalEstimado - obj;
     const classMargem = Math.abs(diffObj) < 0.1 ? 'margem-ok' : Math.abs(diffObj) < 0.3 ? 'margem-warn' : 'margem-erro';
 
     div.innerHTML = `
       <div class="res-linha">
-        <span class="res-label">Total carregado (lotes)</span>
+        <span class="res-label">Total de lotes inseridos</span>
         <span class="res-valor">${totalKgLotes.toLocaleString('pt-BR')} kg</span>
       </div>
       <div class="res-linha">
-        <span class="res-label">% Sb atual (lotes)</span>
+        <span class="res-label">% Sb dos lotes</span>
         <span class="res-valor">${sbAtualPercent.toFixed(2)}%</span>
       </div>
       <div class="res-linha">
-        <span class="res-label">Bica Mole a adicionar (${bicaSb}% Sb)</span>
+        <span class="res-label">Bica Mole para completar (${bicaSb}% Sb)</span>
         <span class="res-valor" style="color:#a8d44d;font-size:14px;">${kgBica.toLocaleString('pt-BR', {maximumFractionDigits:0})} kg</span>
       </div>
       <div class="res-linha">
-        <span class="res-label">Total na panela após bica</span>
+        <span class="res-label">Total na panela</span>
         <span class="res-valor">${totalCarregado.toLocaleString('pt-BR', {maximumFractionDigits:0})} kg / ${capKg.toLocaleString('pt-BR')} kg</span>
       </div>
       <div class="res-linha">
         <span class="res-label">% Sb final estimado</span>
         <span class="res-valor ${classMargem}">${sbFinalEstimado.toFixed(2)}% (obj: ${obj}%)</span>
       </div>
-      ${espacoRestante < 0 ? '<div class="res-alerta">⚠️ Atenção: carga ultrapassa capacidade da panela!</div>' : ''}
+      ${ultrapassou ? '<div class="res-alerta">⚠️ Atenção: lotes ultrapassam capacidade da panela!</div>' : ''}
     `;
 
     // Salvar resultado no Firebase para o painel ver
