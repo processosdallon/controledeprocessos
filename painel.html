@@ -113,6 +113,21 @@
   .btn-del:hover { background: #c0392b; color: white; }
 
 
+
+  /* RESUMO CALCULADORA NO PAINEL */
+  .calc-resumo { margin: 6px 8px 8px; border: 1px solid #a8d44d; border-radius: 6px; overflow: hidden; font-size: 11px; }
+  .calc-resumo-titulo { background: #2d6a3f; color: #a8d44d; font-weight: bold; padding: 4px 10px; font-size: 10px; letter-spacing: 0.5px; }
+  .calc-resumo-linha { display: flex; justify-content: space-between; padding: 3px 10px; border-bottom: 1px solid #e0f0e0; background: #f8fff8; }
+  .card:not(.ativo) .calc-resumo-linha { background: #1a3a20; border-bottom: 1px solid #2d6a3f; }
+  .card:not(.ativo) .calc-resumo-titulo { background: #163d21; }
+  .calc-resumo-linha:last-child { border-bottom: none; }
+  .calc-resumo-label { color: #555; }
+  .card:not(.ativo) .calc-resumo-label { color: #7ab830; }
+  .calc-resumo-valor { font-weight: bold; color: #1e4d2b; }
+  .card:not(.ativo) .calc-resumo-valor { color: #a8d44d; }
+  .calc-resumo-bica { color: #2d7a3f; font-size: 12px; font-weight: bold; }
+  .card:not(.ativo) .calc-resumo-bica { color: #d4f5a0; }
+  .calc-resumo-alerta { background: #ffe0e0; color: #900; padding: 3px 10px; font-size: 10px; text-align: center; }
   /* SETUP ALERT NO PAINEL */
   .setup-alert { margin: 6px 8px; padding: 5px 10px; border-radius: 5px; font-size: 11px; font-weight: bold; background: #ffe0e0; color: #900; border: 1px solid #f00; display: flex; align-items: center; gap: 6px; }
   .setup-alert span { animation: blink 1.2s infinite; }
@@ -202,6 +217,33 @@
     const setupMotivo = dados[`${prefix}_setup_motivo`] || '';
     const setupIni = dados[`${prefix}_setup_ini`] || '';
     const setupFim = dados[`${prefix}_setup_fim`] || '';
+    // Calculadora SB/SN
+    let calcResumoHtml = '';
+    const calcRaw = dados[`${prefix}_calc`];
+    if (calcRaw) {
+      try {
+        const calc = JSON.parse(calcRaw);
+        const capKg = (calc.cap || 48) * 1000;
+        const obj = calc.obj || 3;
+        const bicaSb = calc.bica || 0.5;
+        const lotes = (calc.lotes || []).filter(l => l && l.kg && l.sb !== '');
+        if (lotes.length > 0) {
+          const totalKg = lotes.reduce((s,l) => s + (parseFloat(l.kg)||0), 0);
+          const totalSbKg = lotes.reduce((s,l) => s + (parseFloat(l.kg)||0)*(parseFloat(l.sb)||0)/100, 0);
+          const kgBica = Math.max(0, ((capKg*obj/100) - totalSbKg) / (bicaSb/100));
+          const sbFinal = ((totalSbKg + kgBica*bicaSb/100) / capKg * 100);
+          const lotesHtml = lotes.map(l => `<div class="calc-resumo-linha"><span class="calc-resumo-label">Lote ${l.lote||'?'} (${l.sb}% Sb)</span><span class="calc-resumo-valor">${parseFloat(l.kg).toLocaleString('pt-BR')} kg</span></div>`).join('');
+          const ultrapass = (totalKg + kgBica) > capKg;
+          calcResumoHtml = `<div class="calc-resumo">
+            <div class="calc-resumo-titulo">🧮 CALCULADORA — Obj: ${obj}% Sb | Panela: ${calc.cap}t</div>
+            ${lotesHtml}
+            <div class="calc-resumo-linha"><span class="calc-resumo-label">Bica Mole a adicionar</span><span class="calc-resumo-bica">${kgBica.toLocaleString('pt-BR',{maximumFractionDigits:0})} kg</span></div>
+            <div class="calc-resumo-linha"><span class="calc-resumo-label">% Sb final estimado</span><span class="calc-resumo-valor">${sbFinal.toFixed(2)}%</span></div>
+            ${ultrapass ? '<div class="calc-resumo-alerta">⚠️ Carga ultrapassa capacidade!</div>' : ''}
+          </div>`;
+        }
+      } catch(e) {}
+    }
     const ativo = dados[`${prefix}_lote`] ? 'ativo' : '';
     const linhas = etapas.map(e => {
       const ini = dados[`${prefix}_${e.key}`] || '';
@@ -224,6 +266,7 @@
       <table><thead><tr><th>Etapa</th><th>Início</th><th>Fim</th><th>Última Edição</th></tr></thead><tbody>${linhas}</tbody></table>
       <div class="obs-box"><strong>OBS:</strong><span>${obs||'<em style="color:#bbb">—</em>'}</span></div>
       ${setupMotivo ? `<div class="setup-alert"><span>⚠️</span> SETUP: ${setupMotivo}${setupIni ? ' | Início: '+setupIni : ''}${setupFim ? ' | Prev. Fim: '+setupFim : ''}</div>` : ''}
+      ${calcResumoHtml}
     </div>`;
   }
 
