@@ -230,8 +230,9 @@
         if (lotes.length > 0) {
           const totalKg = lotes.reduce((s,l) => s + (parseFloat(l.kg)||0), 0);
           const totalSbKg = lotes.reduce((s,l) => s + (parseFloat(l.kg)||0)*(parseFloat(l.sb)||0)/100, 0);
-          const kgBica = Math.max(0, ((capKg*obj/100) - totalSbKg) / (bicaSb/100));
-          const sbFinal = ((totalSbKg + kgBica*bicaSb/100) / capKg * 100);
+          // Bica mole completa o espaço restante
+          const kgBica = Math.max(0, capKg - totalKg);
+          const sbFinal = capKg > 0 ? ((totalSbKg + kgBica * bicaSb / 100) / capKg * 100) : 0;
           const lotesHtml = lotes.map(l => `<div class="calc-resumo-linha"><span class="calc-resumo-label">Lote ${l.lote||'?'} (${l.sb}% Sb)</span><span class="calc-resumo-valor">${parseFloat(l.kg).toLocaleString('pt-BR')} kg</span></div>`).join('');
           const ultrapass = (totalKg + kgBica) > capKg;
           calcResumoHtml = `<div class="calc-resumo">
