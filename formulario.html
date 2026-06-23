@@ -35,10 +35,18 @@
   .btn-lapis { background: none; border: none; cursor: pointer; font-size: 11px; padding: 0 2px; opacity: 0.5; }
   .btn-lapis:hover { opacity: 1; }
   .autoria { font-size: 10px; color: #888; display: block; font-style: italic; }
-  .hist-edicao { font-size: 10px; color: #555; margin-top: 3px; }
-  .hist-linha { background: #fff8e1; border-left: 2px solid #f0a000; padding: 2px 5px; margin-bottom: 2px; border-radius: 2px; }
+  .hist-edicao { display: none; } /* histórico inline oculto — exibido no acordeão */
   .exec-time { font-size: 10px; color: #2d7a9a; display: block; margin-top: 1px; font-style: italic; }
-  .hist-edicao div { border-top: 1px dashed #ecc; padding: 1px 0; }
+  /* ACORDEÃO DE HISTÓRICO */
+  .hist-acord-wrap { border-top: 2px solid #1e4d2b; margin: 0; }
+  .hist-acord-btn { padding: 6px 10px; font-size: 12px; color: #1e4d2b; cursor: pointer; background: #f0f7f0; display: flex; justify-content: space-between; align-items: center; user-select: none; font-weight: bold; }
+  .hist-acord-btn:hover { background: #e0f0e0; }
+  .hist-acord-btn .hist-seta { display: inline-block; transition: transform 0.2s; font-size: 11px; }
+  .hist-acord-btn.aberto .hist-seta { transform: rotate(180deg); }
+  .hist-acord-body { display: none; padding: 6px 10px; background: #fafffe; border-top: 1px solid #c8e8c8; max-height: 150px; overflow-y: auto; }
+  .hist-acord-body.aberto { display: block; }
+  .hist-acord-linha { font-size: 11px; color: #444; padding: 3px 0; border-bottom: 1px solid #e8f4e8; }
+  .hist-acord-linha b { color: #1e4d2b; }
   textarea { width: 100%; border: none; background: transparent; font-size: 12px; font-family: Arial; color: #111; outline: none; padding: 2px; resize: none; }
   .obs-section { border-top: 2px solid #1e4d2b; padding: 6px 8px; }
   .obs-label { font-weight: bold; font-size: 12px; margin-bottom: 4px; }
@@ -342,6 +350,14 @@
       <td><input type="time" data-field="a1_setup_fim"></td>
     </tr>
   </tbody></table>
+  <div class="hist-acord-wrap" id="acord-a1">
+    <div class="hist-acord-btn" id="acord-btn-a1" onclick="toggleAcord('a1')">
+      📋 Histórico de edições <span id="acord-count-a1">(0)</span> <span class="hist-seta">▼</span>
+    </div>
+    <div class="hist-acord-body" id="acord-body-a1">
+      <div id="acord-content-a1"></div>
+    </div>
+  </div>
   <button class="btn-concluido" onclick="concluirLote('a1','superior')">✔ Lote Concluído</button>
 </div>
 <div class="bloco" id="bloco-a2">
@@ -572,6 +588,14 @@
       <td><input type="time" data-field="a2_setup_fim"></td>
     </tr>
   </tbody></table>
+  <div class="hist-acord-wrap" id="acord-a2">
+    <div class="hist-acord-btn" id="acord-btn-a2" onclick="toggleAcord('a2')">
+      📋 Histórico de edições <span id="acord-count-a2">(0)</span> <span class="hist-seta">▼</span>
+    </div>
+    <div class="hist-acord-body" id="acord-body-a2">
+      <div id="acord-content-a2"></div>
+    </div>
+  </div>
   <button class="btn-concluido" onclick="concluirLote('a2','superior')">✔ Lote Concluído</button>
 </div>
 <div class="bloco" id="bloco-a3">
@@ -802,6 +826,14 @@
       <td><input type="time" data-field="a3_setup_fim"></td>
     </tr>
   </tbody></table>
+  <div class="hist-acord-wrap" id="acord-a3">
+    <div class="hist-acord-btn" id="acord-btn-a3" onclick="toggleAcord('a3')">
+      📋 Histórico de edições <span id="acord-count-a3">(0)</span> <span class="hist-seta">▼</span>
+    </div>
+    <div class="hist-acord-body" id="acord-body-a3">
+      <div id="acord-content-a3"></div>
+    </div>
+  </div>
   <button class="btn-concluido" onclick="concluirLote('a3','superior')">✔ Lote Concluído</button>
 </div>
 <div class="bloco" id="bloco-a4">
@@ -1032,6 +1064,14 @@
       <td><input type="time" data-field="a4_setup_fim"></td>
     </tr>
   </tbody></table>
+  <div class="hist-acord-wrap" id="acord-a4">
+    <div class="hist-acord-btn" id="acord-btn-a4" onclick="toggleAcord('a4')">
+      📋 Histórico de edições <span id="acord-count-a4">(0)</span> <span class="hist-seta">▼</span>
+    </div>
+    <div class="hist-acord-body" id="acord-body-a4">
+      <div id="acord-content-a4"></div>
+    </div>
+  </div>
   <button class="btn-concluido" onclick="concluirLote('a4','superior')">✔ Lote Concluído</button>
 </div>
 <div class="bloco" id="bloco-a5">
@@ -1262,6 +1302,14 @@
       <td><input type="time" data-field="a5_setup_fim"></td>
     </tr>
   </tbody></table>
+  <div class="hist-acord-wrap" id="acord-a5">
+    <div class="hist-acord-btn" id="acord-btn-a5" onclick="toggleAcord('a5')">
+      📋 Histórico de edições <span id="acord-count-a5">(0)</span> <span class="hist-seta">▼</span>
+    </div>
+    <div class="hist-acord-body" id="acord-body-a5">
+      <div id="acord-content-a5"></div>
+    </div>
+  </div>
   <button class="btn-concluido" onclick="concluirLote('a5','superior')">✔ Lote Concluído</button>
 </div>
 <div class="bloco" id="bloco-a6">
@@ -1492,6 +1540,14 @@
       <td><input type="time" data-field="a6_setup_fim"></td>
     </tr>
   </tbody></table>
+  <div class="hist-acord-wrap" id="acord-a6">
+    <div class="hist-acord-btn" id="acord-btn-a6" onclick="toggleAcord('a6')">
+      📋 Histórico de edições <span id="acord-count-a6">(0)</span> <span class="hist-seta">▼</span>
+    </div>
+    <div class="hist-acord-body" id="acord-body-a6">
+      <div id="acord-content-a6"></div>
+    </div>
+  </div>
   <button class="btn-concluido" onclick="concluirLote('a6','superior')">✔ Lote Concluído</button>
 </div>
 <div class="bloco" id="bloco-a7">
@@ -1722,6 +1778,14 @@
       <td><input type="time" data-field="a7_setup_fim"></td>
     </tr>
   </tbody></table>
+  <div class="hist-acord-wrap" id="acord-a7">
+    <div class="hist-acord-btn" id="acord-btn-a7" onclick="toggleAcord('a7')">
+      📋 Histórico de edições <span id="acord-count-a7">(0)</span> <span class="hist-seta">▼</span>
+    </div>
+    <div class="hist-acord-body" id="acord-body-a7">
+      <div id="acord-content-a7"></div>
+    </div>
+  </div>
   <button class="btn-concluido" onclick="concluirLote('a7','superior')">✔ Lote Concluído</button>
 </div>
 <div class="bloco" id="bloco-a8">
@@ -1952,6 +2016,14 @@
       <td><input type="time" data-field="a8_setup_fim"></td>
     </tr>
   </tbody></table>
+  <div class="hist-acord-wrap" id="acord-a8">
+    <div class="hist-acord-btn" id="acord-btn-a8" onclick="toggleAcord('a8')">
+      📋 Histórico de edições <span id="acord-count-a8">(0)</span> <span class="hist-seta">▼</span>
+    </div>
+    <div class="hist-acord-body" id="acord-body-a8">
+      <div id="acord-content-a8"></div>
+    </div>
+  </div>
   <button class="btn-concluido" onclick="concluirLote('a8','superior')">✔ Lote Concluído</button>
 </div>
 <div class="secao-titulo">▶ PANELAS DE SB/SN</div>
@@ -2092,6 +2164,14 @@
   <button class="btn-add-lote" onclick="adicionarLote('b1')">+ Adicionar Lote</button>
   <div class="calc-resultado" id="b1_resultado"><div class="res-linha"><span class="res-label">Adicione lotes para calcular</span></div></div>
 </div>
+  <div class="hist-acord-wrap" id="acord-b1">
+    <div class="hist-acord-btn" id="acord-btn-b1" onclick="toggleAcord('b1')">
+      📋 Histórico de edições <span id="acord-count-b1">(0)</span> <span class="hist-seta">▼</span>
+    </div>
+    <div class="hist-acord-body" id="acord-body-b1">
+      <div id="acord-content-b1"></div>
+    </div>
+  </div>
   <button class="btn-concluido" onclick="concluirLote('b1','inferior')">✔ Lote Concluído</button>
 </div>
 <div class="bloco" id="bloco-b2">
@@ -2231,6 +2311,14 @@
   <button class="btn-add-lote" onclick="adicionarLote('b2')">+ Adicionar Lote</button>
   <div class="calc-resultado" id="b2_resultado"><div class="res-linha"><span class="res-label">Adicione lotes para calcular</span></div></div>
 </div>
+  <div class="hist-acord-wrap" id="acord-b2">
+    <div class="hist-acord-btn" id="acord-btn-b2" onclick="toggleAcord('b2')">
+      📋 Histórico de edições <span id="acord-count-b2">(0)</span> <span class="hist-seta">▼</span>
+    </div>
+    <div class="hist-acord-body" id="acord-body-b2">
+      <div id="acord-content-b2"></div>
+    </div>
+  </div>
   <button class="btn-concluido" onclick="concluirLote('b2','inferior')">✔ Lote Concluído</button>
 </div>
 <div class="btn-container">
@@ -2328,6 +2416,7 @@
     carregarCalculadora(cacheFirebase);
     setTimeout(verificarAtrasos, 200);
     setTimeout(calcularExecucao, 250);
+    setTimeout(atualizarAcords, 300);
     if (ignorarUpdate) return;
     document.querySelectorAll('[data-field]').forEach(el => {
       const key = el.dataset.field;
@@ -2497,6 +2586,9 @@
 
     function checar(prefixos, etapas) {
       prefixos.forEach(p => {
+        // Se lingotamento iniciado → nunca atraso, volta ao verde
+        const lingotIniciado = !!cacheFirebase[`${p}_lingot_ini`];
+
         // Encontrar última etapa com início preenchido
         let ultimaIdx = -1;
         etapas.forEach((e, idx) => {
@@ -2504,19 +2596,14 @@
         });
 
         let blocoAtrasado = false;
-        if (ultimaIdx >= 0) {
+        if (!lingotIniciado && ultimaIdx >= 0) {
           const e = etapas[ultimaIdx];
           const fimVal = cacheFirebase[`${p}_${e.key}_fim`];
-
-          // SÓ considera atrasado se tem previsão de fim E horário atual passou dela
           if (fimVal) {
             const fimMin = toMin(fimVal);
-            // Comparar minutos do dia — se agora > fimMin é atraso
-            // Tolerância de virada de dia: se fimMin > 22*60 e agoraMin < 2*60, não é atraso (virada)
             const virada = fimMin > 22 * 60 && agoraMin < 2 * 60;
             if (!virada && agoraMin > fimMin) blocoAtrasado = true;
           }
-          // Se não tem previsão de fim, NÃO marca como atrasado
         }
 
         const blocoEl = document.getElementById(`bloco-${p}`);
@@ -2527,6 +2614,65 @@
     checar(PREFIXOS_INF, ETAPAS_INF);
   }
   setInterval(verificarAtrasos, 60000);
+
+
+  // ACORDEÃO DE HISTÓRICO
+  window.toggleAcord = (p) => {
+    const btn = document.getElementById(`acord-btn-${p}`);
+    const body = document.getElementById(`acord-body-${p}`);
+    if (!btn || !body) return;
+    btn.classList.toggle('aberto');
+    body.classList.toggle('aberto');
+  };
+
+  function atualizarAcords() {
+    const prefixosSup = ['a1','a2','a3','a4','a5','a6','a7','a8'];
+    const prefixosInf = ['b1','b2'];
+    const keysSup = ['limp1','desest','lanca','setuptemp','desant1','decup','transf','desant2','limpeza1','transf2','limpeza2','metais','lingot'];
+    const keysInf = ['limp1','enxofre','desest','transf','soda','carvao','metais','lingot'];
+
+    const ETAPA_LABELS_SUP = {
+      limp1:'1ª Limpeza', desest:'Desestanhação', lanca:'Desant. com Lança',
+      setuptemp:'Setup de Temperatura', desant1:'1ª Desantimoniação', decup:'Decuprização',
+      transf:'1ª Transferência', desant2:'2ª Desantimoniação', limpeza1:'1ª Limpeza Final',
+      transf2:'2ª Transferência', limpeza2:'2ª Limpeza Final', metais:'Agregar Metais', lingot:'Lingotamento'
+    };
+    const ETAPA_LABELS_INF = {
+      limp1:'1ª Limpeza', enxofre:'Dec. Com Enxofre', desest:'Desestanhação',
+      transf:'Transferência', soda:'Limpeza com Soda', carvao:'Limpeza com Carvão',
+      metais:'Agregar Metais', lingot:'Lingotamento'
+    };
+
+    function processar(prefixos, keys, labels) {
+      prefixos.forEach(p => {
+        const contentEl = document.getElementById(`acord-content-${p}`);
+        const countEl = document.getElementById(`acord-count-${p}`);
+        const wrapEl = document.getElementById(`acord-${p}`);
+        if (!contentEl) return;
+        let todasEdicoes = [];
+        keys.forEach(key => {
+          const histRaw = cacheFirebase[`${p}_${key}_histedicao`] || '';
+          if (!histRaw) return;
+          try {
+            const hist = JSON.parse(histRaw);
+            hist.forEach(h => todasEdicoes.push({etapa: labels[key]||key, ...h}));
+          } catch(e) {}
+        });
+        if (todasEdicoes.length > 0) {
+          contentEl.innerHTML = todasEdicoes.map(h =>
+            `<div class="hist-acord-linha"><b>${h.etapa}</b> — ✏️ ${h.usuario} ${h.quando}: ${h.antigo} → <b>${h.novo}</b></div>`
+          ).join('');
+          if (countEl) countEl.textContent = `(${todasEdicoes.length})`;
+          if (wrapEl) wrapEl.style.display = '';
+        } else {
+          contentEl.innerHTML = '<div style="color:#aaa;font-size:11px;">Nenhuma edição registrada</div>';
+          if (countEl) countEl.textContent = '(0)';
+        }
+      });
+    }
+    processar(prefixosSup, keysSup, ETAPA_LABELS_SUP);
+    processar(prefixosInf, keysInf, ETAPA_LABELS_INF);
+  }
 
   // Listener global para botões lápis (evita problema de escopo em type="module")
   document.addEventListener('click', (e) => {
