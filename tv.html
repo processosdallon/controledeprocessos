@@ -374,8 +374,11 @@
   function buildSlides() {
     // Coletar ativos
     const sup=[], inf=[];
-    for(let i=1;i<=8;i++) { if(dados[`a${i}_lote`]) sup.push({p:`a${i}`,etapas:ETAPAS_SUP,tipo:'PURO/CÁLCIO'}); }
-    for(let i=1;i<=2;i++) { if(dados[`b${i}_lote`]) inf.push({p:`b${i}`,etapas:ETAPAS_INF,tipo:'SB/SN'}); }
+    // Coletar ativos e ordenar por número de panela crescente
+    for(let i=1;i<=8;i++) { if(dados[`a${i}_lote`]) sup.push({p:`a${i}`,etapas:ETAPAS_SUP,tipo:'PURO/CÁLCIO',panela:parseInt(dados[`a${i}_panela`])||999}); }
+    sup.sort((a,b)=>a.panela-b.panela);
+    for(let i=1;i<=2;i++) { if(dados[`b${i}_lote`]) inf.push({p:`b${i}`,etapas:ETAPAS_INF,tipo:'SB/SN',panela:parseInt(dados[`b${i}_panela`])||999}); }
+    inf.sort((a,b)=>a.panela-b.panela);
 
     slidesMeta = [];
     // Slides de sup (4 por slide)
