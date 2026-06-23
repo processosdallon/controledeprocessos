@@ -16,7 +16,6 @@
     flex-direction: column;
   }
 
-  /* HEADER */
   .tv-header {
     background: #1e4d2b;
     padding: 8px 24px;
@@ -27,13 +26,12 @@
     flex-shrink: 0;
   }
   .tv-header img { height: 48px; }
-  .tv-header-center h1 { font-size: 20px; color: #a8d44d; letter-spacing: 2px; text-transform: uppercase; text-align:center; }
-  .tv-header-center p { font-size: 12px; color: #7ab830; text-align:center; margin-top:2px; }
+  .tv-header-center h1 { font-size: 20px; color: #a8d44d; letter-spacing: 2px; text-transform: uppercase; text-align: center; }
+  .tv-header-center p { font-size: 11px; color: #7ab830; text-align: center; margin-top: 2px; }
   .tv-header-right { text-align: right; }
   .tv-header-right .relogio { font-size: 26px; font-weight: bold; color: #fff; }
   .tv-header-right .data { font-size: 11px; color: #7ab830; }
 
-  /* STATUS */
   .tv-status {
     background: #163d21;
     padding: 4px 20px;
@@ -48,40 +46,45 @@
   .dot { width: 9px; height: 9px; border-radius: 50%; background: #ccc; display: inline-block; }
   .dot.on { background: #a8d44d; animation: pulse 2s infinite; }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-  .slide-info { color: #a8d44d; font-size: 11px; margin-left: auto; }
+  .status-right { margin-left: auto; display: flex; align-items: center; gap: 16px; }
+  .secao-badge {
+    font-size: 12px; font-weight: bold; color: #1e4d2b;
+    background: #a8d44d; padding: 2px 14px; border-radius: 10px;
+  }
+  .slide-info { font-size: 11px; color: #5a9a5a; }
 
-  /* AREA PRINCIPAL */
-  .main-area {
-    flex: 1;
-    overflow: hidden;
+  /* SLIDE */
+  .slide-outer { flex: 1; overflow: hidden; position: relative; }
+  .slide-viewport {
+    display: flex;
+    height: 100%;
+    transition: transform 0.6s cubic-bezier(0.77,0,0.175,1);
+  }
+  .slide-page {
+    min-width: 100%;
+    height: 100%;
     display: flex;
     flex-direction: column;
-    padding: 10px 16px 6px;
-    gap: 10px;
+    padding: 12px 16px 8px;
+    gap: 8px;
   }
 
-  /* SEÇÃO */
-  .secao-wrap {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-  .secao-titulo-tv {
-    font-size: 13px;
+  /* TÍTULO DA SEÇÃO DENTRO DO SLIDE */
+  .secao-titulo-slide {
+    font-size: 12px;
     font-weight: bold;
     color: #fff;
     background: #1e4d2b;
-    padding: 4px 14px;
-    border-radius: 6px;
+    padding: 3px 12px;
+    border-radius: 5px;
     border-left: 4px solid #a8d44d;
     letter-spacing: 1px;
     flex-shrink: 0;
   }
 
-  /* GRID DE CARDS — centralizado quando menos de 4 */
-  .cards-grid {
+  /* GRID DE CARDS — sempre 4 colunas, centralizado */
+  .cards-row {
     display: flex;
-    flex-wrap: nowrap;
     gap: 12px;
     justify-content: center;
     flex: 1;
@@ -97,69 +100,70 @@
     display: flex;
     flex-direction: column;
     flex: 1;
-    max-width: 340px;
-    min-width: 200px;
-    height: 100%;
+    max-width: 380px;
+    min-width: 0;
   }
   .card-tv.atrasado {
     border: 2px solid #c00 !important;
     box-shadow: 0 0 14px #f006;
   }
 
-  /* TOPO DO CARD: Liga + Panela em destaque */
+  /* TOPO: Liga + Panela */
   .card-top {
     background: #163d21;
-    padding: 6px 10px;
+    padding: 6px 10px 6px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 3px;
+    gap: 4px;
     border-bottom: 2px solid #2d6a3f;
+    flex-shrink: 0;
   }
   .card-tv.atrasado .card-top { background: #5a0000; border-bottom: 2px solid #c00; }
   .card-liga-tv {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: bold;
     color: #a8d44d;
-    letter-spacing: 0.5px;
     text-align: center;
+    letter-spacing: 0.5px;
   }
   .card-tv.atrasado .card-liga-tv { color: #ffaaaa; }
-  .card-panela-destaque {
-    font-size: 20px;
+  .card-panela-box {
+    font-size: 22px;
     font-weight: bold;
     color: #fff;
     background: #1e4d2b;
-    padding: 2px 16px;
+    padding: 2px 20px;
     border-radius: 6px;
-    border: 1px solid #a8d44d;
-    letter-spacing: 1px;
+    border: 1.5px solid #a8d44d;
+    letter-spacing: 2px;
+    text-align: center;
   }
-  .card-tv.atrasado .card-panela-destaque {
+  .card-tv.atrasado .card-panela-box {
     background: #c00;
     border-color: #ff9999;
-    color: #fff;
   }
 
-  /* HEADER DO CARD */
+  /* HEADER: Lote + Badge */
   .card-header-tv {
     background: #1e4d2b;
     padding: 5px 10px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-shrink: 0;
   }
   .card-tv.atrasado .card-header-tv { background: #c00; }
   .card-lote-tv { font-size: 13px; font-weight: bold; color: #fff; }
   .badge-andamento {
     background: #a8d44d; color: #1e4d2b;
     font-size: 9px; font-weight: bold;
-    padding: 2px 7px; border-radius: 10px;
+    padding: 2px 8px; border-radius: 10px;
   }
   .badge-atraso {
     background: #fff; color: #c00;
     font-size: 9px; font-weight: bold;
-    padding: 2px 7px; border-radius: 10px;
+    padding: 2px 8px; border-radius: 10px;
     animation: pisca 1s infinite;
   }
   @keyframes pisca { 0%,100%{opacity:1} 50%{opacity:0.3} }
@@ -176,66 +180,51 @@
     padding: 5px 8px;
     border-bottom: 1px solid #1a3a20;
     font-size: 12px; color: #bbb;
-    vertical-align: middle;
   }
-  .card-tv.atrasado .card-table td { background: #ffe0e0 !important; border-bottom: 1px solid #f5a0a0; color: #900; }
-  .etapa-tv { color: #ccc; }
+  .card-tv.atrasado .card-table td { background: #ffe0e0 !important; border-bottom: 1px solid #f5a0a0 !important; color: #900; }
+  .etapa-tv { color: #ccc !important; }
   .card-tv.atrasado .etapa-tv { color: #900 !important; font-weight: bold; }
   .medio-tv { font-size: 9px; color: #3a6a3a; display: block; }
-  .card-tv.atrasado .medio-tv { color: #c88; }
   .val { color: #fff !important; font-weight: bold; font-size: 13px; }
   .card-tv.atrasado .val { color: #c00 !important; }
   .vz { color: #2a4a2a !important; font-style: italic; }
-  .card-tv.atrasado .vz { color: #c88 !important; }
   .tr-ativa { background: #0d2a18 !important; }
   .card-tv.atrasado .tr-ativa { background: #fff0f0 !important; }
   .tr-ativa .etapa-tv { color: #a8d44d !important; font-weight: bold; }
   .card-tv.atrasado .tr-ativa .etapa-tv { color: #c00 !important; }
 
-  /* OBS e SETUP */
   .card-obs {
     padding: 4px 10px; font-size: 10px; color: #5a8a5a;
-    border-top: 1px solid #1a3a20;
+    border-top: 1px solid #1a3a20; flex-shrink: 0;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .card-tv.atrasado .card-obs { background: #ffe0e0; color: #900; border-top: 1px solid #f5a0a0; }
+  .card-tv.atrasado .card-obs { background: #ffe0e0; color: #900; }
   .setup-tv {
     background: #3a0000; color: #ffaaaa;
-    font-size: 11px; padding: 4px 8px;
+    font-size: 11px; padding: 3px 8px;
     border-top: 1px solid #c00;
     font-weight: bold; text-align: center;
-    animation: pisca 1.5s infinite;
+    animation: pisca 1.5s infinite; flex-shrink: 0;
   }
 
   /* SEM ATIVOS */
   .sem-ativos {
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
-    flex: 1; color: #2d6a3f; font-size: 18px; gap: 12px;
+    height: 100%; color: #2d6a3f; font-size: 20px; gap: 12px;
   }
   .sem-ativos span { font-size: 52px; }
 
   /* DOTS */
   .slide-dots {
-    display: flex; justify-content: center; gap: 8px; padding: 4px 0; flex-shrink: 0;
+    display: flex; justify-content: center; gap: 8px;
+    padding: 4px 0; flex-shrink: 0;
   }
   .slide-dot {
     width: 7px; height: 7px; border-radius: 50%;
     background: #2d6a3f; transition: background 0.3s;
   }
   .slide-dot.ativo { background: #a8d44d; }
-
-  /* SLIDE VIEWPORT */
-  .slide-outer { flex: 1; overflow: hidden; min-height: 0; }
-  .slide-viewport {
-    display: flex; width: 100%; height: 100%;
-    transition: transform 0.7s cubic-bezier(0.77,0,0.175,1);
-  }
-  .slide-page {
-    min-width: 100%; height: 100%;
-    display: flex; flex-direction: column;
-    gap: 10px;
-  }
 </style>
 </head>
 <body>
@@ -255,11 +244,18 @@
 <div class="tv-status">
   <span class="dot" id="dot"></span>
   <span id="status-txt">Conectando...</span>
-  <span class="slide-info" id="slide-info"></span>
+  <div class="status-right">
+    <span class="slide-info" id="slide-info"></span>
+    <span class="secao-badge" id="secao-badge"></span>
+  </div>
 </div>
 
-<div class="main-area" id="main-area">
-  <div class="sem-ativos"><span>⏳</span>Carregando...</div>
+<div class="slide-outer">
+  <div class="slide-viewport" id="viewport">
+    <div class="slide-page">
+      <div class="sem-ativos"><span>⏳</span>Carregando...</div>
+    </div>
+  </div>
 </div>
 <div class="slide-dots" id="dots"></div>
 
@@ -279,7 +275,6 @@
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
-  // Relógio
   function tick() {
     const n = new Date();
     document.getElementById('relogio').textContent = n.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
@@ -314,40 +309,40 @@
 
   let dados = {};
   let slideAtual = 0;
-  let slides = []; // cada slide = { sup:[], inf:[] }
+  let totalSlides = 0;
+  let slidesMeta = []; // {tipo, cards[]}
   let slideTimer = null;
+  const INTERVALO = 10000; // 10 segundos
 
   function toMin(s) { const [h,m]=s.split(':').map(Number); return h*60+m; }
 
   function isAtrasado(p, etapas) {
-    const agoraMin = new Date().getHours()*60 + new Date().getMinutes();
-    let ultimaIdx = -1;
-    etapas.forEach((e,i) => { if (dados[`${p}_${e.k}`]) ultimaIdx=i; });
-    if (ultimaIdx < 0) return false;
-    const fim = dados[`${p}_${etapas[ultimaIdx].k2}`] || '';
-    if (!fim) return false;
-    const fimMin = toMin(fim);
-    const virada = fimMin > 22*60 && agoraMin < 2*60;
-    return !virada && agoraMin > fimMin;
+    const agoraMin = new Date().getHours()*60+new Date().getMinutes();
+    let ultimaIdx=-1;
+    etapas.forEach((e,i)=>{ if(dados[`${p}_${e.k}`]) ultimaIdx=i; });
+    if(ultimaIdx<0) return false;
+    const fim=dados[`${p}_${etapas[ultimaIdx].k2}`]||'';
+    if(!fim) return false;
+    const fimMin=toMin(fim);
+    return !(fimMin>22*60&&agoraMin<2*60) && agoraMin>fimMin;
   }
 
   function renderCard(p, etapas) {
-    const lote   = dados[`${p}_lote`]   || '—';
-    const panela = dados[`${p}_panela`] || '—';
-    const liga   = dados[`${p}_liga`]   || '';
-    const obs    = dados[`${p}_obs`]    || '';
-    const setup  = dados[`${p}_setup_motivo`] || '';
-    const atrasado = isAtrasado(p, etapas);
-    const agoraMin = new Date().getHours()*60 + new Date().getMinutes();
+    const lote   = dados[`${p}_lote`]||'—';
+    const panela = dados[`${p}_panela`]||'—';
+    const liga   = dados[`${p}_liga`]||'';
+    const obs    = dados[`${p}_obs`]||'';
+    const setup  = dados[`${p}_setup_motivo`]||'';
+    const atr    = isAtrasado(p,etapas);
 
-    let ultimaIdx = -1;
-    etapas.forEach((e,i) => { if (dados[`${p}_${e.k}`]) ultimaIdx=i; });
+    let ultimaIdx=-1;
+    etapas.forEach((e,i)=>{ if(dados[`${p}_${e.k}`]) ultimaIdx=i; });
 
-    const rows = etapas.map((e,idx) => {
-      const ini = dados[`${p}_${e.k}`]  || '';
-      const fim = dados[`${p}_${e.k2}`] || '';
-      const ativa = idx === ultimaIdx;
-      const med = e.m ? `<span class="medio-tv">T.M: ${Math.floor(e.m/60)}:${String(e.m%60).padStart(2,'0')}h</span>` : '';
+    const rows = etapas.map((e,idx)=>{
+      const ini=dados[`${p}_${e.k}`]||'';
+      const fim=dados[`${p}_${e.k2}`]||'';
+      const ativa=idx===ultimaIdx;
+      const med=e.m?`<span class="medio-tv">T.M: ${Math.floor(e.m/60)}:${String(e.m%60).padStart(2,'0')}h</span>`:'';
       return `<tr class="${ativa?'tr-ativa':''}">
         <td class="etapa-tv">${e.l}${med}</td>
         <td class="${ini?'val':'vz'}">${ini||'—'}</td>
@@ -355,117 +350,113 @@
       </tr>`;
     }).join('');
 
-    const badge = atrasado
-      ? '<span class="badge-atraso">⚠ ATRASO</span>'
-      : '<span class="badge-andamento">● EM ANDAMENTO</span>';
+    const badge=atr?'<span class="badge-atraso">⚠ ATRASO</span>':'<span class="badge-andamento">● EM ANDAMENTO</span>';
 
-    return `<div class="card-tv${atrasado?' atrasado':''}">
+    return `<div class="card-tv${atr?' atrasado':''}">
       <div class="card-top">
-        ${liga ? `<div class="card-liga-tv">⚗️ ${liga}</div>` : ''}
-        <div class="card-panela-destaque">Panela ${panela}</div>
+        ${liga?`<div class="card-liga-tv">⚗️ ${liga}</div>`:''}
+        <div class="card-panela-box">Panela ${panela}</div>
       </div>
       <div class="card-header-tv">
-        <span class="card-lote-tv">Lote: ${lote}</span>
-        ${badge}
+        <span class="card-lote-tv">Lote: ${lote}</span>${badge}
       </div>
       <table class="card-table">
         <thead><tr><th>Etapa</th><th>Início</th><th>Prev. Fim</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
-      ${obs ? `<div class="card-obs">OBS: ${obs}</div>` : ''}
-      ${setup ? `<div class="setup-tv">⚠️ SETUP: ${setup}</div>` : ''}
+      ${obs?`<div class="card-obs">OBS: ${obs}</div>`:''}
+      ${setup?`<div class="setup-tv">⚠️ SETUP: ${setup}</div>`:''}
     </div>`;
   }
 
+  function buildSlides() {
+    // Coletar ativos
+    const sup=[], inf=[];
+    for(let i=1;i<=8;i++) { if(dados[`a${i}_lote`]) sup.push({p:`a${i}`,etapas:ETAPAS_SUP,tipo:'PURO/CÁLCIO'}); }
+    for(let i=1;i<=2;i++) { if(dados[`b${i}_lote`]) inf.push({p:`b${i}`,etapas:ETAPAS_INF,tipo:'SB/SN'}); }
+
+    slidesMeta = [];
+    // Slides de sup (4 por slide)
+    for(let i=0;i<sup.length;i+=4) slidesMeta.push({tipo:'PURO/CÁLCIO',cards:sup.slice(i,i+4)});
+    // Slides de inf (4 por slide, mas temos max 2)
+    if(inf.length) slidesMeta.push({tipo:'SB/SN',cards:inf});
+
+    totalSlides = slidesMeta.length;
+    return {sup,inf};
+  }
+
   function buildUI() {
-    const mainArea = document.getElementById('main-area');
-    const dotsEl = document.getElementById('dots');
+    const vp=document.getElementById('viewport');
+    const dotsEl=document.getElementById('dots');
 
-    // Coletar ativos por seção
-    const sup = [], inf = [];
-    for (let i=1;i<=8;i++) { if (dados[`a${i}_lote`]) sup.push({p:`a${i}`,etapas:ETAPAS_SUP}); }
-    for (let i=1;i<=2;i++) { if (dados[`b${i}_lote`]) inf.push({p:`b${i}`,etapas:ETAPAS_INF}); }
+    const {sup,inf}=buildSlides();
 
-    if (!sup.length && !inf.length) {
-      mainArea.innerHTML = '<div class="sem-ativos"><span>⏳</span>Nenhuma panela em andamento</div>';
-      dotsEl.innerHTML = '';
-      document.getElementById('slide-info').textContent = '';
+    if(!sup.length&&!inf.length) {
+      vp.style.transition='none';
+      vp.innerHTML='<div class="slide-page"><div class="sem-ativos"><span>⏳</span>Nenhuma panela em andamento</div></div>';
+      dotsEl.innerHTML='';
+      document.getElementById('slide-info').textContent='';
+      document.getElementById('secao-badge').textContent='';
       return;
     }
 
-    // Montar slides: cada slide tem até 4 sup + inf que couberem
-    // Estratégia: sup em slides de 4, inf sempre aparece em todos os slides (máx 2)
-    const supPages = [];
-    for (let i=0;i<Math.max(sup.length,1);i+=4) supPages.push(sup.slice(i,i+4));
-    slides = supPages;
-
-    const totalSlides = slides.length;
-    dotsEl.innerHTML = slides.length > 1
-      ? slides.map((_,i)=>`<div class="slide-dot${i===slideAtual?' ativo':''}" ></div>`).join('')
-      : '';
-
-    // Construir viewport
-    const pagesHtml = slides.map((supPage, pi) => {
-      const supCards = supPage.map(c => renderCard(c.p, c.etapas)).join('');
-      const infCards = inf.map(c => renderCard(c.p, c.etapas)).join('');
-
-      const supSection = supPage.length ? `
-        <div class="secao-wrap" style="flex:${inf.length?'1.4':'1'};min-height:0;">
-          <div class="secao-titulo-tv">🏭 PANELAS DE PURO/CÁLCIO</div>
-          <div class="cards-grid" style="flex:1;min-height:0;">${supCards}</div>
-        </div>` : '';
-
-      const infSection = inf.length ? `
-        <div class="secao-wrap" style="flex:1;min-height:0;">
-          <div class="secao-titulo-tv">⚗️ PANELAS DE SB/SN</div>
-          <div class="cards-grid" style="flex:1;min-height:0;">${infCards}</div>
-        </div>` : '';
-
-      return `<div class="slide-page">${supSection}${infSection}</div>`;
+    const pagesHtml = slidesMeta.map(s=>{
+      const cardsHtml = s.cards.map(c=>renderCard(c.p,c.etapas)).join('');
+      const titulo = s.tipo==='PURO/CÁLCIO' ? '🏭 PANELAS DE PURO/CÁLCIO' : '⚗️ PANELAS DE SB/SN';
+      return `<div class="slide-page">
+        <div class="secao-titulo-slide">${titulo}</div>
+        <div class="cards-row">${cardsHtml}</div>
+      </div>`;
     }).join('');
 
-    mainArea.innerHTML = `<div class="slide-outer"><div class="slide-viewport" id="viewport">${pagesHtml}</div></div>`;
+    vp.style.transition='none';
+    vp.innerHTML=pagesHtml;
 
-    document.getElementById('slide-info').textContent =
-      slides.length > 1 ? `Slide ${slideAtual+1} de ${slides.length} · ${sup.length+inf.length} panela(s) ativa(s)` : `${sup.length+inf.length} panela(s) ativa(s)`;
+    dotsEl.innerHTML = totalSlides>1
+      ? slidesMeta.map((_,i)=>`<div class="slide-dot${i===slideAtual?' ativo':''}"></div>`).join('')
+      : '';
 
-    goTo(slideAtual < slides.length ? slideAtual : 0, false);
+    const cur = slideAtual<totalSlides?slideAtual:0;
+    goTo(cur,false);
   }
 
-  function goTo(idx, animate=true) {
-    slideAtual = idx;
-    const vp = document.getElementById('viewport');
-    if (!vp) return;
-    if (!animate) vp.style.transition='none';
+  function goTo(idx,animate=true) {
+    slideAtual=idx;
+    const vp=document.getElementById('viewport');
+    if(!vp) return;
+    if(!animate) vp.style.transition='none';
+    else vp.style.transition='transform 0.6s cubic-bezier(0.77,0,0.175,1)';
     vp.style.transform=`translateX(-${idx*100}%)`;
-    if (!animate) setTimeout(()=>vp.style.transition='',50);
+    if(!animate) setTimeout(()=>vp.style.transition='',50);
     document.querySelectorAll('.slide-dot').forEach((d,i)=>d.classList.toggle('ativo',i===idx));
-    document.getElementById('slide-info').textContent =
-      slides.length > 1 ? `Slide ${idx+1} de ${slides.length}` : `${Object.keys(dados).filter(k=>k.endsWith('_lote')&&dados[k]).length} panela(s) ativa(s)`;
+    if(slidesMeta[idx]) {
+      document.getElementById('secao-badge').textContent=slidesMeta[idx].tipo;
+      document.getElementById('slide-info').textContent=totalSlides>1?`Slide ${idx+1} de ${totalSlides}`:'';
+    }
   }
 
   function nextSlide() {
-    if (slides.length <= 1) return;
-    goTo((slideAtual+1) % slides.length);
+    if(totalSlides<=1) return;
+    goTo((slideAtual+1)%totalSlides);
   }
 
   function iniciarTimer() {
-    if (slideTimer) clearInterval(slideTimer);
-    slideTimer = setInterval(nextSlide, 30000);
+    if(slideTimer) clearInterval(slideTimer);
+    slideTimer=setInterval(nextSlide,INTERVALO);
   }
 
-  onValue(ref(db,'formulario/dados'), (snap) => {
+  onValue(ref(db,'formulario/dados'),(snap)=>{
     document.getElementById('dot').className='dot on';
     document.getElementById('status-txt').textContent='🟢 Conectado — tempo real';
-    dados = snap.val() || {};
+    dados=snap.val()||{};
     buildUI();
     iniciarTimer();
-  }, () => {
+  },()=>{
     document.getElementById('dot').className='dot';
     document.getElementById('status-txt').textContent='🔴 Sem conexão';
   });
 
-  setInterval(()=>buildUI(), 60000);
+  setInterval(()=>buildUI(),60000);
 </script>
 </body>
 </html>
