@@ -340,13 +340,31 @@
     let ultimaIdx=-1;
     etapas.forEach((e,i)=>{ if(dados[`${p}_${e.k}`]) ultimaIdx=i; });
 
+    // Lingotamento iniciado → não considera atraso
+    const lingotKey = etapas.find(e2 => e2.k.includes('lingot'));
+    const lingotIniciado = lingotKey ? !!dados[`${p}_${lingotKey.k}`] : false;
+    if (lingotIniciado) atr = false;
+
     const rows = etapas.map((e,idx)=>{
       const ini=dados[`${p}_${e.k}`]||'';
       const fim=dados[`${p}_${e.k2}`]||'';
       const ativa=idx===ultimaIdx;
       const med=e.m?`<span class="medio-tv">T.M: ${Math.floor(e.m/60)}:${String(e.m%60).padStart(2,'0')}h</span>`:'';
+      // Tempo de execução
+      let exec='';
+      if(ini){
+        const prox=etapas.slice(idx+1).find(e2=>dados[`${p}_${e2.k}`]);
+        if(prox){
+          const pi=dados[`${p}_${prox.k}`];
+          const [h1,m1]=ini.split(':').map(Number);
+          const [h2,m2]=pi.split(':').map(Number);
+          let diff=(h2*60+m2)-(h1*60+m1);
+          if(diff<0) diff+=24*60;
+          exec=`<span class="exec-tv">⏱ ${Math.floor(diff/60)}:${String(diff%60).padStart(2,'0')}h</span>`;
+        }
+      }
       return `<tr class="${ativa?'tr-ativa':''}">
-        <td class="etapa-tv">${e.l}${med}</td>
+        <td class="etapa-tv">${e.l}${med}${exec}</td>
         <td class="${ini?'val':'vz'}">${ini||'—'}</td>
         <td class="${fim?'val':'vz'}">${fim||'—'}</td>
       </tr>`;
