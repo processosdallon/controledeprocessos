@@ -185,7 +185,7 @@
   .etapa-tv { color: #ccc !important; }
   .card-tv.atrasado .etapa-tv { color: #900 !important; font-weight: bold; }
   .medio-tv { font-size: 9px; color: #3a6a3a; display: block; }
-  .exec-tv { font-size: 9px; color: #5ab8d4; display: block; }
+  .exec-tv { font-size: 10px; color: #5ab8d4; display: block; font-weight: bold; margin-top: 2px; }
   .val { color: #fff !important; font-weight: bold; font-size: 13px; }
   .card-tv.atrasado .val { color: #c00 !important; }
   .vz { color: #2a4a2a !important; font-style: italic; }
@@ -360,7 +360,7 @@
           const [h2,m2]=pi.split(':').map(Number);
           let diff=(h2*60+m2)-(h1*60+m1);
           if(diff<0) diff+=24*60;
-          exec=`<span class="exec-tv">⏱ ${Math.floor(diff/60)}:${String(diff%60).padStart(2,'0')}h</span>`;
+          exec=`<span class="exec-tv">Tempo de Execução: ${Math.floor(diff/60)}:${String(diff%60).padStart(2,'0')}h</span>`;
         }
       }
       return `<tr class="${ativa?'tr-ativa':''}">
