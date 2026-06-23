@@ -1056,6 +1056,8 @@
     document.getElementById('nome-usuario').textContent = usuario.toUpperCase();
     atualizarTempSessao();
     setInterval(atualizarTempSessao, 30000);
+    // Verificar atraso após DOM estar pronto
+    setTimeout(verificarAtrasoForm, 1000);
   }
 
   function atualizarTempSessao() {
@@ -1153,11 +1155,13 @@
     // Sempre atualiza o cache completo com tudo que está no Firebase
     cacheFirebase = snapshot.val() || {};
 
+    // Verificar atraso e setup SEMPRE (independente de ignorarUpdate)
+    verificarSetupsAtivos(cacheFirebase);
+    setTimeout(verificarAtrasoForm, 300);
+
     if (ignorarUpdate) return;
 
-    verificarSetupsAtivos(cacheFirebase);
     carregarCalculadora(cacheFirebase);
-    verificarAtrasoForm();
 
     document.querySelectorAll('[data-field]').forEach(el => {
       const key = el.dataset.field;
