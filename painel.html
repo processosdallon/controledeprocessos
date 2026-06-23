@@ -151,6 +151,8 @@
 
   .badge-atraso { display: inline-block; background: #c00; color: #fff; font-size: 9px; font-weight: bold; padding: 1px 5px; border-radius: 8px; margin-left: 4px; animation: blink 1s infinite; }
   .medio-label { font-size: 9px; color: #aaa; font-weight: normal; margin-left: 4px; }
+  .exec-label { font-size: 9px; color: #7ecff5; display: block; margin-top: 1px; }
+  .card.ativo .exec-label { color: #2d7a9a; }
   .card.ativo tr.atrasada .medio-label { color: #e88; }
   .card:not(.ativo) .medio-label { color: #5a7a5a; }
   /* SETUP ALERT NO PAINEL */
@@ -222,6 +224,7 @@
     {key:'limp1_ini',   key2:'limp1_fim',   label:'1ª Limpeza',          medio:60},
     {key:'desest_ini',  key2:'desest_fim',   label:'Desestanhação',        medio:120},
     {key:'lanca_ini',   key2:'lanca_fim',    label:'Desant. com Lança',    medio:330},
+    {key:'setuptemp_ini',key2:'setuptemp_fim',label:'Setup de Temperatura', medio:null},
     {key:'desant1_ini', key2:'desant1_fim',  label:'1ª Desantimoniação',   medio:120},
     {key:'decup_ini',   key2:'decup_fim',    label:'Decuprização',         medio:150},
     {key:'transf_ini',  key2:'transf_fim',   label:'1ª Transferência',     medio:60},
