@@ -185,6 +185,7 @@
   .etapa-tv { color: #ccc !important; }
   .card-tv.atrasado .etapa-tv { color: #900 !important; font-weight: bold; }
   .medio-tv { font-size: 9px; color: #3a6a3a; display: block; }
+  .exec-tv { font-size: 9px; color: #5ab8d4; display: block; }
   .val { color: #fff !important; font-weight: bold; font-size: 13px; }
   .card-tv.atrasado .val { color: #c00 !important; }
   .vz { color: #2a4a2a !important; font-style: italic; }
@@ -285,7 +286,8 @@
   const ETAPAS_SUP = [
     {k:'limp1_ini',   k2:'limp1_fim',   l:'1ª Limpeza',        m:60},
     {k:'desest_ini',  k2:'desest_fim',  l:'Desestanhação',      m:120},
-    {k:'lanca_ini',   k2:'lanca_fim',   l:'Desant. c/ Lança',   m:330},
+    {k:'lanca_ini',    k2:'lanca_fim',    l:'Desant. c/ Lança',    m:330},
+    {k:'setuptemp_ini', k2:'setuptemp_fim', l:'Setup de Temperatura', m:null},
     {k:'desant1_ini', k2:'desant1_fim', l:'1ª Desantimoniação', m:120},
     {k:'decup_ini',   k2:'decup_fim',   l:'Decuprização',       m:150},
     {k:'transf_ini',  k2:'transf_fim',  l:'1ª Transferência',   m:60},
@@ -312,7 +314,7 @@
   let totalSlides = 0;
   let slidesMeta = []; // {tipo, cards[]}
   let slideTimer = null;
-  const INTERVALO = 10000; // 10 segundos
+  const INTERVALO = 30000; // 30 segundos
 
   function toMin(s) { const [h,m]=s.split(':').map(Number); return h*60+m; }
 
