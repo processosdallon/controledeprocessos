@@ -130,24 +130,25 @@
   .calc-resumo-alerta { background: #ffe0e0; color: #900; padding: 3px 10px; font-size: 10px; text-align: center; }
 
 
+  /* CARD ATRASADO — mesmo tom do formulário */
   .card-atrasado { border: 2px solid #c00 !important; box-shadow: 0 0 10px #f005 !important; }
+  .card-atrasado .liga-bar { background: #c00 !important; color: #fff !important; }
   .card-atrasado .card-header { background: #c00 !important; }
   .card-atrasado.ativo { background: #ffe0e0 !important; }
-  .card-atrasado.ativo .card-header { background: #c00 !important; }
-  .card-atrasado:not(.ativo) { background: #4a0000 !important; }
-  .card-atrasado:not(.ativo) .card-header { background: #700000 !important; }
-  tr.atrasada { background: #ffe0e0 !important; }
-  tr.atrasada td.etapa { color: #900 !important; font-weight: bold; }
-  tr.atrasada td.valor { color: #900 !important; }
-  .card-atrasado:not(.ativo) tr.atrasada { background: #5a1010 !important; }
-  .card-atrasado:not(.ativo) tr.atrasada td.etapa { color: #ffaaaa !important; }
+  .card-atrasado.ativo th { background: #c00 !important; }
+  .card-atrasado.ativo td { background: #ffe0e0 !important; border-bottom: 1px solid #f5a0a0 !important; }
+  .card-atrasado.ativo td.etapa { background: #ffd0d0 !important; color: #900 !important; }
+  .card-atrasado.ativo td.valor { color: #900 !important; font-weight: bold; }
+  .card-atrasado.ativo .obs-box { background: #ffe0e0 !important; border-top: 1px solid #f5a0a0 !important; }
+  /* Card vazio atrasado — fundo escuro vermelho */
+  .card-atrasado:not(.ativo) { background: #3a0000 !important; }
+  .card-atrasado:not(.ativo) th { background: #700000 !important; }
+  .card-atrasado:not(.ativo) td { background: #3a0000 !important; border-bottom: 1px solid #6a0000 !important; color: #ffaaaa !important; }
+  .card-atrasado:not(.ativo) td.etapa { color: #ffaaaa !important; background: #4a0000 !important; }
+  .card-atrasado:not(.ativo) td.valor { color: #ffcccc !important; }
+  .card-atrasado:not(.ativo) .obs-box { background: #3a0000 !important; color: #ffaaaa !important; }
   /* ALERTA DE ATRASO */
-  tr.atrasada { background: #ffe0e0 !important; }
-  tr.atrasada td { border-bottom: 1px solid #f5a0a0 !important; }
-  tr.atrasada td.etapa { color: #900 !important; font-weight: bold !important; }
-  tr.atrasada td.valor { color: #c00 !important; }
-  .card:not(.ativo) tr.atrasada { background: #4a1a1a !important; }
-  .card:not(.ativo) tr.atrasada td.etapa { color: #ff9999 !important; }
+
   .badge-atraso { display: inline-block; background: #c00; color: #fff; font-size: 9px; font-weight: bold; padding: 1px 5px; border-radius: 8px; margin-left: 4px; animation: blink 1s infinite; }
   .medio-label { font-size: 9px; color: #aaa; font-weight: normal; margin-left: 4px; }
   .card.ativo tr.atrasada .medio-label { color: #e88; }
