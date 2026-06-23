@@ -131,8 +131,16 @@
 
 
   .card-atrasado { border: 2px solid #c00 !important; box-shadow: 0 0 10px #f005 !important; }
-  .card-atrasado .card-header { background: #8b0000 !important; }
-  .card-atrasado.ativo .card-header { background: #8b0000 !important; }
+  .card-atrasado .card-header { background: #c00 !important; }
+  .card-atrasado.ativo { background: #ffe0e0 !important; }
+  .card-atrasado.ativo .card-header { background: #c00 !important; }
+  .card-atrasado:not(.ativo) { background: #4a0000 !important; }
+  .card-atrasado:not(.ativo) .card-header { background: #700000 !important; }
+  tr.atrasada { background: #ffe0e0 !important; }
+  tr.atrasada td.etapa { color: #900 !important; font-weight: bold; }
+  tr.atrasada td.valor { color: #900 !important; }
+  .card-atrasado:not(.ativo) tr.atrasada { background: #5a1010 !important; }
+  .card-atrasado:not(.ativo) tr.atrasada td.etapa { color: #ffaaaa !important; }
   /* ALERTA DE ATRASO */
   tr.atrasada { background: #ffe0e0 !important; }
   tr.atrasada td { border-bottom: 1px solid #f5a0a0 !important; }
@@ -280,24 +288,14 @@
       const preenchida = ini || fim;
 
       // Alerta de atraso: só verifica a última etapa com início preenchido
+      // Só é atrasado se tem previsão de fim E horário atual passou dela
       let atrasada = false;
-      if (idx === ultimaComIni && ini) {
-        let limiteDate = null;
-        if (fim) {
-          // Se tem previsão de fim preenchida, usa ela como limite
-          const [hf, mf] = fim.split(':').map(Number);
-          limiteDate = new Date(agora);
-          limiteDate.setHours(hf, mf, 0, 0);
-          if (limiteDate > agora) limiteDate.setDate(limiteDate.getDate() - 1);
-        } else if (e.medio) {
-          // Sem previsão, usa início + tempo médio
-          const [h, m] = ini.split(':').map(Number);
-          const iniDate = new Date(agora);
-          iniDate.setHours(h, m, 0, 0);
-          if (iniDate > agora) iniDate.setDate(iniDate.getDate() - 1);
-          limiteDate = new Date(iniDate.getTime() + e.medio * 60000);
-        }
-        if (limiteDate && agora > limiteDate) atrasada = true;
+      if (idx === ultimaComIni && fim) {
+        const agoraMin = agora.getHours() * 60 + agora.getMinutes();
+        const [hf, mf] = fim.split(':').map(Number);
+        const fimMin = hf * 60 + mf;
+        const virada = fimMin > 22 * 60 && agoraMin < 2 * 60;
+        if (!virada && agoraMin > fimMin) atrasada = true;
       }
 
       // Label com tempo médio
@@ -311,7 +309,7 @@
         <td class="td-autor">${autor ? `<span class="tag-autor">✏️ ${autor}</span>` : '<span class="sem-autor">—</span>'}</td>
       </tr>`;
     }).join('');
-    const atrasadoCard = linhas.includes('atrasada');
+    const atrasadoCard = linhas.includes('class="atrasada"');
     return `<div class="card ${ativo} ${atrasadoCard ? 'card-atrasado' : ''}">
       ${liga ? `<div class="liga-bar">⚗️ LIGA: ${liga}</div>` : ''}
       <div class="card-header"><h2>Lote: ${lote}${ativo ? '<span class="badge-andamento">● EM ANDAMENTO</span>' : ''}</h2><span class="info">Panela: ${panela}</span></div>
