@@ -15,8 +15,11 @@
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
   .secao-titulo { text-align: center; font-size: 13px; font-weight: bold; color: #1e4d2b; max-width: 720px; margin: 24px auto 8px; border-bottom: 2px solid #aaa; padding-bottom: 4px; }
   .bloco { background: #fff; border: 1.5px solid #2d6a3f; margin-bottom: 24px; max-width: 720px; margin-left: auto; margin-right: auto; transition: border-color 0.3s; }
-  .bloco.atrasado { border: 2px solid #c00 !important; box-shadow: 0 0 10px #f005; }
-  .bloco.atrasado .bloco-header { background: #8b0000 !important; }
+  .bloco.atrasado { border: 2px solid #c00 !important; box-shadow: 0 0 10px #f005; background: #ffe0e0; }
+  .bloco.atrasado .bloco-header { background: #c00 !important; }
+  .bloco.atrasado table { background: #ffe0e0; }
+  .bloco.atrasado .etapa-label { background: #ffd0d0 !important; }
+  .bloco.atrasado th { background: #c00 !important; }
   .bloco-header { background: #1e4d2b; display: flex; align-items: center; gap: 16px; padding: 6px 10px; border-bottom: 1px solid #555; font-weight: bold; font-size: 13px; flex-wrap: wrap; }
   .bloco-header input[type="text"] { border: none; border-bottom: 1px solid #a8d44d; background: transparent; font-size: 13px; font-family: Arial; color: #fff; outline: none; padding: 1px 4px; }
   .bloco-header .campo-lote { width: 140px; }
@@ -170,7 +173,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a1_limp1_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a1','limp1')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a1_desest">
@@ -182,7 +184,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a1_desest_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a1','desest')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a1_lanca">
@@ -194,7 +195,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a1_lanca_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a1','lanca')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a1_desant1">
@@ -206,7 +206,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a1_desant1_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a1','desant1')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a1_decup">
@@ -218,7 +217,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a1_decup_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a1','decup')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a1_transf">
@@ -230,7 +228,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a1_transf_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a1','transf')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a1_desant2">
@@ -242,7 +239,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a1_desant2_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a1','desant2')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a1_limpeza1">
@@ -254,7 +250,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a1_limpeza1_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a1','limpeza1')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a1_transf2">
@@ -266,7 +261,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a1_transf2_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a1','transf2')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a1_limpeza2">
@@ -278,7 +272,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a1_limpeza2_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a1','limpeza2')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a1_metais">
@@ -290,7 +283,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a1_metais_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a1','metais')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a1_lingot">
@@ -302,7 +294,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a1_lingot_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a1','lingot')" title="Editar horário">✏️</button>
         </td>
       </tr>
     </tbody>
@@ -388,7 +379,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a2_limp1_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a2','limp1')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a2_desest">
@@ -400,7 +390,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a2_desest_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a2','desest')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a2_lanca">
@@ -412,7 +401,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a2_lanca_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a2','lanca')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a2_desant1">
@@ -424,7 +412,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a2_desant1_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a2','desant1')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a2_decup">
@@ -436,7 +423,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a2_decup_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a2','decup')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a2_transf">
@@ -448,7 +434,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a2_transf_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a2','transf')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a2_desant2">
@@ -460,7 +445,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a2_desant2_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a2','desant2')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a2_limpeza1">
@@ -472,7 +456,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a2_limpeza1_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a2','limpeza1')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a2_transf2">
@@ -484,7 +467,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a2_transf2_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a2','transf2')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a2_limpeza2">
@@ -496,7 +478,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a2_limpeza2_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a2','limpeza2')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a2_metais">
@@ -508,7 +489,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a2_metais_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a2','metais')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a2_lingot">
@@ -520,7 +500,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a2_lingot_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a2','lingot')" title="Editar horário">✏️</button>
         </td>
       </tr>
     </tbody>
@@ -606,7 +585,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a3_limp1_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a3','limp1')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a3_desest">
@@ -618,7 +596,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a3_desest_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a3','desest')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a3_lanca">
@@ -630,7 +607,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a3_lanca_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a3','lanca')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a3_desant1">
@@ -642,7 +618,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a3_desant1_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a3','desant1')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a3_decup">
@@ -654,7 +629,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a3_decup_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a3','decup')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a3_transf">
@@ -666,7 +640,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a3_transf_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a3','transf')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a3_desant2">
@@ -678,7 +651,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a3_desant2_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a3','desant2')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a3_limpeza1">
@@ -690,7 +662,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a3_limpeza1_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a3','limpeza1')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a3_transf2">
@@ -702,7 +673,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a3_transf2_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a3','transf2')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a3_limpeza2">
@@ -714,7 +684,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a3_limpeza2_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a3','limpeza2')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a3_metais">
@@ -726,7 +695,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a3_metais_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a3','metais')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a3_lingot">
@@ -738,7 +706,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a3_lingot_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a3','lingot')" title="Editar horário">✏️</button>
         </td>
       </tr>
     </tbody>
@@ -824,7 +791,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a4_limp1_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a4','limp1')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a4_desest">
@@ -836,7 +802,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a4_desest_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a4','desest')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a4_lanca">
@@ -848,7 +813,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a4_lanca_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a4','lanca')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a4_desant1">
@@ -860,7 +824,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a4_desant1_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a4','desant1')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a4_decup">
@@ -872,7 +835,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a4_decup_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a4','decup')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a4_transf">
@@ -884,7 +846,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a4_transf_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a4','transf')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a4_desant2">
@@ -896,7 +857,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a4_desant2_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a4','desant2')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a4_limpeza1">
@@ -908,7 +868,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a4_limpeza1_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a4','limpeza1')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a4_transf2">
@@ -920,7 +879,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a4_transf2_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a4','transf2')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a4_limpeza2">
@@ -932,7 +890,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a4_limpeza2_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a4','limpeza2')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a4_metais">
@@ -944,7 +901,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a4_metais_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a4','metais')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a4_lingot">
@@ -956,7 +912,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a4_lingot_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a4','lingot')" title="Editar horário">✏️</button>
         </td>
       </tr>
     </tbody>
@@ -1042,7 +997,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a5_limp1_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a5','limp1')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a5_desest">
@@ -1054,7 +1008,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a5_desest_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a5','desest')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a5_lanca">
@@ -1066,7 +1019,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a5_lanca_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a5','lanca')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a5_desant1">
@@ -1078,7 +1030,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a5_desant1_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a5','desant1')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a5_decup">
@@ -1090,7 +1041,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a5_decup_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a5','decup')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a5_transf">
@@ -1102,7 +1052,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a5_transf_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a5','transf')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a5_desant2">
@@ -1114,7 +1063,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a5_desant2_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a5','desant2')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a5_limpeza1">
@@ -1126,7 +1074,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a5_limpeza1_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a5','limpeza1')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a5_transf2">
@@ -1138,7 +1085,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a5_transf2_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a5','transf2')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a5_limpeza2">
@@ -1150,7 +1096,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a5_limpeza2_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a5','limpeza2')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a5_metais">
@@ -1162,7 +1107,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a5_metais_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a5','metais')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a5_lingot">
@@ -1174,7 +1118,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a5_lingot_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a5','lingot')" title="Editar horário">✏️</button>
         </td>
       </tr>
     </tbody>
@@ -1260,7 +1203,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a6_limp1_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a6','limp1')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a6_desest">
@@ -1272,7 +1214,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a6_desest_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a6','desest')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a6_lanca">
@@ -1284,7 +1225,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a6_lanca_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a6','lanca')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a6_desant1">
@@ -1296,7 +1236,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a6_desant1_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a6','desant1')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a6_decup">
@@ -1308,7 +1247,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a6_decup_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a6','decup')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a6_transf">
@@ -1320,7 +1258,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a6_transf_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a6','transf')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a6_desant2">
@@ -1332,7 +1269,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a6_desant2_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a6','desant2')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a6_limpeza1">
@@ -1344,7 +1280,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a6_limpeza1_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a6','limpeza1')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a6_transf2">
@@ -1356,7 +1291,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a6_transf2_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a6','transf2')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a6_limpeza2">
@@ -1368,7 +1302,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a6_limpeza2_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a6','limpeza2')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a6_metais">
@@ -1380,7 +1313,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a6_metais_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a6','metais')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a6_lingot">
@@ -1392,7 +1324,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a6_lingot_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a6','lingot')" title="Editar horário">✏️</button>
         </td>
       </tr>
     </tbody>
@@ -1478,7 +1409,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a7_limp1_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a7','limp1')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a7_desest">
@@ -1490,7 +1420,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a7_desest_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a7','desest')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a7_lanca">
@@ -1502,7 +1431,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a7_lanca_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a7','lanca')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a7_desant1">
@@ -1514,7 +1442,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a7_desant1_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a7','desant1')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a7_decup">
@@ -1526,7 +1453,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a7_decup_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a7','decup')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a7_transf">
@@ -1538,7 +1464,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a7_transf_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a7','transf')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a7_desant2">
@@ -1550,7 +1475,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a7_desant2_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a7','desant2')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a7_limpeza1">
@@ -1562,7 +1486,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a7_limpeza1_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a7','limpeza1')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a7_transf2">
@@ -1574,7 +1497,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a7_transf2_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a7','transf2')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a7_limpeza2">
@@ -1586,7 +1508,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a7_limpeza2_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a7','limpeza2')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a7_metais">
@@ -1598,7 +1519,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a7_metais_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a7','metais')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a7_lingot">
@@ -1610,7 +1530,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a7_lingot_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a7','lingot')" title="Editar horário">✏️</button>
         </td>
       </tr>
     </tbody>
@@ -1696,7 +1615,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a8_limp1_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a8','limp1')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a8_desest">
@@ -1708,7 +1626,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a8_desest_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a8','desest')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a8_lanca">
@@ -1720,7 +1637,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a8_lanca_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a8','lanca')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a8_desant1">
@@ -1732,7 +1648,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a8_desant1_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a8','desant1')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a8_decup">
@@ -1744,7 +1659,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a8_decup_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a8','decup')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a8_transf">
@@ -1756,7 +1670,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a8_transf_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a8','transf')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a8_desant2">
@@ -1768,7 +1681,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a8_desant2_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a8','desant2')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a8_limpeza1">
@@ -1780,7 +1692,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a8_limpeza1_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a8','limpeza1')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a8_transf2">
@@ -1792,7 +1703,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a8_transf2_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a8','transf2')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a8_limpeza2">
@@ -1804,7 +1714,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a8_limpeza2_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a8','limpeza2')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a8_metais">
@@ -1816,7 +1725,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a8_metais_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a8','metais')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="a8_lingot">
@@ -1828,7 +1736,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a8_lingot_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a8','lingot')" title="Editar horário">✏️</button>
         </td>
       </tr>
     </tbody>
@@ -1871,7 +1778,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="b1_limp1_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'b1','limp1')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="b1_enxofre">
@@ -1883,7 +1789,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="b1_enxofre_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'b1','enxofre')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="b1_desest">
@@ -1895,7 +1800,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="b1_desest_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'b1','desest')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="b1_transf">
@@ -1907,7 +1811,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="b1_transf_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'b1','transf')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="b1_soda">
@@ -1919,7 +1822,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="b1_soda_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'b1','soda')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="b1_carvao">
@@ -1931,7 +1833,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="b1_carvao_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'b1','carvao')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="b1_metais">
@@ -1943,7 +1844,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="b1_metais_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'b1','metais')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="b1_lingot">
@@ -1955,7 +1855,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="b1_lingot_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'b1','lingot')" title="Editar horário">✏️</button>
         </td>
       </tr>
     </tbody>
@@ -2010,7 +1909,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="b2_limp1_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'b2','limp1')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="b2_enxofre">
@@ -2022,7 +1920,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="b2_enxofre_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'b2','enxofre')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="b2_desest">
@@ -2034,7 +1931,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="b2_desest_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'b2','desest')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="b2_transf">
@@ -2046,7 +1942,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="b2_transf_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'b2','transf')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="b2_soda">
@@ -2058,7 +1953,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="b2_soda_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'b2','soda')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="b2_carvao">
@@ -2070,7 +1964,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="b2_carvao_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'b2','carvao')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="b2_metais">
@@ -2082,7 +1975,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="b2_metais_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'b2','metais')" title="Editar horário">✏️</button>
         </td>
       </tr>
       <tr data-etapa="b2_lingot">
@@ -2094,7 +1986,6 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="b2_lingot_fim" class="inp-fim" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'b2','lingot')" title="Editar horário">✏️</button>
         </td>
       </tr>
     </tbody>
@@ -2142,7 +2033,7 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getDatabase, ref, onValue, set, remove, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-  const USUARIOS = {'eqp1':'rph','eqp2':'alx','eqp3':'mrl','eqp4':'dgo'};
+  const USUARIOS = {'eqp1':'rph','eqp2':'alx','eqp3':'mrl','eqp4':'dgo','nicolas':'nicolasv'};
   const SESSAO_HORAS = 10;
 
   const ETAPAS_SUP = [
@@ -2357,32 +2248,38 @@
   // VERIFICAR ATRASOS
   function verificarAtrasos() {
     const agora = new Date();
+    const agoraMin = agora.getHours() * 60 + agora.getMinutes();
+
+    function toMin(str) {
+      // Converte "HH:MM" para minutos do dia
+      const [h,m] = str.split(':').map(Number);
+      return h * 60 + m;
+    }
+
     function checar(prefixos, etapas) {
       prefixos.forEach(p => {
+        // Encontrar última etapa com início preenchido
         let ultimaIdx = -1;
         etapas.forEach((e, idx) => {
           if (cacheFirebase[`${p}_${e.key}_ini`]) ultimaIdx = idx;
         });
+
         let blocoAtrasado = false;
         if (ultimaIdx >= 0) {
           const e = etapas[ultimaIdx];
-          const iniVal = cacheFirebase[`${p}_${e.key}_ini`];
           const fimVal = cacheFirebase[`${p}_${e.key}_fim`];
-          if (iniVal) {
-            let limiteDate = null;
-            if (fimVal) {
-              const [hf,mf] = fimVal.split(':').map(Number);
-              limiteDate = new Date(agora); limiteDate.setHours(hf,mf,0,0);
-              if (limiteDate > agora) limiteDate.setDate(limiteDate.getDate()-1);
-            } else if (e.min) {
-              const [h,m] = iniVal.split(':').map(Number);
-              const d = new Date(agora); d.setHours(h,m,0,0);
-              if (d > agora) d.setDate(d.getDate()-1);
-              limiteDate = new Date(d.getTime() + e.min*60000);
-            }
-            if (limiteDate && agora > limiteDate) blocoAtrasado = true;
+
+          // SÓ considera atrasado se tem previsão de fim E horário atual passou dela
+          if (fimVal) {
+            const fimMin = toMin(fimVal);
+            // Comparar minutos do dia — se agora > fimMin é atraso
+            // Tolerância de virada de dia: se fimMin > 22*60 e agoraMin < 2*60, não é atraso (virada)
+            const virada = fimMin > 22 * 60 && agoraMin < 2 * 60;
+            if (!virada && agoraMin > fimMin) blocoAtrasado = true;
           }
+          // Se não tem previsão de fim, NÃO marca como atrasado
         }
+
         const blocoEl = document.getElementById(`bloco-${p}`);
         if (blocoEl) blocoEl.classList.toggle('atrasado', blocoAtrasado);
       });
