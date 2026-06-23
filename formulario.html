@@ -169,7 +169,7 @@
         <td class="etapa-label">1ª Limpeza (T.M: 1:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a1_limp1_ini" class="inp-ini" onchange="aoPreencherIni(this,'a1','limp1',60)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a1','limp1')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a1" data-key="limp1" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a1_limp1_ini"></span>
           <div class="hist-edicao" id="hist_a1_limp1"></div>
         </td>
@@ -181,7 +181,7 @@
         <td class="etapa-label">Desestanhação (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a1_desest_ini" class="inp-ini" onchange="aoPreencherIni(this,'a1','desest',120)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a1','desest')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a1" data-key="desest" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a1_desest_ini"></span>
           <div class="hist-edicao" id="hist_a1_desest"></div>
         </td>
@@ -193,7 +193,7 @@
         <td class="etapa-label">Desant. com Lança (T.M: 5:30h)</td>
         <td class="td-ini">
           <input type="time" data-field="a1_lanca_ini" class="inp-ini" onchange="aoPreencherIni(this,'a1','lanca',330)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a1','lanca')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a1" data-key="lanca" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a1_lanca_ini"></span>
           <div class="hist-edicao" id="hist_a1_lanca"></div>
         </td>
@@ -205,7 +205,7 @@
         <td class="etapa-label">1ª Desantimoniação (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a1_desant1_ini" class="inp-ini" onchange="aoPreencherIni(this,'a1','desant1',120)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a1','desant1')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a1" data-key="desant1" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a1_desant1_ini"></span>
           <div class="hist-edicao" id="hist_a1_desant1"></div>
         </td>
@@ -217,7 +217,7 @@
         <td class="etapa-label">Decuprização (T.M: 2:30h)</td>
         <td class="td-ini">
           <input type="time" data-field="a1_decup_ini" class="inp-ini" onchange="aoPreencherIni(this,'a1','decup',150)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a1','decup')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a1" data-key="decup" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a1_decup_ini"></span>
           <div class="hist-edicao" id="hist_a1_decup"></div>
         </td>
@@ -229,7 +229,7 @@
         <td class="etapa-label">1ª Transferência (T.M: 1:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a1_transf_ini" class="inp-ini" onchange="aoPreencherIni(this,'a1','transf',60)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a1','transf')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a1" data-key="transf" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a1_transf_ini"></span>
           <div class="hist-edicao" id="hist_a1_transf"></div>
         </td>
@@ -241,7 +241,7 @@
         <td class="etapa-label">2ª Desantimoniação (T.M: 5:30h)</td>
         <td class="td-ini">
           <input type="time" data-field="a1_desant2_ini" class="inp-ini" onchange="aoPreencherIni(this,'a1','desant2',330)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a1','desant2')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a1" data-key="desant2" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a1_desant2_ini"></span>
           <div class="hist-edicao" id="hist_a1_desant2"></div>
         </td>
@@ -253,7 +253,7 @@
         <td class="etapa-label">1ª Limpeza Final (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a1_limpeza1_ini" class="inp-ini" onchange="aoPreencherIni(this,'a1','limpeza1',120)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a1','limpeza1')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a1" data-key="limpeza1" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a1_limpeza1_ini"></span>
           <div class="hist-edicao" id="hist_a1_limpeza1"></div>
         </td>
@@ -265,7 +265,7 @@
         <td class="etapa-label">2ª Transferência (T.M: 1:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a1_transf2_ini" class="inp-ini" onchange="aoPreencherIni(this,'a1','transf2',60)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a1','transf2')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a1" data-key="transf2" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a1_transf2_ini"></span>
           <div class="hist-edicao" id="hist_a1_transf2"></div>
         </td>
@@ -277,7 +277,7 @@
         <td class="etapa-label">2ª Limpeza Final (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a1_limpeza2_ini" class="inp-ini" onchange="aoPreencherIni(this,'a1','limpeza2',120)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a1','limpeza2')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a1" data-key="limpeza2" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a1_limpeza2_ini"></span>
           <div class="hist-edicao" id="hist_a1_limpeza2"></div>
         </td>
@@ -289,7 +289,7 @@
         <td class="etapa-label">Agregar Metais (T.M: 5:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a1_metais_ini" class="inp-ini" onchange="aoPreencherIni(this,'a1','metais',300)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a1','metais')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a1" data-key="metais" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a1_metais_ini"></span>
           <div class="hist-edicao" id="hist_a1_metais"></div>
         </td>
@@ -301,7 +301,7 @@
         <td class="etapa-label">Lingotamento</td>
         <td class="td-ini">
           <input type="time" data-field="a1_lingot_ini" class="inp-ini" onchange="aoPreencherIni(this,'a1','lingot',null)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a1','lingot')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a1" data-key="lingot" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a1_lingot_ini"></span>
           <div class="hist-edicao" id="hist_a1_lingot"></div>
         </td>
@@ -387,7 +387,7 @@
         <td class="etapa-label">1ª Limpeza (T.M: 1:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a2_limp1_ini" class="inp-ini" onchange="aoPreencherIni(this,'a2','limp1',60)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a2','limp1')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a2" data-key="limp1" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a2_limp1_ini"></span>
           <div class="hist-edicao" id="hist_a2_limp1"></div>
         </td>
@@ -399,7 +399,7 @@
         <td class="etapa-label">Desestanhação (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a2_desest_ini" class="inp-ini" onchange="aoPreencherIni(this,'a2','desest',120)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a2','desest')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a2" data-key="desest" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a2_desest_ini"></span>
           <div class="hist-edicao" id="hist_a2_desest"></div>
         </td>
@@ -411,7 +411,7 @@
         <td class="etapa-label">Desant. com Lança (T.M: 5:30h)</td>
         <td class="td-ini">
           <input type="time" data-field="a2_lanca_ini" class="inp-ini" onchange="aoPreencherIni(this,'a2','lanca',330)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a2','lanca')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a2" data-key="lanca" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a2_lanca_ini"></span>
           <div class="hist-edicao" id="hist_a2_lanca"></div>
         </td>
@@ -423,7 +423,7 @@
         <td class="etapa-label">1ª Desantimoniação (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a2_desant1_ini" class="inp-ini" onchange="aoPreencherIni(this,'a2','desant1',120)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a2','desant1')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a2" data-key="desant1" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a2_desant1_ini"></span>
           <div class="hist-edicao" id="hist_a2_desant1"></div>
         </td>
@@ -435,7 +435,7 @@
         <td class="etapa-label">Decuprização (T.M: 2:30h)</td>
         <td class="td-ini">
           <input type="time" data-field="a2_decup_ini" class="inp-ini" onchange="aoPreencherIni(this,'a2','decup',150)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a2','decup')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a2" data-key="decup" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a2_decup_ini"></span>
           <div class="hist-edicao" id="hist_a2_decup"></div>
         </td>
@@ -447,7 +447,7 @@
         <td class="etapa-label">1ª Transferência (T.M: 1:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a2_transf_ini" class="inp-ini" onchange="aoPreencherIni(this,'a2','transf',60)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a2','transf')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a2" data-key="transf" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a2_transf_ini"></span>
           <div class="hist-edicao" id="hist_a2_transf"></div>
         </td>
@@ -459,7 +459,7 @@
         <td class="etapa-label">2ª Desantimoniação (T.M: 5:30h)</td>
         <td class="td-ini">
           <input type="time" data-field="a2_desant2_ini" class="inp-ini" onchange="aoPreencherIni(this,'a2','desant2',330)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a2','desant2')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a2" data-key="desant2" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a2_desant2_ini"></span>
           <div class="hist-edicao" id="hist_a2_desant2"></div>
         </td>
@@ -471,7 +471,7 @@
         <td class="etapa-label">1ª Limpeza Final (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a2_limpeza1_ini" class="inp-ini" onchange="aoPreencherIni(this,'a2','limpeza1',120)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a2','limpeza1')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a2" data-key="limpeza1" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a2_limpeza1_ini"></span>
           <div class="hist-edicao" id="hist_a2_limpeza1"></div>
         </td>
@@ -483,7 +483,7 @@
         <td class="etapa-label">2ª Transferência (T.M: 1:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a2_transf2_ini" class="inp-ini" onchange="aoPreencherIni(this,'a2','transf2',60)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a2','transf2')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a2" data-key="transf2" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a2_transf2_ini"></span>
           <div class="hist-edicao" id="hist_a2_transf2"></div>
         </td>
@@ -495,7 +495,7 @@
         <td class="etapa-label">2ª Limpeza Final (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a2_limpeza2_ini" class="inp-ini" onchange="aoPreencherIni(this,'a2','limpeza2',120)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a2','limpeza2')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a2" data-key="limpeza2" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a2_limpeza2_ini"></span>
           <div class="hist-edicao" id="hist_a2_limpeza2"></div>
         </td>
@@ -507,7 +507,7 @@
         <td class="etapa-label">Agregar Metais (T.M: 5:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a2_metais_ini" class="inp-ini" onchange="aoPreencherIni(this,'a2','metais',300)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a2','metais')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a2" data-key="metais" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a2_metais_ini"></span>
           <div class="hist-edicao" id="hist_a2_metais"></div>
         </td>
@@ -519,7 +519,7 @@
         <td class="etapa-label">Lingotamento</td>
         <td class="td-ini">
           <input type="time" data-field="a2_lingot_ini" class="inp-ini" onchange="aoPreencherIni(this,'a2','lingot',null)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a2','lingot')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a2" data-key="lingot" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a2_lingot_ini"></span>
           <div class="hist-edicao" id="hist_a2_lingot"></div>
         </td>
@@ -605,7 +605,7 @@
         <td class="etapa-label">1ª Limpeza (T.M: 1:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a3_limp1_ini" class="inp-ini" onchange="aoPreencherIni(this,'a3','limp1',60)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a3','limp1')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a3" data-key="limp1" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a3_limp1_ini"></span>
           <div class="hist-edicao" id="hist_a3_limp1"></div>
         </td>
@@ -617,7 +617,7 @@
         <td class="etapa-label">Desestanhação (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a3_desest_ini" class="inp-ini" onchange="aoPreencherIni(this,'a3','desest',120)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a3','desest')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a3" data-key="desest" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a3_desest_ini"></span>
           <div class="hist-edicao" id="hist_a3_desest"></div>
         </td>
@@ -629,7 +629,7 @@
         <td class="etapa-label">Desant. com Lança (T.M: 5:30h)</td>
         <td class="td-ini">
           <input type="time" data-field="a3_lanca_ini" class="inp-ini" onchange="aoPreencherIni(this,'a3','lanca',330)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a3','lanca')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a3" data-key="lanca" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a3_lanca_ini"></span>
           <div class="hist-edicao" id="hist_a3_lanca"></div>
         </td>
@@ -641,7 +641,7 @@
         <td class="etapa-label">1ª Desantimoniação (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a3_desant1_ini" class="inp-ini" onchange="aoPreencherIni(this,'a3','desant1',120)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a3','desant1')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a3" data-key="desant1" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a3_desant1_ini"></span>
           <div class="hist-edicao" id="hist_a3_desant1"></div>
         </td>
@@ -653,7 +653,7 @@
         <td class="etapa-label">Decuprização (T.M: 2:30h)</td>
         <td class="td-ini">
           <input type="time" data-field="a3_decup_ini" class="inp-ini" onchange="aoPreencherIni(this,'a3','decup',150)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a3','decup')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a3" data-key="decup" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a3_decup_ini"></span>
           <div class="hist-edicao" id="hist_a3_decup"></div>
         </td>
@@ -665,7 +665,7 @@
         <td class="etapa-label">1ª Transferência (T.M: 1:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a3_transf_ini" class="inp-ini" onchange="aoPreencherIni(this,'a3','transf',60)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a3','transf')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a3" data-key="transf" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a3_transf_ini"></span>
           <div class="hist-edicao" id="hist_a3_transf"></div>
         </td>
@@ -677,7 +677,7 @@
         <td class="etapa-label">2ª Desantimoniação (T.M: 5:30h)</td>
         <td class="td-ini">
           <input type="time" data-field="a3_desant2_ini" class="inp-ini" onchange="aoPreencherIni(this,'a3','desant2',330)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a3','desant2')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a3" data-key="desant2" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a3_desant2_ini"></span>
           <div class="hist-edicao" id="hist_a3_desant2"></div>
         </td>
@@ -689,7 +689,7 @@
         <td class="etapa-label">1ª Limpeza Final (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a3_limpeza1_ini" class="inp-ini" onchange="aoPreencherIni(this,'a3','limpeza1',120)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a3','limpeza1')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a3" data-key="limpeza1" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a3_limpeza1_ini"></span>
           <div class="hist-edicao" id="hist_a3_limpeza1"></div>
         </td>
@@ -701,7 +701,7 @@
         <td class="etapa-label">2ª Transferência (T.M: 1:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a3_transf2_ini" class="inp-ini" onchange="aoPreencherIni(this,'a3','transf2',60)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a3','transf2')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a3" data-key="transf2" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a3_transf2_ini"></span>
           <div class="hist-edicao" id="hist_a3_transf2"></div>
         </td>
@@ -713,7 +713,7 @@
         <td class="etapa-label">2ª Limpeza Final (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a3_limpeza2_ini" class="inp-ini" onchange="aoPreencherIni(this,'a3','limpeza2',120)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a3','limpeza2')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a3" data-key="limpeza2" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a3_limpeza2_ini"></span>
           <div class="hist-edicao" id="hist_a3_limpeza2"></div>
         </td>
@@ -725,7 +725,7 @@
         <td class="etapa-label">Agregar Metais (T.M: 5:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a3_metais_ini" class="inp-ini" onchange="aoPreencherIni(this,'a3','metais',300)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a3','metais')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a3" data-key="metais" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a3_metais_ini"></span>
           <div class="hist-edicao" id="hist_a3_metais"></div>
         </td>
@@ -737,7 +737,7 @@
         <td class="etapa-label">Lingotamento</td>
         <td class="td-ini">
           <input type="time" data-field="a3_lingot_ini" class="inp-ini" onchange="aoPreencherIni(this,'a3','lingot',null)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a3','lingot')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a3" data-key="lingot" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a3_lingot_ini"></span>
           <div class="hist-edicao" id="hist_a3_lingot"></div>
         </td>
@@ -823,7 +823,7 @@
         <td class="etapa-label">1ª Limpeza (T.M: 1:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a4_limp1_ini" class="inp-ini" onchange="aoPreencherIni(this,'a4','limp1',60)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a4','limp1')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a4" data-key="limp1" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a4_limp1_ini"></span>
           <div class="hist-edicao" id="hist_a4_limp1"></div>
         </td>
@@ -835,7 +835,7 @@
         <td class="etapa-label">Desestanhação (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a4_desest_ini" class="inp-ini" onchange="aoPreencherIni(this,'a4','desest',120)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a4','desest')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a4" data-key="desest" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a4_desest_ini"></span>
           <div class="hist-edicao" id="hist_a4_desest"></div>
         </td>
@@ -847,7 +847,7 @@
         <td class="etapa-label">Desant. com Lança (T.M: 5:30h)</td>
         <td class="td-ini">
           <input type="time" data-field="a4_lanca_ini" class="inp-ini" onchange="aoPreencherIni(this,'a4','lanca',330)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a4','lanca')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a4" data-key="lanca" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a4_lanca_ini"></span>
           <div class="hist-edicao" id="hist_a4_lanca"></div>
         </td>
@@ -859,7 +859,7 @@
         <td class="etapa-label">1ª Desantimoniação (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a4_desant1_ini" class="inp-ini" onchange="aoPreencherIni(this,'a4','desant1',120)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a4','desant1')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a4" data-key="desant1" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a4_desant1_ini"></span>
           <div class="hist-edicao" id="hist_a4_desant1"></div>
         </td>
@@ -871,7 +871,7 @@
         <td class="etapa-label">Decuprização (T.M: 2:30h)</td>
         <td class="td-ini">
           <input type="time" data-field="a4_decup_ini" class="inp-ini" onchange="aoPreencherIni(this,'a4','decup',150)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a4','decup')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a4" data-key="decup" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a4_decup_ini"></span>
           <div class="hist-edicao" id="hist_a4_decup"></div>
         </td>
@@ -883,7 +883,7 @@
         <td class="etapa-label">1ª Transferência (T.M: 1:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a4_transf_ini" class="inp-ini" onchange="aoPreencherIni(this,'a4','transf',60)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a4','transf')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a4" data-key="transf" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a4_transf_ini"></span>
           <div class="hist-edicao" id="hist_a4_transf"></div>
         </td>
@@ -895,7 +895,7 @@
         <td class="etapa-label">2ª Desantimoniação (T.M: 5:30h)</td>
         <td class="td-ini">
           <input type="time" data-field="a4_desant2_ini" class="inp-ini" onchange="aoPreencherIni(this,'a4','desant2',330)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a4','desant2')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a4" data-key="desant2" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a4_desant2_ini"></span>
           <div class="hist-edicao" id="hist_a4_desant2"></div>
         </td>
@@ -907,7 +907,7 @@
         <td class="etapa-label">1ª Limpeza Final (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a4_limpeza1_ini" class="inp-ini" onchange="aoPreencherIni(this,'a4','limpeza1',120)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a4','limpeza1')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a4" data-key="limpeza1" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a4_limpeza1_ini"></span>
           <div class="hist-edicao" id="hist_a4_limpeza1"></div>
         </td>
@@ -919,7 +919,7 @@
         <td class="etapa-label">2ª Transferência (T.M: 1:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a4_transf2_ini" class="inp-ini" onchange="aoPreencherIni(this,'a4','transf2',60)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a4','transf2')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a4" data-key="transf2" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a4_transf2_ini"></span>
           <div class="hist-edicao" id="hist_a4_transf2"></div>
         </td>
@@ -931,7 +931,7 @@
         <td class="etapa-label">2ª Limpeza Final (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a4_limpeza2_ini" class="inp-ini" onchange="aoPreencherIni(this,'a4','limpeza2',120)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a4','limpeza2')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a4" data-key="limpeza2" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a4_limpeza2_ini"></span>
           <div class="hist-edicao" id="hist_a4_limpeza2"></div>
         </td>
@@ -943,7 +943,7 @@
         <td class="etapa-label">Agregar Metais (T.M: 5:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a4_metais_ini" class="inp-ini" onchange="aoPreencherIni(this,'a4','metais',300)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a4','metais')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a4" data-key="metais" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a4_metais_ini"></span>
           <div class="hist-edicao" id="hist_a4_metais"></div>
         </td>
@@ -955,7 +955,7 @@
         <td class="etapa-label">Lingotamento</td>
         <td class="td-ini">
           <input type="time" data-field="a4_lingot_ini" class="inp-ini" onchange="aoPreencherIni(this,'a4','lingot',null)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a4','lingot')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a4" data-key="lingot" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a4_lingot_ini"></span>
           <div class="hist-edicao" id="hist_a4_lingot"></div>
         </td>
@@ -1041,7 +1041,7 @@
         <td class="etapa-label">1ª Limpeza (T.M: 1:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a5_limp1_ini" class="inp-ini" onchange="aoPreencherIni(this,'a5','limp1',60)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a5','limp1')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a5" data-key="limp1" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a5_limp1_ini"></span>
           <div class="hist-edicao" id="hist_a5_limp1"></div>
         </td>
@@ -1053,7 +1053,7 @@
         <td class="etapa-label">Desestanhação (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a5_desest_ini" class="inp-ini" onchange="aoPreencherIni(this,'a5','desest',120)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a5','desest')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a5" data-key="desest" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a5_desest_ini"></span>
           <div class="hist-edicao" id="hist_a5_desest"></div>
         </td>
@@ -1065,7 +1065,7 @@
         <td class="etapa-label">Desant. com Lança (T.M: 5:30h)</td>
         <td class="td-ini">
           <input type="time" data-field="a5_lanca_ini" class="inp-ini" onchange="aoPreencherIni(this,'a5','lanca',330)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a5','lanca')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a5" data-key="lanca" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a5_lanca_ini"></span>
           <div class="hist-edicao" id="hist_a5_lanca"></div>
         </td>
@@ -1077,7 +1077,7 @@
         <td class="etapa-label">1ª Desantimoniação (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a5_desant1_ini" class="inp-ini" onchange="aoPreencherIni(this,'a5','desant1',120)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a5','desant1')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a5" data-key="desant1" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a5_desant1_ini"></span>
           <div class="hist-edicao" id="hist_a5_desant1"></div>
         </td>
@@ -1089,7 +1089,7 @@
         <td class="etapa-label">Decuprização (T.M: 2:30h)</td>
         <td class="td-ini">
           <input type="time" data-field="a5_decup_ini" class="inp-ini" onchange="aoPreencherIni(this,'a5','decup',150)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a5','decup')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a5" data-key="decup" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a5_decup_ini"></span>
           <div class="hist-edicao" id="hist_a5_decup"></div>
         </td>
@@ -1101,7 +1101,7 @@
         <td class="etapa-label">1ª Transferência (T.M: 1:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a5_transf_ini" class="inp-ini" onchange="aoPreencherIni(this,'a5','transf',60)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a5','transf')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a5" data-key="transf" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a5_transf_ini"></span>
           <div class="hist-edicao" id="hist_a5_transf"></div>
         </td>
@@ -1113,7 +1113,7 @@
         <td class="etapa-label">2ª Desantimoniação (T.M: 5:30h)</td>
         <td class="td-ini">
           <input type="time" data-field="a5_desant2_ini" class="inp-ini" onchange="aoPreencherIni(this,'a5','desant2',330)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a5','desant2')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a5" data-key="desant2" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a5_desant2_ini"></span>
           <div class="hist-edicao" id="hist_a5_desant2"></div>
         </td>
@@ -1125,7 +1125,7 @@
         <td class="etapa-label">1ª Limpeza Final (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a5_limpeza1_ini" class="inp-ini" onchange="aoPreencherIni(this,'a5','limpeza1',120)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a5','limpeza1')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a5" data-key="limpeza1" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a5_limpeza1_ini"></span>
           <div class="hist-edicao" id="hist_a5_limpeza1"></div>
         </td>
@@ -1137,7 +1137,7 @@
         <td class="etapa-label">2ª Transferência (T.M: 1:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a5_transf2_ini" class="inp-ini" onchange="aoPreencherIni(this,'a5','transf2',60)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a5','transf2')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a5" data-key="transf2" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a5_transf2_ini"></span>
           <div class="hist-edicao" id="hist_a5_transf2"></div>
         </td>
@@ -1149,7 +1149,7 @@
         <td class="etapa-label">2ª Limpeza Final (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a5_limpeza2_ini" class="inp-ini" onchange="aoPreencherIni(this,'a5','limpeza2',120)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a5','limpeza2')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a5" data-key="limpeza2" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a5_limpeza2_ini"></span>
           <div class="hist-edicao" id="hist_a5_limpeza2"></div>
         </td>
@@ -1161,7 +1161,7 @@
         <td class="etapa-label">Agregar Metais (T.M: 5:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a5_metais_ini" class="inp-ini" onchange="aoPreencherIni(this,'a5','metais',300)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a5','metais')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a5" data-key="metais" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a5_metais_ini"></span>
           <div class="hist-edicao" id="hist_a5_metais"></div>
         </td>
@@ -1173,7 +1173,7 @@
         <td class="etapa-label">Lingotamento</td>
         <td class="td-ini">
           <input type="time" data-field="a5_lingot_ini" class="inp-ini" onchange="aoPreencherIni(this,'a5','lingot',null)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a5','lingot')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a5" data-key="lingot" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a5_lingot_ini"></span>
           <div class="hist-edicao" id="hist_a5_lingot"></div>
         </td>
@@ -1259,7 +1259,7 @@
         <td class="etapa-label">1ª Limpeza (T.M: 1:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a6_limp1_ini" class="inp-ini" onchange="aoPreencherIni(this,'a6','limp1',60)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a6','limp1')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a6" data-key="limp1" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a6_limp1_ini"></span>
           <div class="hist-edicao" id="hist_a6_limp1"></div>
         </td>
@@ -1271,7 +1271,7 @@
         <td class="etapa-label">Desestanhação (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a6_desest_ini" class="inp-ini" onchange="aoPreencherIni(this,'a6','desest',120)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a6','desest')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a6" data-key="desest" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a6_desest_ini"></span>
           <div class="hist-edicao" id="hist_a6_desest"></div>
         </td>
@@ -1283,7 +1283,7 @@
         <td class="etapa-label">Desant. com Lança (T.M: 5:30h)</td>
         <td class="td-ini">
           <input type="time" data-field="a6_lanca_ini" class="inp-ini" onchange="aoPreencherIni(this,'a6','lanca',330)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a6','lanca')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a6" data-key="lanca" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a6_lanca_ini"></span>
           <div class="hist-edicao" id="hist_a6_lanca"></div>
         </td>
@@ -1295,7 +1295,7 @@
         <td class="etapa-label">1ª Desantimoniação (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a6_desant1_ini" class="inp-ini" onchange="aoPreencherIni(this,'a6','desant1',120)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a6','desant1')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a6" data-key="desant1" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a6_desant1_ini"></span>
           <div class="hist-edicao" id="hist_a6_desant1"></div>
         </td>
@@ -1307,7 +1307,7 @@
         <td class="etapa-label">Decuprização (T.M: 2:30h)</td>
         <td class="td-ini">
           <input type="time" data-field="a6_decup_ini" class="inp-ini" onchange="aoPreencherIni(this,'a6','decup',150)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a6','decup')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a6" data-key="decup" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a6_decup_ini"></span>
           <div class="hist-edicao" id="hist_a6_decup"></div>
         </td>
@@ -1319,7 +1319,7 @@
         <td class="etapa-label">1ª Transferência (T.M: 1:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a6_transf_ini" class="inp-ini" onchange="aoPreencherIni(this,'a6','transf',60)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a6','transf')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a6" data-key="transf" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a6_transf_ini"></span>
           <div class="hist-edicao" id="hist_a6_transf"></div>
         </td>
@@ -1331,7 +1331,7 @@
         <td class="etapa-label">2ª Desantimoniação (T.M: 5:30h)</td>
         <td class="td-ini">
           <input type="time" data-field="a6_desant2_ini" class="inp-ini" onchange="aoPreencherIni(this,'a6','desant2',330)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a6','desant2')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a6" data-key="desant2" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a6_desant2_ini"></span>
           <div class="hist-edicao" id="hist_a6_desant2"></div>
         </td>
@@ -1343,7 +1343,7 @@
         <td class="etapa-label">1ª Limpeza Final (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a6_limpeza1_ini" class="inp-ini" onchange="aoPreencherIni(this,'a6','limpeza1',120)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a6','limpeza1')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a6" data-key="limpeza1" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a6_limpeza1_ini"></span>
           <div class="hist-edicao" id="hist_a6_limpeza1"></div>
         </td>
@@ -1355,7 +1355,7 @@
         <td class="etapa-label">2ª Transferência (T.M: 1:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a6_transf2_ini" class="inp-ini" onchange="aoPreencherIni(this,'a6','transf2',60)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a6','transf2')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a6" data-key="transf2" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a6_transf2_ini"></span>
           <div class="hist-edicao" id="hist_a6_transf2"></div>
         </td>
@@ -1367,7 +1367,7 @@
         <td class="etapa-label">2ª Limpeza Final (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a6_limpeza2_ini" class="inp-ini" onchange="aoPreencherIni(this,'a6','limpeza2',120)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a6','limpeza2')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a6" data-key="limpeza2" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a6_limpeza2_ini"></span>
           <div class="hist-edicao" id="hist_a6_limpeza2"></div>
         </td>
@@ -1379,7 +1379,7 @@
         <td class="etapa-label">Agregar Metais (T.M: 5:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a6_metais_ini" class="inp-ini" onchange="aoPreencherIni(this,'a6','metais',300)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a6','metais')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a6" data-key="metais" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a6_metais_ini"></span>
           <div class="hist-edicao" id="hist_a6_metais"></div>
         </td>
@@ -1391,7 +1391,7 @@
         <td class="etapa-label">Lingotamento</td>
         <td class="td-ini">
           <input type="time" data-field="a6_lingot_ini" class="inp-ini" onchange="aoPreencherIni(this,'a6','lingot',null)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a6','lingot')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a6" data-key="lingot" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a6_lingot_ini"></span>
           <div class="hist-edicao" id="hist_a6_lingot"></div>
         </td>
@@ -1477,7 +1477,7 @@
         <td class="etapa-label">1ª Limpeza (T.M: 1:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a7_limp1_ini" class="inp-ini" onchange="aoPreencherIni(this,'a7','limp1',60)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a7','limp1')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a7" data-key="limp1" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a7_limp1_ini"></span>
           <div class="hist-edicao" id="hist_a7_limp1"></div>
         </td>
@@ -1489,7 +1489,7 @@
         <td class="etapa-label">Desestanhação (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a7_desest_ini" class="inp-ini" onchange="aoPreencherIni(this,'a7','desest',120)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a7','desest')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a7" data-key="desest" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a7_desest_ini"></span>
           <div class="hist-edicao" id="hist_a7_desest"></div>
         </td>
@@ -1501,7 +1501,7 @@
         <td class="etapa-label">Desant. com Lança (T.M: 5:30h)</td>
         <td class="td-ini">
           <input type="time" data-field="a7_lanca_ini" class="inp-ini" onchange="aoPreencherIni(this,'a7','lanca',330)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a7','lanca')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a7" data-key="lanca" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a7_lanca_ini"></span>
           <div class="hist-edicao" id="hist_a7_lanca"></div>
         </td>
@@ -1513,7 +1513,7 @@
         <td class="etapa-label">1ª Desantimoniação (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a7_desant1_ini" class="inp-ini" onchange="aoPreencherIni(this,'a7','desant1',120)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a7','desant1')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a7" data-key="desant1" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a7_desant1_ini"></span>
           <div class="hist-edicao" id="hist_a7_desant1"></div>
         </td>
@@ -1525,7 +1525,7 @@
         <td class="etapa-label">Decuprização (T.M: 2:30h)</td>
         <td class="td-ini">
           <input type="time" data-field="a7_decup_ini" class="inp-ini" onchange="aoPreencherIni(this,'a7','decup',150)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a7','decup')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a7" data-key="decup" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a7_decup_ini"></span>
           <div class="hist-edicao" id="hist_a7_decup"></div>
         </td>
@@ -1537,7 +1537,7 @@
         <td class="etapa-label">1ª Transferência (T.M: 1:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a7_transf_ini" class="inp-ini" onchange="aoPreencherIni(this,'a7','transf',60)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a7','transf')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a7" data-key="transf" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a7_transf_ini"></span>
           <div class="hist-edicao" id="hist_a7_transf"></div>
         </td>
@@ -1549,7 +1549,7 @@
         <td class="etapa-label">2ª Desantimoniação (T.M: 5:30h)</td>
         <td class="td-ini">
           <input type="time" data-field="a7_desant2_ini" class="inp-ini" onchange="aoPreencherIni(this,'a7','desant2',330)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a7','desant2')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a7" data-key="desant2" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a7_desant2_ini"></span>
           <div class="hist-edicao" id="hist_a7_desant2"></div>
         </td>
@@ -1561,7 +1561,7 @@
         <td class="etapa-label">1ª Limpeza Final (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a7_limpeza1_ini" class="inp-ini" onchange="aoPreencherIni(this,'a7','limpeza1',120)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a7','limpeza1')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a7" data-key="limpeza1" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a7_limpeza1_ini"></span>
           <div class="hist-edicao" id="hist_a7_limpeza1"></div>
         </td>
@@ -1573,7 +1573,7 @@
         <td class="etapa-label">2ª Transferência (T.M: 1:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a7_transf2_ini" class="inp-ini" onchange="aoPreencherIni(this,'a7','transf2',60)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a7','transf2')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a7" data-key="transf2" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a7_transf2_ini"></span>
           <div class="hist-edicao" id="hist_a7_transf2"></div>
         </td>
@@ -1585,7 +1585,7 @@
         <td class="etapa-label">2ª Limpeza Final (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a7_limpeza2_ini" class="inp-ini" onchange="aoPreencherIni(this,'a7','limpeza2',120)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a7','limpeza2')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a7" data-key="limpeza2" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a7_limpeza2_ini"></span>
           <div class="hist-edicao" id="hist_a7_limpeza2"></div>
         </td>
@@ -1597,7 +1597,7 @@
         <td class="etapa-label">Agregar Metais (T.M: 5:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a7_metais_ini" class="inp-ini" onchange="aoPreencherIni(this,'a7','metais',300)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a7','metais')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a7" data-key="metais" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a7_metais_ini"></span>
           <div class="hist-edicao" id="hist_a7_metais"></div>
         </td>
@@ -1609,7 +1609,7 @@
         <td class="etapa-label">Lingotamento</td>
         <td class="td-ini">
           <input type="time" data-field="a7_lingot_ini" class="inp-ini" onchange="aoPreencherIni(this,'a7','lingot',null)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a7','lingot')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a7" data-key="lingot" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a7_lingot_ini"></span>
           <div class="hist-edicao" id="hist_a7_lingot"></div>
         </td>
@@ -1695,7 +1695,7 @@
         <td class="etapa-label">1ª Limpeza (T.M: 1:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a8_limp1_ini" class="inp-ini" onchange="aoPreencherIni(this,'a8','limp1',60)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a8','limp1')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a8" data-key="limp1" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a8_limp1_ini"></span>
           <div class="hist-edicao" id="hist_a8_limp1"></div>
         </td>
@@ -1707,7 +1707,7 @@
         <td class="etapa-label">Desestanhação (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a8_desest_ini" class="inp-ini" onchange="aoPreencherIni(this,'a8','desest',120)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a8','desest')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a8" data-key="desest" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a8_desest_ini"></span>
           <div class="hist-edicao" id="hist_a8_desest"></div>
         </td>
@@ -1719,7 +1719,7 @@
         <td class="etapa-label">Desant. com Lança (T.M: 5:30h)</td>
         <td class="td-ini">
           <input type="time" data-field="a8_lanca_ini" class="inp-ini" onchange="aoPreencherIni(this,'a8','lanca',330)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a8','lanca')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a8" data-key="lanca" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a8_lanca_ini"></span>
           <div class="hist-edicao" id="hist_a8_lanca"></div>
         </td>
@@ -1731,7 +1731,7 @@
         <td class="etapa-label">1ª Desantimoniação (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a8_desant1_ini" class="inp-ini" onchange="aoPreencherIni(this,'a8','desant1',120)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a8','desant1')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a8" data-key="desant1" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a8_desant1_ini"></span>
           <div class="hist-edicao" id="hist_a8_desant1"></div>
         </td>
@@ -1743,7 +1743,7 @@
         <td class="etapa-label">Decuprização (T.M: 2:30h)</td>
         <td class="td-ini">
           <input type="time" data-field="a8_decup_ini" class="inp-ini" onchange="aoPreencherIni(this,'a8','decup',150)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a8','decup')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a8" data-key="decup" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a8_decup_ini"></span>
           <div class="hist-edicao" id="hist_a8_decup"></div>
         </td>
@@ -1755,7 +1755,7 @@
         <td class="etapa-label">1ª Transferência (T.M: 1:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a8_transf_ini" class="inp-ini" onchange="aoPreencherIni(this,'a8','transf',60)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a8','transf')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a8" data-key="transf" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a8_transf_ini"></span>
           <div class="hist-edicao" id="hist_a8_transf"></div>
         </td>
@@ -1767,7 +1767,7 @@
         <td class="etapa-label">2ª Desantimoniação (T.M: 5:30h)</td>
         <td class="td-ini">
           <input type="time" data-field="a8_desant2_ini" class="inp-ini" onchange="aoPreencherIni(this,'a8','desant2',330)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a8','desant2')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a8" data-key="desant2" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a8_desant2_ini"></span>
           <div class="hist-edicao" id="hist_a8_desant2"></div>
         </td>
@@ -1779,7 +1779,7 @@
         <td class="etapa-label">1ª Limpeza Final (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a8_limpeza1_ini" class="inp-ini" onchange="aoPreencherIni(this,'a8','limpeza1',120)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a8','limpeza1')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a8" data-key="limpeza1" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a8_limpeza1_ini"></span>
           <div class="hist-edicao" id="hist_a8_limpeza1"></div>
         </td>
@@ -1791,7 +1791,7 @@
         <td class="etapa-label">2ª Transferência (T.M: 1:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a8_transf2_ini" class="inp-ini" onchange="aoPreencherIni(this,'a8','transf2',60)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a8','transf2')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a8" data-key="transf2" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a8_transf2_ini"></span>
           <div class="hist-edicao" id="hist_a8_transf2"></div>
         </td>
@@ -1803,7 +1803,7 @@
         <td class="etapa-label">2ª Limpeza Final (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a8_limpeza2_ini" class="inp-ini" onchange="aoPreencherIni(this,'a8','limpeza2',120)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a8','limpeza2')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a8" data-key="limpeza2" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a8_limpeza2_ini"></span>
           <div class="hist-edicao" id="hist_a8_limpeza2"></div>
         </td>
@@ -1815,7 +1815,7 @@
         <td class="etapa-label">Agregar Metais (T.M: 5:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a8_metais_ini" class="inp-ini" onchange="aoPreencherIni(this,'a8','metais',300)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a8','metais')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a8" data-key="metais" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a8_metais_ini"></span>
           <div class="hist-edicao" id="hist_a8_metais"></div>
         </td>
@@ -1827,7 +1827,7 @@
         <td class="etapa-label">Lingotamento</td>
         <td class="td-ini">
           <input type="time" data-field="a8_lingot_ini" class="inp-ini" onchange="aoPreencherIni(this,'a8','lingot',null)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'a8','lingot')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="a8" data-key="lingot" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a8_lingot_ini"></span>
           <div class="hist-edicao" id="hist_a8_lingot"></div>
         </td>
@@ -1870,7 +1870,7 @@
         <td class="etapa-label">1ª Limpeza (T.M: 1:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="b1_limp1_ini" class="inp-ini" onchange="aoPreencherIni(this,'b1','limp1',60)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'b1','limp1')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="b1" data-key="limp1" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="b1_limp1_ini"></span>
           <div class="hist-edicao" id="hist_b1_limp1"></div>
         </td>
@@ -1882,7 +1882,7 @@
         <td class="etapa-label">Dec. Com Enxofre (T.M: 3:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="b1_enxofre_ini" class="inp-ini" onchange="aoPreencherIni(this,'b1','enxofre',180)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'b1','enxofre')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="b1" data-key="enxofre" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="b1_enxofre_ini"></span>
           <div class="hist-edicao" id="hist_b1_enxofre"></div>
         </td>
@@ -1894,7 +1894,7 @@
         <td class="etapa-label">Desestanhação (T.M: 5:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="b1_desest_ini" class="inp-ini" onchange="aoPreencherIni(this,'b1','desest',300)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'b1','desest')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="b1" data-key="desest" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="b1_desest_ini"></span>
           <div class="hist-edicao" id="hist_b1_desest"></div>
         </td>
@@ -1906,7 +1906,7 @@
         <td class="etapa-label">Transferência</td>
         <td class="td-ini">
           <input type="time" data-field="b1_transf_ini" class="inp-ini" onchange="aoPreencherIni(this,'b1','transf',null)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'b1','transf')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="b1" data-key="transf" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="b1_transf_ini"></span>
           <div class="hist-edicao" id="hist_b1_transf"></div>
         </td>
@@ -1918,7 +1918,7 @@
         <td class="etapa-label">Limpeza com Soda (T.M: 4:30h)</td>
         <td class="td-ini">
           <input type="time" data-field="b1_soda_ini" class="inp-ini" onchange="aoPreencherIni(this,'b1','soda',270)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'b1','soda')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="b1" data-key="soda" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="b1_soda_ini"></span>
           <div class="hist-edicao" id="hist_b1_soda"></div>
         </td>
@@ -1930,7 +1930,7 @@
         <td class="etapa-label">Limpeza com Carvão</td>
         <td class="td-ini">
           <input type="time" data-field="b1_carvao_ini" class="inp-ini" onchange="aoPreencherIni(this,'b1','carvao',null)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'b1','carvao')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="b1" data-key="carvao" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="b1_carvao_ini"></span>
           <div class="hist-edicao" id="hist_b1_carvao"></div>
         </td>
@@ -1942,7 +1942,7 @@
         <td class="etapa-label">Agregar Metais (T.M: 4:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="b1_metais_ini" class="inp-ini" onchange="aoPreencherIni(this,'b1','metais',240)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'b1','metais')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="b1" data-key="metais" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="b1_metais_ini"></span>
           <div class="hist-edicao" id="hist_b1_metais"></div>
         </td>
@@ -1954,7 +1954,7 @@
         <td class="etapa-label">Lingotamento</td>
         <td class="td-ini">
           <input type="time" data-field="b1_lingot_ini" class="inp-ini" onchange="aoPreencherIni(this,'b1','lingot',null)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'b1','lingot')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="b1" data-key="lingot" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="b1_lingot_ini"></span>
           <div class="hist-edicao" id="hist_b1_lingot"></div>
         </td>
@@ -2009,7 +2009,7 @@
         <td class="etapa-label">1ª Limpeza (T.M: 1:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="b2_limp1_ini" class="inp-ini" onchange="aoPreencherIni(this,'b2','limp1',60)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'b2','limp1')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="b2" data-key="limp1" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="b2_limp1_ini"></span>
           <div class="hist-edicao" id="hist_b2_limp1"></div>
         </td>
@@ -2021,7 +2021,7 @@
         <td class="etapa-label">Dec. Com Enxofre (T.M: 3:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="b2_enxofre_ini" class="inp-ini" onchange="aoPreencherIni(this,'b2','enxofre',180)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'b2','enxofre')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="b2" data-key="enxofre" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="b2_enxofre_ini"></span>
           <div class="hist-edicao" id="hist_b2_enxofre"></div>
         </td>
@@ -2033,7 +2033,7 @@
         <td class="etapa-label">Desestanhação (T.M: 5:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="b2_desest_ini" class="inp-ini" onchange="aoPreencherIni(this,'b2','desest',300)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'b2','desest')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="b2" data-key="desest" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="b2_desest_ini"></span>
           <div class="hist-edicao" id="hist_b2_desest"></div>
         </td>
@@ -2045,7 +2045,7 @@
         <td class="etapa-label">Transferência</td>
         <td class="td-ini">
           <input type="time" data-field="b2_transf_ini" class="inp-ini" onchange="aoPreencherIni(this,'b2','transf',null)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'b2','transf')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="b2" data-key="transf" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="b2_transf_ini"></span>
           <div class="hist-edicao" id="hist_b2_transf"></div>
         </td>
@@ -2057,7 +2057,7 @@
         <td class="etapa-label">Limpeza com Soda (T.M: 4:30h)</td>
         <td class="td-ini">
           <input type="time" data-field="b2_soda_ini" class="inp-ini" onchange="aoPreencherIni(this,'b2','soda',270)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'b2','soda')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="b2" data-key="soda" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="b2_soda_ini"></span>
           <div class="hist-edicao" id="hist_b2_soda"></div>
         </td>
@@ -2069,7 +2069,7 @@
         <td class="etapa-label">Limpeza com Carvão</td>
         <td class="td-ini">
           <input type="time" data-field="b2_carvao_ini" class="inp-ini" onchange="aoPreencherIni(this,'b2','carvao',null)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'b2','carvao')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="b2" data-key="carvao" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="b2_carvao_ini"></span>
           <div class="hist-edicao" id="hist_b2_carvao"></div>
         </td>
@@ -2081,7 +2081,7 @@
         <td class="etapa-label">Agregar Metais (T.M: 4:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="b2_metais_ini" class="inp-ini" onchange="aoPreencherIni(this,'b2','metais',240)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'b2','metais')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="b2" data-key="metais" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="b2_metais_ini"></span>
           <div class="hist-edicao" id="hist_b2_metais"></div>
         </td>
@@ -2093,7 +2093,7 @@
         <td class="etapa-label">Lingotamento</td>
         <td class="td-ini">
           <input type="time" data-field="b2_lingot_ini" class="inp-ini" onchange="aoPreencherIni(this,'b2','lingot',null)" readonly>
-          <button class="btn-lapis" onclick="habilitarEdicao(this,'b2','lingot')" title="Editar horário">✏️</button>
+          <button class="btn-lapis" data-p="b2" data-key="lingot" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="b2_lingot_ini"></span>
           <div class="hist-edicao" id="hist_b2_lingot"></div>
         </td>
@@ -2429,6 +2429,16 @@
     checar(PREFIXOS_INF, ETAPAS_INF);
   }
   setInterval(verificarAtrasos, 60000);
+
+  // Listener global para botões lápis (evita problema de escopo em type="module")
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.btn-lapis');
+    if (!btn) return;
+    const p = btn.dataset.p;
+    const key = btn.dataset.key;
+    if (!p || !key) return;
+    habilitarEdicao(btn, p, key);
+  });
 
   // SETUP
   function verificarSetupsAtivos(dados) {
