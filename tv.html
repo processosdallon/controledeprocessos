@@ -19,71 +19,73 @@
   /* HEADER */
   .tv-header {
     background: #1e4d2b;
-    padding: 10px 24px;
+    padding: 8px 24px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     border-bottom: 3px solid #a8d44d;
     flex-shrink: 0;
   }
-  .tv-header img { height: 56px; }
-  .tv-header-center { text-align: center; }
-  .tv-header-center h1 { font-size: 22px; color: #a8d44d; letter-spacing: 2px; text-transform: uppercase; }
-  .tv-header-center p { font-size: 13px; color: #7ab830; margin-top: 2px; }
-  .tv-header-right { text-align: right; font-size: 13px; color: #a8d44d; }
-  .tv-header-right .relogio { font-size: 28px; font-weight: bold; color: #fff; }
-  .tv-header-right .data { font-size: 13px; color: #7ab830; }
+  .tv-header img { height: 48px; }
+  .tv-header-center h1 { font-size: 20px; color: #a8d44d; letter-spacing: 2px; text-transform: uppercase; text-align:center; }
+  .tv-header-center p { font-size: 12px; color: #7ab830; text-align:center; margin-top:2px; }
+  .tv-header-right { text-align: right; }
+  .tv-header-right .relogio { font-size: 26px; font-weight: bold; color: #fff; }
+  .tv-header-right .data { font-size: 11px; color: #7ab830; }
 
   /* STATUS */
   .tv-status {
     background: #163d21;
-    padding: 6px 24px;
+    padding: 4px 20px;
     display: flex;
     align-items: center;
-    gap: 16px;
-    font-size: 13px;
+    gap: 12px;
+    font-size: 12px;
     color: #7ab830;
     border-bottom: 1px solid #2d6a3f;
     flex-shrink: 0;
   }
-  .dot { width: 10px; height: 10px; border-radius: 50%; background: #ccc; display: inline-block; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: #ccc; display: inline-block; }
   .dot.on { background: #a8d44d; animation: pulse 2s infinite; }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-  .secao-label {
-    margin-left: auto;
-    font-size: 13px;
-    color: #fff;
-    background: #2d6a3f;
-    padding: 3px 14px;
-    border-radius: 12px;
-    font-weight: bold;
-  }
-  .slide-info { color: #a8d44d; font-size: 12px; }
+  .slide-info { color: #a8d44d; font-size: 11px; margin-left: auto; }
 
-  /* AREA DO SLIDE */
-  .slide-area {
+  /* AREA PRINCIPAL */
+  .main-area {
     flex: 1;
     overflow: hidden;
-    position: relative;
-    padding: 14px 20px 10px;
-  }
-
-  /* VIEWPORT */
-  .slide-viewport {
     display: flex;
-    width: 100%;
-    height: 100%;
-    transition: transform 0.7s cubic-bezier(0.77, 0, 0.175, 1);
+    flex-direction: column;
+    padding: 10px 16px 6px;
+    gap: 10px;
   }
 
-  /* PÁGINA DO SLIDE */
-  .slide-page {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    grid-template-rows: 1fr;
-    gap: 14px;
-    min-width: 100%;
-    height: 100%;
+  /* SEÇÃO */
+  .secao-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .secao-titulo-tv {
+    font-size: 13px;
+    font-weight: bold;
+    color: #fff;
+    background: #1e4d2b;
+    padding: 4px 14px;
+    border-radius: 6px;
+    border-left: 4px solid #a8d44d;
+    letter-spacing: 1px;
+    flex-shrink: 0;
+  }
+
+  /* GRID DE CARDS — centralizado quando menos de 4 */
+  .cards-grid {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 12px;
+    justify-content: center;
+    flex: 1;
+    min-height: 0;
   }
 
   /* CARD */
@@ -94,60 +96,70 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    font-size: 12px;
+    flex: 1;
+    max-width: 340px;
+    min-width: 200px;
     height: 100%;
   }
   .card-tv.atrasado {
     border: 2px solid #c00 !important;
-    box-shadow: 0 0 12px #f005;
+    box-shadow: 0 0 14px #f006;
   }
-  .card-liga {
-    background: #a8d44d;
-    color: #1e4d2b;
-    font-size: 11px;
+
+  /* TOPO DO CARD: Liga + Panela em destaque */
+  .card-top {
+    background: #163d21;
+    padding: 6px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    border-bottom: 2px solid #2d6a3f;
+  }
+  .card-tv.atrasado .card-top { background: #5a0000; border-bottom: 2px solid #c00; }
+  .card-liga-tv {
+    font-size: 14px;
     font-weight: bold;
-    text-align: center;
-    padding: 3px 8px;
+    color: #a8d44d;
     letter-spacing: 0.5px;
+    text-align: center;
   }
-  .card-tv.atrasado .card-liga { background: #c00; color: #fff; }
+  .card-tv.atrasado .card-liga-tv { color: #ffaaaa; }
+  .card-panela-destaque {
+    font-size: 20px;
+    font-weight: bold;
+    color: #fff;
+    background: #1e4d2b;
+    padding: 2px 16px;
+    border-radius: 6px;
+    border: 1px solid #a8d44d;
+    letter-spacing: 1px;
+  }
+  .card-tv.atrasado .card-panela-destaque {
+    background: #c00;
+    border-color: #ff9999;
+    color: #fff;
+  }
+
+  /* HEADER DO CARD */
   .card-header-tv {
     background: #1e4d2b;
-    padding: 8px 12px;
+    padding: 5px 10px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap;
-    gap: 4px;
   }
   .card-tv.atrasado .card-header-tv { background: #c00; }
-  .card-lote {
-    font-size: 17px;
-    font-weight: bold;
-    color: #fff;
-    white-space: nowrap;
-  }
-  .card-panela {
-    font-size: 12px;
-    color: #a8d44d;
-    white-space: nowrap;
-  }
-  .card-tv.atrasado .card-panela { color: #ffd0d0; }
+  .card-lote-tv { font-size: 13px; font-weight: bold; color: #fff; }
   .badge-andamento {
-    background: #a8d44d;
-    color: #1e4d2b;
-    font-size: 9px;
-    font-weight: bold;
-    padding: 2px 7px;
-    border-radius: 10px;
+    background: #a8d44d; color: #1e4d2b;
+    font-size: 9px; font-weight: bold;
+    padding: 2px 7px; border-radius: 10px;
   }
   .badge-atraso {
-    background: #fff;
-    color: #c00;
-    font-size: 9px;
-    font-weight: bold;
-    padding: 2px 7px;
-    border-radius: 10px;
+    background: #fff; color: #c00;
+    font-size: 9px; font-weight: bold;
+    padding: 2px 7px; border-radius: 10px;
     animation: pisca 1s infinite;
   }
   @keyframes pisca { 0%,100%{opacity:1} 50%{opacity:0.3} }
@@ -155,96 +167,74 @@
   /* TABELA */
   .card-table { width: 100%; border-collapse: collapse; flex: 1; }
   .card-table th {
-    background: #163d21;
-    color: #a8d44d;
-    font-size: 10px;
-    padding: 4px 6px;
-    text-align: left;
-    border-bottom: 1px solid #2d6a3f;
+    background: #163d21; color: #a8d44d;
+    font-size: 11px; padding: 4px 8px;
+    text-align: left; border-bottom: 1px solid #2d6a3f;
   }
   .card-tv.atrasado .card-table th { background: #5a0000; color: #ffd0d0; }
   .card-table td {
-    padding: 4px 6px;
+    padding: 5px 8px;
     border-bottom: 1px solid #1a3a20;
-    font-size: 11px;
-    color: #ccc;
+    font-size: 12px; color: #bbb;
+    vertical-align: middle;
   }
-  .card-tv.atrasado .card-table td { border-bottom: 1px solid #5a1010; background: #ffe0e0; color: #900; }
-  .card-table td.etapa-tv { color: #ddd; font-size: 11px; }
-  .card-tv.atrasado .card-table td.etapa-tv { color: #900; font-weight: bold; }
-  .card-table td.val { color: #fff; font-weight: bold; font-size: 12px; }
-  .card-tv.atrasado .card-table td.val { color: #c00; }
-  .card-table td.vz { color: #3a5a3a; font-style: italic; }
-  .card-tv.atrasado .card-table td.vz { color: #c88; }
-  .tr-ativa { background: #0d2a18; }
-  .card-tv.atrasado .tr-ativa { background: #fff0f0; }
-  .tr-ativa td.etapa-tv { color: #a8d44d; }
-  .card-tv.atrasado .tr-ativa td.etapa-tv { color: #c00; font-weight: bold; }
-  .medio-tv { font-size: 9px; color: #5a7a5a; display: block; }
+  .card-tv.atrasado .card-table td { background: #ffe0e0 !important; border-bottom: 1px solid #f5a0a0; color: #900; }
+  .etapa-tv { color: #ccc; }
+  .card-tv.atrasado .etapa-tv { color: #900 !important; font-weight: bold; }
+  .medio-tv { font-size: 9px; color: #3a6a3a; display: block; }
   .card-tv.atrasado .medio-tv { color: #c88; }
+  .val { color: #fff !important; font-weight: bold; font-size: 13px; }
+  .card-tv.atrasado .val { color: #c00 !important; }
+  .vz { color: #2a4a2a !important; font-style: italic; }
+  .card-tv.atrasado .vz { color: #c88 !important; }
+  .tr-ativa { background: #0d2a18 !important; }
+  .card-tv.atrasado .tr-ativa { background: #fff0f0 !important; }
+  .tr-ativa .etapa-tv { color: #a8d44d !important; font-weight: bold; }
+  .card-tv.atrasado .tr-ativa .etapa-tv { color: #c00 !important; }
 
-  /* OBS */
+  /* OBS e SETUP */
   .card-obs {
-    padding: 5px 10px;
-    font-size: 10px;
-    color: #7ab830;
-    border-top: 1px solid #2d6a3f;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    padding: 4px 10px; font-size: 10px; color: #5a8a5a;
+    border-top: 1px solid #1a3a20;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   .card-tv.atrasado .card-obs { background: #ffe0e0; color: #900; border-top: 1px solid #f5a0a0; }
-
-  /* SETUP ALERT */
   .setup-tv {
-    background: #3a0000;
-    color: #ff9999;
-    font-size: 10px;
-    padding: 4px 8px;
+    background: #3a0000; color: #ffaaaa;
+    font-size: 11px; padding: 4px 8px;
     border-top: 1px solid #c00;
-    font-weight: bold;
+    font-weight: bold; text-align: center;
     animation: pisca 1.5s infinite;
   }
 
-  /* NENHUM ATIVO */
+  /* SEM ATIVOS */
   .sem-ativos {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    color: #2d6a3f;
-    font-size: 20px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    flex: 1; color: #2d6a3f; font-size: 18px; gap: 12px;
   }
-  .sem-ativos span { font-size: 60px; margin-bottom: 16px; }
+  .sem-ativos span { font-size: 52px; }
 
-  /* INDICADORES DE SLIDE */
+  /* DOTS */
   .slide-dots {
-    position: fixed;
-    bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 8px;
+    display: flex; justify-content: center; gap: 8px; padding: 4px 0; flex-shrink: 0;
   }
   .slide-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: #2d6a3f;
-    transition: background 0.3s;
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #2d6a3f; transition: background 0.3s;
   }
   .slide-dot.ativo { background: #a8d44d; }
 
-  /* SEÇÃO LABEL */
-  .secao-sep {
-    grid-column: 1 / -1;
-    font-size: 12px;
-    font-weight: bold;
-    color: #a8d44d;
-    background: #163d21;
-    padding: 3px 10px;
-    border-radius: 4px;
-    margin-bottom: -4px;
+  /* SLIDE VIEWPORT */
+  .slide-outer { flex: 1; overflow: hidden; min-height: 0; }
+  .slide-viewport {
+    display: flex; width: 100%; height: 100%;
+    transition: transform 0.7s cubic-bezier(0.77,0,0.175,1);
+  }
+  .slide-page {
+    min-width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    gap: 10px;
   }
 </style>
 </head>
@@ -266,11 +256,10 @@
   <span class="dot" id="dot"></span>
   <span id="status-txt">Conectando...</span>
   <span class="slide-info" id="slide-info"></span>
-  <span class="secao-label" id="secao-label">—</span>
 </div>
 
-<div class="slide-area">
-  <div class="slide-viewport" id="viewport"></div>
+<div class="main-area" id="main-area">
+  <div class="sem-ativos"><span>⏳</span>Carregando...</div>
 </div>
 <div class="slide-dots" id="dots"></div>
 
@@ -291,185 +280,192 @@
   const db = getDatabase(app);
 
   // Relógio
-  function atualizarRelogio() {
-    const agora = new Date();
-    document.getElementById('relogio').textContent =
-      agora.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
-    document.getElementById('data-atual').textContent =
-      agora.toLocaleDateString('pt-BR', {weekday:'long', day:'2-digit', month:'long', year:'numeric'});
+  function tick() {
+    const n = new Date();
+    document.getElementById('relogio').textContent = n.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    document.getElementById('data-atual').textContent = n.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
   }
-  setInterval(atualizarRelogio, 1000);
-  atualizarRelogio();
+  setInterval(tick,1000); tick();
 
   const ETAPAS_SUP = [
-    {k:'limp1_ini',   k2:'limp1_fim',   l:'1ª Limpeza',         m:60},
-    {k:'desest_ini',  k2:'desest_fim',   l:'Desestanhação',       m:120},
-    {k:'lanca_ini',   k2:'lanca_fim',    l:'Desant. c/ Lança',    m:330},
-    {k:'desant1_ini', k2:'desant1_fim',  l:'1ª Desantimoniação',  m:120},
-    {k:'decup_ini',   k2:'decup_fim',    l:'Decuprização',        m:150},
-    {k:'transf_ini',  k2:'transf_fim',   l:'1ª Transferência',    m:60},
-    {k:'desant2_ini', k2:'desant2_fim',  l:'2ª Desantimoniação',  m:330},
-    {k:'limpeza1_ini',k2:'limpeza1_fim', l:'1ª Limpeza Final',    m:120},
-    {k:'transf2_ini', k2:'transf2_fim',  l:'2ª Transferência',    m:60},
-    {k:'limpeza2_ini',k2:'limpeza2_fim', l:'2ª Limpeza Final',    m:120},
-    {k:'metais_ini',  k2:'metais_fim',   l:'Agregar Metais',      m:300},
-    {k:'lingot_ini',  k2:'lingot_fim',   l:'Lingotamento',        m:null},
+    {k:'limp1_ini',   k2:'limp1_fim',   l:'1ª Limpeza',        m:60},
+    {k:'desest_ini',  k2:'desest_fim',  l:'Desestanhação',      m:120},
+    {k:'lanca_ini',   k2:'lanca_fim',   l:'Desant. c/ Lança',   m:330},
+    {k:'desant1_ini', k2:'desant1_fim', l:'1ª Desantimoniação', m:120},
+    {k:'decup_ini',   k2:'decup_fim',   l:'Decuprização',       m:150},
+    {k:'transf_ini',  k2:'transf_fim',  l:'1ª Transferência',   m:60},
+    {k:'desant2_ini', k2:'desant2_fim', l:'2ª Desantimoniação', m:330},
+    {k:'limpeza1_ini',k2:'limpeza1_fim',l:'1ª Limpeza Final',   m:120},
+    {k:'transf2_ini', k2:'transf2_fim', l:'2ª Transferência',   m:60},
+    {k:'limpeza2_ini',k2:'limpeza2_fim',l:'2ª Limpeza Final',   m:120},
+    {k:'metais_ini',  k2:'metais_fim',  l:'Agregar Metais',     m:300},
+    {k:'lingot_ini',  k2:'lingot_fim',  l:'Lingotamento',       m:null},
   ];
   const ETAPAS_INF = [
-    {k:'limp1_ini',   k2:'limp1_fim',   l:'1ª Limpeza',          m:60},
-    {k:'enxofre_ini', k2:'enxofre_fim', l:'Dec. Com Enxofre',    m:180},
-    {k:'desest_ini',  k2:'desest_fim',  l:'Desestanhação',        m:300},
-    {k:'transf_ini',  k2:'transf_fim',  l:'Transferência',        m:null},
-    {k:'soda_ini',    k2:'soda_fim',    l:'Limpeza c/ Soda',      m:270},
-    {k:'carvao_ini',  k2:'carvao_fim',  l:'Limpeza c/ Carvão',    m:null},
-    {k:'metais_ini',  k2:'metais_fim',  l:'Agregar Metais',       m:240},
-    {k:'lingot_ini',  k2:'lingot_fim',  l:'Lingotamento',         m:null},
+    {k:'limp1_ini',   k2:'limp1_fim',   l:'1ª Limpeza',        m:60},
+    {k:'enxofre_ini', k2:'enxofre_fim', l:'Dec. Com Enxofre',  m:180},
+    {k:'desest_ini',  k2:'desest_fim',  l:'Desestanhação',      m:300},
+    {k:'transf_ini',  k2:'transf_fim',  l:'Transferência',      m:null},
+    {k:'soda_ini',    k2:'soda_fim',    l:'Limpeza c/ Soda',    m:270},
+    {k:'carvao_ini',  k2:'carvao_fim',  l:'Limpeza c/ Carvão',  m:null},
+    {k:'metais_ini',  k2:'metais_fim',  l:'Agregar Metais',     m:240},
+    {k:'lingot_ini',  k2:'lingot_fim',  l:'Lingotamento',       m:null},
   ];
 
   let dados = {};
   let slideAtual = 0;
-  let totalSlides = 0;
+  let slides = []; // cada slide = { sup:[], inf:[] }
   let slideTimer = null;
-  let cardsAtivos = [];
 
-  function toMin(str) {
-    const [h,m] = str.split(':').map(Number);
-    return h*60+m;
+  function toMin(s) { const [h,m]=s.split(':').map(Number); return h*60+m; }
+
+  function isAtrasado(p, etapas) {
+    const agoraMin = new Date().getHours()*60 + new Date().getMinutes();
+    let ultimaIdx = -1;
+    etapas.forEach((e,i) => { if (dados[`${p}_${e.k}`]) ultimaIdx=i; });
+    if (ultimaIdx < 0) return false;
+    const fim = dados[`${p}_${etapas[ultimaIdx].k2}`] || '';
+    if (!fim) return false;
+    const fimMin = toMin(fim);
+    const virada = fimMin > 22*60 && agoraMin < 2*60;
+    return !virada && agoraMin > fimMin;
   }
 
-  function renderCard(p, etapas, tipo) {
-    const lote   = dados[`${p}_lote`]   || '';
-    const panela = dados[`${p}_panela`] || '';
+  function renderCard(p, etapas) {
+    const lote   = dados[`${p}_lote`]   || '—';
+    const panela = dados[`${p}_panela`] || '—';
     const liga   = dados[`${p}_liga`]   || '';
     const obs    = dados[`${p}_obs`]    || '';
     const setup  = dados[`${p}_setup_motivo`] || '';
+    const atrasado = isAtrasado(p, etapas);
+    const agoraMin = new Date().getHours()*60 + new Date().getMinutes();
 
-    const agora    = new Date();
-    const agoraMin = agora.getHours()*60 + agora.getMinutes();
-
-    // Última etapa com início preenchido
     let ultimaIdx = -1;
-    etapas.forEach((e,i) => { if (dados[`${p}_${e.k}`]) ultimaIdx = i; });
+    etapas.forEach((e,i) => { if (dados[`${p}_${e.k}`]) ultimaIdx=i; });
 
-    let atrasado = false;
-    if (ultimaIdx >= 0) {
-      const fim = dados[`${p}_${etapas[ultimaIdx].k2}`] || '';
-      if (fim) {
-        const fimMin = toMin(fim);
-        const virada = fimMin > 22*60 && agoraMin < 2*60;
-        if (!virada && agoraMin > fimMin) atrasado = true;
-      }
-    }
-
-    const rows = etapas.map((e, idx) => {
+    const rows = etapas.map((e,idx) => {
       const ini = dados[`${p}_${e.k}`]  || '';
       const fim = dados[`${p}_${e.k2}`] || '';
       const ativa = idx === ultimaIdx;
-      const medStr = e.m ? `<span class="medio-tv">T.M: ${Math.floor(e.m/60)}:${String(e.m%60).padStart(2,'0')}h</span>` : '';
+      const med = e.m ? `<span class="medio-tv">T.M: ${Math.floor(e.m/60)}:${String(e.m%60).padStart(2,'0')}h</span>` : '';
       return `<tr class="${ativa?'tr-ativa':''}">
-        <td class="etapa-tv">${e.l}${medStr}</td>
+        <td class="etapa-tv">${e.l}${med}</td>
         <td class="${ini?'val':'vz'}">${ini||'—'}</td>
         <td class="${fim?'val':'vz'}">${fim||'—'}</td>
       </tr>`;
     }).join('');
 
-    const badgeAtraso = atrasado ? '<span class="badge-atraso">⚠ ATRASO</span>' : '<span class="badge-andamento">● EM ANDAMENTO</span>';
+    const badge = atrasado
+      ? '<span class="badge-atraso">⚠ ATRASO</span>'
+      : '<span class="badge-andamento">● EM ANDAMENTO</span>';
 
     return `<div class="card-tv${atrasado?' atrasado':''}">
-      ${liga ? `<div class="card-liga">⚗️ ${liga}</div>` : ''}
+      <div class="card-top">
+        ${liga ? `<div class="card-liga-tv">⚗️ ${liga}</div>` : ''}
+        <div class="card-panela-destaque">Panela ${panela}</div>
+      </div>
       <div class="card-header-tv">
-        <span class="card-lote">Lote: ${lote}</span>
-        <span class="card-panela">Panela: ${panela}</span>
-        ${badgeAtraso}
+        <span class="card-lote-tv">Lote: ${lote}</span>
+        ${badge}
       </div>
       <table class="card-table">
         <thead><tr><th>Etapa</th><th>Início</th><th>Prev. Fim</th></tr></thead>
-        <tbody>${rows||'<tr><td colspan="3" style="color:#3a5a3a;font-style:italic;padding:6px">Sem etapas preenchidas</td></tr>'}</tbody>
+        <tbody>${rows}</tbody>
       </table>
       ${obs ? `<div class="card-obs">OBS: ${obs}</div>` : ''}
       ${setup ? `<div class="setup-tv">⚠️ SETUP: ${setup}</div>` : ''}
     </div>`;
   }
 
-  function buildSlides() {
-    const viewport = document.getElementById('viewport');
-    const dotsEl   = document.getElementById('dots');
-    const secLabel = document.getElementById('secao-label');
+  function buildUI() {
+    const mainArea = document.getElementById('main-area');
+    const dotsEl = document.getElementById('dots');
 
-    // Coletar cards ativos
+    // Coletar ativos por seção
     const sup = [], inf = [];
-    for (let i=1;i<=8;i++) { if (dados[`a${i}_lote`]) sup.push({p:`a${i}`, etapas:ETAPAS_SUP, tipo:'PURO/CÁLCIO'}); }
-    for (let i=1;i<=2;i++) { if (dados[`b${i}_lote`]) inf.push({p:`b${i}`, etapas:ETAPAS_INF, tipo:'SB/SN'}); }
+    for (let i=1;i<=8;i++) { if (dados[`a${i}_lote`]) sup.push({p:`a${i}`,etapas:ETAPAS_SUP}); }
+    for (let i=1;i<=2;i++) { if (dados[`b${i}_lote`]) inf.push({p:`b${i}`,etapas:ETAPAS_INF}); }
 
-    cardsAtivos = [...sup, ...inf];
-
-    if (cardsAtivos.length === 0) {
-      viewport.innerHTML = '<div class="slide-page" style="align-items:center;justify-items:center;"><div class="sem-ativos" style="grid-column:1/-1"><span>⏳</span>Nenhuma panela em andamento</div></div>';
+    if (!sup.length && !inf.length) {
+      mainArea.innerHTML = '<div class="sem-ativos"><span>⏳</span>Nenhuma panela em andamento</div>';
       dotsEl.innerHTML = '';
       document.getElementById('slide-info').textContent = '';
-      secLabel.textContent = '—';
       return;
     }
 
-    // Dividir em páginas de 4
-    const pages = [];
-    for (let i=0; i<cardsAtivos.length; i+=4) pages.push(cardsAtivos.slice(i,i+4));
-    totalSlides = pages.length;
+    // Montar slides: cada slide tem até 4 sup + inf que couberem
+    // Estratégia: sup em slides de 4, inf sempre aparece em todos os slides (máx 2)
+    const supPages = [];
+    for (let i=0;i<Math.max(sup.length,1);i+=4) supPages.push(sup.slice(i,i+4));
+    slides = supPages;
 
-    viewport.innerHTML = pages.map((page, pi) => {
-      const cards = page.map(c => renderCard(c.p, c.etapas, c.tipo)).join('');
-      return `<div class="slide-page">${cards}</div>`;
+    const totalSlides = slides.length;
+    dotsEl.innerHTML = slides.length > 1
+      ? slides.map((_,i)=>`<div class="slide-dot${i===slideAtual?' ativo':''}" ></div>`).join('')
+      : '';
+
+    // Construir viewport
+    const pagesHtml = slides.map((supPage, pi) => {
+      const supCards = supPage.map(c => renderCard(c.p, c.etapas)).join('');
+      const infCards = inf.map(c => renderCard(c.p, c.etapas)).join('');
+
+      const supSection = supPage.length ? `
+        <div class="secao-wrap" style="flex:${inf.length?'1.4':'1'};min-height:0;">
+          <div class="secao-titulo-tv">🏭 PANELAS DE PURO/CÁLCIO</div>
+          <div class="cards-grid" style="flex:1;min-height:0;">${supCards}</div>
+        </div>` : '';
+
+      const infSection = inf.length ? `
+        <div class="secao-wrap" style="flex:1;min-height:0;">
+          <div class="secao-titulo-tv">⚗️ PANELAS DE SB/SN</div>
+          <div class="cards-grid" style="flex:1;min-height:0;">${infCards}</div>
+        </div>` : '';
+
+      return `<div class="slide-page">${supSection}${infSection}</div>`;
     }).join('');
 
-    // Dots
-    dotsEl.innerHTML = pages.map((_,i) => `<div class="slide-dot${i===slideAtual?' ativo':''}" data-i="${i}"></div>`).join('');
+    mainArea.innerHTML = `<div class="slide-outer"><div class="slide-viewport" id="viewport">${pagesHtml}</div></div>`;
 
-    // Ajustar posição
-    goTo(slideAtual < totalSlides ? slideAtual : 0, false);
+    document.getElementById('slide-info').textContent =
+      slides.length > 1 ? `Slide ${slideAtual+1} de ${slides.length} · ${sup.length+inf.length} panela(s) ativa(s)` : `${sup.length+inf.length} panela(s) ativa(s)`;
+
+    goTo(slideAtual < slides.length ? slideAtual : 0, false);
   }
 
   function goTo(idx, animate=true) {
     slideAtual = idx;
-    const viewport = document.getElementById('viewport');
-    if (!animate) viewport.style.transition = 'none';
-    viewport.style.transform = `translateX(-${idx*100}%)`;
-    if (!animate) setTimeout(()=> viewport.style.transition = '', 50);
-
-    // Atualizar dots
-    document.querySelectorAll('.slide-dot').forEach((d,i) => d.classList.toggle('ativo', i===idx));
-
-    // Label seção
-    const page = cardsAtivos.slice(idx*4, idx*4+4);
-    const tipos = [...new Set(page.map(c=>c.tipo))];
-    document.getElementById('secao-label').textContent = tipos.join(' + ');
+    const vp = document.getElementById('viewport');
+    if (!vp) return;
+    if (!animate) vp.style.transition='none';
+    vp.style.transform=`translateX(-${idx*100}%)`;
+    if (!animate) setTimeout(()=>vp.style.transition='',50);
+    document.querySelectorAll('.slide-dot').forEach((d,i)=>d.classList.toggle('ativo',i===idx));
     document.getElementById('slide-info').textContent =
-      `Slide ${idx+1} de ${totalSlides} · ${cardsAtivos.length} panela(s) ativa(s)`;
+      slides.length > 1 ? `Slide ${idx+1} de ${slides.length}` : `${Object.keys(dados).filter(k=>k.endsWith('_lote')&&dados[k]).length} panela(s) ativa(s)`;
   }
 
   function nextSlide() {
-    if (totalSlides <= 1) return;
-    goTo((slideAtual+1) % totalSlides);
+    if (slides.length <= 1) return;
+    goTo((slideAtual+1) % slides.length);
   }
 
-  function iniciarSlide() {
+  function iniciarTimer() {
     if (slideTimer) clearInterval(slideTimer);
     slideTimer = setInterval(nextSlide, 30000);
   }
 
-  // Firebase
-  onValue(ref(db, 'formulario/dados'), (snapshot) => {
-    document.getElementById('dot').className = 'dot on';
-    document.getElementById('status-txt').textContent = '🟢 Conectado — tempo real';
-    dados = snapshot.val() || {};
-    buildSlides();
-    iniciarSlide();
+  onValue(ref(db,'formulario/dados'), (snap) => {
+    document.getElementById('dot').className='dot on';
+    document.getElementById('status-txt').textContent='🟢 Conectado — tempo real';
+    dados = snap.val() || {};
+    buildUI();
+    iniciarTimer();
   }, () => {
-    document.getElementById('dot').className = 'dot';
-    document.getElementById('status-txt').textContent = '🔴 Sem conexão';
+    document.getElementById('dot').className='dot';
+    document.getElementById('status-txt').textContent='🔴 Sem conexão';
   });
 
-  // Re-verificar atrasos a cada minuto sem recarregar do Firebase
-  setInterval(() => { buildSlides(); }, 60000);
+  setInterval(()=>buildUI(), 60000);
 </script>
 </body>
 </html>
