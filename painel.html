@@ -19,13 +19,13 @@
   .secao-titulo { 
     font-size: 14px; font-weight: bold; color: #fff; 
     background: #1e4d2b; padding: 8px 16px; border-radius: 6px;
-    max-width: 1200px; margin: 20px auto 12px; 
+    max-width: 1400px; margin: 20px auto 12px; 
     letter-spacing: 1px;
   }
 
   /* GRIDS */
-  .grid-8 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; max-width: 1200px; margin: 0 auto 10px; }
-  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; max-width: 1200px; margin: 0 auto; }
+  .grid-8 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; max-width: 1400px; margin: 0 auto 10px; }
+  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; max-width: 1400px; margin: 0 auto; }
   @media(max-width: 900px) { .grid-8 { grid-template-columns: repeat(2, 1fr); } }
   @media(max-width: 500px) { .grid-8, .grid-2 { grid-template-columns: 1fr; } }
 
@@ -87,7 +87,7 @@
   }
 
   /* HISTÓRICO */
-  .hist-secao { max-width: 1200px; margin: 28px auto 0; }
+  .hist-secao { max-width: 1400px; margin: 28px auto 0; }
   .hist-titulo { color: #1e4d2b; font-size: 15px; font-weight: bold; border-bottom: 2px solid #a8d44d; padding-bottom: 8px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
   .hist-vazio { color: #aaa; font-style: italic; text-align: center; padding: 20px; }
   /* ACORDEÃO HISTÓRICO */
@@ -167,6 +167,15 @@
   .sem-autor { color: #ccc; }
   .card:not(.ativo) .td-autor { color: #5a9e2f; }
   .card:not(.ativo) .tag-autor { background: #1a3d25; color: #a8d44d; border-color: #2d6a3f; }
+
+  /* HISTÓRICO DE EDIÇÃO NO PAINEL */
+  .hist-painel { margin-top: 3px; }
+  .hist-painel-linha { font-size: 9px; color: #888; background: #fffbe6; border-left: 2px solid #f0a000; padding: 1px 4px; margin-bottom: 1px; border-radius: 2px; white-space: normal; }
+  .card.ativo .hist-painel-linha { background: #fffbe6; color: #555; }
+  .card:not(.ativo) .hist-painel-linha { background: #2a2000; color: #c8a800; border-color: #8a6000; }
+  /* LARGURA DOS CARDS */
+  .grid-8 { grid-template-columns: repeat(4, 1fr); gap: 14px; max-width: 1400px; }
+  .grid-2 { gap: 20px; max-width: 1400px; }
   .footer { text-align: center; margin-top: 28px; font-size: 11px; color: #aaa; }
 </style>
 </head>
@@ -279,37 +288,48 @@
       if (dados[`${prefix}_${e.key}`]) ultimaComIni = idx;
     });
 
+    const agoraMin = agora.getHours() * 60 + agora.getMinutes();
+    let atrasadoCard = false;
+
     const linhas = etapas.map((e, idx) => {
+      // e.key já inclui _ini, e.key2 inclui _fim
       const ini = dados[`${prefix}_${e.key}`] || '';
       const fim = dados[`${prefix}_${e.key2}`] || '';
       const autorIni = dados[`${prefix}_${e.key}_autor`] || '';
-      const autorFim = dados[`${prefix}_${e.key2}_autor`] || '';
-      const autor = autorFim || autorIni || '';
+      const autor = autorIni || '';
+
+      // Histórico de edição — chave: prefix_etapakey_histedicao (ex: a1_limp1_histedicao)
+      const etapaBase = e.key.replace('_ini','');
+      const histRaw = dados[`${prefix}_${etapaBase}_histedicao`] || '';
+      let histHtml = '';
+      if (histRaw) {
+        try {
+          const hist = JSON.parse(histRaw);
+          histHtml = hist.map(h => `<div class="hist-painel-linha">✏️ <b>${h.usuario}</b> ${h.quando} | ${h.antigo} → <b>${h.novo}</b></div>`).join('');
+        } catch(e2) {}
+      }
+
       const preenchida = ini || fim;
 
-      // Alerta de atraso: só verifica a última etapa com início preenchido
-      // Só é atrasado se tem previsão de fim E horário atual passou dela
+      // Atraso: só na última etapa com início preenchido, só se tem fim e passou dele
       let atrasada = false;
       if (idx === ultimaComIni && fim) {
-        const agoraMin = agora.getHours() * 60 + agora.getMinutes();
         const [hf, mf] = fim.split(':').map(Number);
         const fimMin = hf * 60 + mf;
         const virada = fimMin > 22 * 60 && agoraMin < 2 * 60;
-        if (!virada && agoraMin > fimMin) atrasada = true;
+        if (!virada && agoraMin > fimMin) { atrasada = true; atrasadoCard = true; }
       }
 
-      // Label com tempo médio
       const medioStr = e.medio ? `<span class="medio-label">(T.M: ${Math.floor(e.medio/60)}:${String(e.medio%60).padStart(2,'0')}h)</span>` : '';
       const badgeAtraso = atrasada ? '<span class="badge-atraso">⚠ ATRASO</span>' : '';
 
       return `<tr class="${preenchida?'preenchida':''} ${atrasada?'atrasada':''}">
-        <td class="etapa">${e.label}${medioStr}${badgeAtraso}</td>
+        <td class="etapa">${e.label}${medioStr}${badgeAtraso}${histHtml ? `<div class="hist-painel">${histHtml}</div>` : ''}</td>
         <td class="${ini?'valor':'vazio'}">${ini||'—'}</td>
         <td class="${fim?'valor':'vazio'}">${fim||'—'}</td>
         <td class="td-autor">${autor ? `<span class="tag-autor">✏️ ${autor}</span>` : '<span class="sem-autor">—</span>'}</td>
       </tr>`;
     }).join('');
-    const atrasadoCard = linhas.includes('class="atrasada"');
     return `<div class="card ${ativo} ${atrasadoCard ? 'card-atrasado' : ''}">
       ${liga ? `<div class="liga-bar">⚗️ LIGA: ${liga}</div>` : ''}
       <div class="card-header"><h2>Lote: ${lote}${ativo ? '<span class="badge-andamento">● EM ANDAMENTO</span>' : ''}</h2><span class="info">Panela: ${panela}</span></div>
