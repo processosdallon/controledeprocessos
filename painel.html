@@ -305,24 +305,20 @@
     const agora = new Date();
     const agoraMin = agora.getHours() * 60 + agora.getMinutes();
 
-    // Índice da última etapa com início preenchido
     let ultimaComIni = -1;
     etapas.forEach((e, idx) => { if (dados[`${prefix}_${e.key}`]) ultimaComIni = idx; });
 
-    // Se lingotamento iniciado → nunca atraso
-    const lingotKey = etapas.find(e => e.key.includes('lingot'));
-    const lingotIniciado = lingotKey ? !!dados[`${prefix}_${lingotKey.key}`] : false;
-
+    const lingotIniciado = !!dados[`${prefix}_lingot_ini`];
     let atrasadoCard = false;
-    // Coletar histórico global de edições do card
     let todasEdicoes = [];
 
     const linhas = etapas.map((e, idx) => {
       const ini = dados[`${prefix}_${e.key}`] || '';
       const fim = dados[`${prefix}_${e.key2}`] || '';
       const autorIni = dados[`${prefix}_${e.key}_autor`] || '';
+      const preenchida = ini || fim;
 
-      // Tempo de execução: ini desta até ini da próxima com início preenchido
+      // Tempo de execução com label
       let execStr = '';
       if (ini) {
         const proxEtapa = etapas.slice(idx+1).find(e2 => dados[`${prefix}_${e2.key}`]);
@@ -332,27 +328,25 @@
           const [h2,m2] = proxIni.split(':').map(Number);
           let diff = (h2*60+m2)-(h1*60+m1);
           if (diff < 0) diff += 24*60;
-          execStr = `<span class="exec-label">⏱ ${Math.floor(diff/60)}:${String(diff%60).padStart(2,'0')}h</span>`;
+          execStr = `<span class="exec-label">Tempo de Execução: ${Math.floor(diff/60)}:${String(diff%60).padStart(2,'0')}h</span>`;
         }
       }
 
-      // Coletar histórico para acordeão global
+      // Coletar histórico para acordeão
       const etapaBase = e.key.replace('_ini','');
-      const histRaw = dados[`${prefix}_${etapaBase}_histedicao`] || '';
-      if (histRaw) {
-        try {
+      try {
+        const histRaw = dados[`${prefix}_${etapaBase}_histedicao`] || '';
+        if (histRaw) {
           const hist = JSON.parse(histRaw);
-          hist.forEach(h => todasEdicoes.push({etapa: e.label, ...h}));
-        } catch(e2) {}
-      }
+          hist.forEach(h => todasEdicoes.push({etapa: e.label, usuario: h.usuario||'', quando: h.quando||'', antigo: h.antigo||'', novo: h.novo||''}));
+        }
+      } catch(err) {}
 
-      const preenchida = ini || fim;
-
-      // Atraso: só na última etapa, só se tem fim preenchido, e lingotamento não iniciado
+      // Atraso
       let atrasada = false;
       if (!lingotIniciado && idx === ultimaComIni && fim) {
-        const [hf, mf] = fim.split(':').map(Number);
-        const fimMin = hf * 60 + mf;
+        const [hf,mf] = fim.split(':').map(Number);
+        const fimMin = hf*60+mf;
         const virada = fimMin > 22*60 && agoraMin < 2*60;
         if (!virada && agoraMin > fimMin) { atrasada = true; atrasadoCard = true; }
       }
@@ -368,19 +362,17 @@
       </tr>`;
     }).join('');
 
-    // Acordeão de histórico de edições
-    const cardId = `hist-acord-${prefix}`;
+    // Acordeão recolhível de histórico
     let histAcordHtml = '';
     if (todasEdicoes.length > 0) {
       const linhasHist = todasEdicoes.map(h =>
         `<div class="hist-acord-linha"><b>${h.etapa}</b> — ✏️ ${h.usuario} ${h.quando}: ${h.antigo} → <b>${h.novo}</b></div>`
       ).join('');
-      histAcordHtml = `
-        <div class="hist-acord-wrap">
-          <div class="hist-acord-btn" onclick="this.classList.toggle('aberto');this.nextElementSibling.classList.toggle('aberto')">
+      histAcordHtml = `<div class="hist-acord-wrap">
+          <div class="hist-acord-btn" onclick="var b=this;b.classList.toggle('aberto');b.nextElementSibling.classList.toggle('aberto')">
             📋 Histórico de edições (${todasEdicoes.length}) <span class="hist-seta">▼</span>
           </div>
-          <div class="hist-acord-body" id="${cardId}">${linhasHist}</div>
+          <div class="hist-acord-body">${linhasHist}</div>
         </div>`;
     }
 
