@@ -13,8 +13,8 @@
   .dot { width: 9px; height: 9px; border-radius: 50%; background: #ccc; display: inline-block; }
   .dot.connected { background: #5a9e2f; animation: pulse 2s infinite; }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
-  .secao-titulo { text-align: center; font-size: 13px; font-weight: bold; color: #1e4d2b; max-width: 720px; margin: 24px auto 8px; border-bottom: 2px solid #aaa; padding-bottom: 4px; }
-  .bloco { background: #fff; border: 1.5px solid #2d6a3f; margin-bottom: 24px; max-width: 720px; margin-left: auto; margin-right: auto; transition: border-color 0.3s; }
+  .secao-titulo { text-align: center; font-size: 13px; font-weight: bold; color: #1e4d2b; max-width: 900px; margin: 24px auto 8px; border-bottom: 2px solid #aaa; padding-bottom: 4px; }
+  .bloco { background: #fff; border: 1.5px solid #2d6a3f; margin-bottom: 24px; max-width: 900px; margin-left: auto; margin-right: auto; transition: border-color 0.3s; }
   .bloco.atrasado { border: 2px solid #c00 !important; box-shadow: 0 0 10px #f005; background: #ffe0e0; }
   .bloco.atrasado .bloco-header { background: #c00 !important; }
   .bloco.atrasado table { background: #ffe0e0; }
@@ -35,14 +35,15 @@
   .btn-lapis { background: none; border: none; cursor: pointer; font-size: 11px; padding: 0 2px; opacity: 0.5; }
   .btn-lapis:hover { opacity: 1; }
   .autoria { font-size: 10px; color: #888; display: block; font-style: italic; }
-  .hist-edicao { font-size: 10px; color: #a00; margin-top: 2px; }
+  .hist-edicao { font-size: 10px; color: #555; margin-top: 3px; }
+  .hist-linha { background: #fff8e1; border-left: 2px solid #f0a000; padding: 2px 5px; margin-bottom: 2px; border-radius: 2px; }
   .hist-edicao div { border-top: 1px dashed #ecc; padding: 1px 0; }
   textarea { width: 100%; border: none; background: transparent; font-size: 12px; font-family: Arial; color: #111; outline: none; padding: 2px; resize: none; }
   .obs-section { border-top: 2px solid #1e4d2b; padding: 6px 8px; }
   .obs-label { font-weight: bold; font-size: 12px; margin-bottom: 4px; }
   .btn-concluido { display: block; width: calc(100% - 16px); margin: 8px; padding: 9px; background: #28a745; color: white; border: none; font-size: 13px; font-weight: bold; border-radius: 4px; cursor: pointer; }
   .btn-concluido:hover { background: #1e7e34; }
-  .btn-container { text-align: center; margin: 10px 0 30px; max-width: 720px; margin-left: auto; margin-right: auto; }
+  .btn-container { text-align: center; margin: 10px 0 30px; max-width: 900px; margin-left: auto; margin-right: auto; }
   .btn-limpar { color: white; border: none; padding: 10px 32px; font-size: 14px; border-radius: 4px; cursor: pointer; margin: 0 8px; background: #dc3545; }
   .btn-imprimir { color: white; border: none; padding: 10px 32px; font-size: 14px; border-radius: 4px; cursor: pointer; margin: 0 8px; background: #444; }
   /* SETUP */
@@ -78,7 +79,7 @@
   .login-box input { width: 100%; padding: 9px 12px; margin-bottom: 12px; border: 1px solid #a8d44d; border-radius: 5px; background: #f5f5f5; color: #1e4d2b; font-size: 13px; outline: none; }
   .login-box button { width: 100%; padding: 10px; background: #28a745; color: white; border: none; border-radius: 5px; font-size: 14px; font-weight: bold; cursor: pointer; }
   .login-erro { color: #ff6b6b; font-size: 12px; margin-top: 8px; display: none; }
-  .usuario-bar { background: #1a3a2a; border: 1px solid #28a745; border-radius: 6px; padding: 6px 14px; max-width: 720px; margin: 0 auto 14px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #a8f0b8; }
+  .usuario-bar { background: #1a3a2a; border: 1px solid #28a745; border-radius: 6px; padding: 6px 14px; max-width: 900px; margin: 0 auto 14px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #a8f0b8; }
   .usuario-bar button { background: transparent; border: 1px solid #28a745; color: #a8f0b8; padding: 3px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; }
   .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #2d6a3f; color: white; padding: 10px 24px; border-radius: 6px; font-size: 13px; display: none; z-index: 999; }
   @media print { #tela-login,.btn-container,.status-bar,.secao-titulo,.btn-concluido,.usuario-bar,.toast { display: none; } body { background: white; padding: 5px; } }
@@ -2128,8 +2129,11 @@
       }
       const autorEl = document.querySelector(`.autoria[data-autor="${key}"]`);
       if (autorEl) autorEl.textContent = cacheFirebase[key+'_autor'] ? `✏️ ${cacheFirebase[key+'_autor']}` : '';
-      // Restaurar readonly no campo fim se tiver valor
+      // Restaurar readonly nos campos ini e fim se tiverem valor
       if (key.endsWith('_fim') && el.classList.contains('inp-fim') && el.value) {
+        el.readOnly = true;
+      }
+      if (key.endsWith('_ini') && el.classList.contains('inp-ini') && el.value) {
         el.readOnly = true;
       }
     });
@@ -2151,7 +2155,7 @@
     setTimeout(verificarAtrasos, 300);
   }, () => { dot.className='dot'; statusTxt.textContent='🔴 Sem conexão'; });
 
-  // Preencher fim automaticamente ao preencher início
+  // Preencher fim automaticamente ao preencher início e bloquear ambos
   window.aoPreencherIni = (el, p, key, medMin) => {
     const sessao = verificarSessao();
     if (!sessao) { alert('Sessão expirada.'); fazerLogout(); return; }
@@ -2162,18 +2166,19 @@
     let fimVal = '';
     if (medMin) {
       const [h,m] = iniVal.split(':').map(Number);
-      // Usar timestamp para calcular corretamente horas + minutos
       const base = new Date(2000,0,1,h,m,0,0);
       const result = new Date(base.getTime() + medMin * 60000);
       fimVal = `${String(result.getHours()).padStart(2,'0')}:${String(result.getMinutes()).padStart(2,'0')}`;
     }
+    // Bloquear ambos após preenchimento
+    el.readOnly = true;
     fimEl.value = fimVal;
     fimEl.readOnly = true;
     salvarCampos(p, key, iniVal, fimVal, sessao.usuario);
     setTimeout(verificarAtrasos, 300);
   };
 
-  // Habilitar edição do horário de início
+  // Habilitar edição do horário de início via lápis
   window.habilitarEdicao = (btn, p, key) => {
     const sessao = verificarSessao();
     if (!sessao) { alert('Sessão expirada.'); fazerLogout(); return; }
@@ -2181,17 +2186,23 @@
     const fimEl = document.querySelector(`[data-field="${p}_${key}_fim"]`);
     if (!iniEl) return;
     const valorAntigo = iniEl.value;
+    // Desbloquear para edição
     iniEl.readOnly = false;
+    iniEl.style.background = '#fffbe6';
     iniEl.focus();
-    iniEl.onchange = () => {
+    // Registrar mudança ao sair do campo
+    const onEdit = () => {
       const novoVal = iniEl.value;
+      // Rebloquear sempre
+      iniEl.readOnly = true;
+      iniEl.style.background = '';
+      iniEl.removeEventListener('change', onEdit);
+      iniEl.removeEventListener('blur', onBlur);
       if (!novoVal || novoVal === valorAntigo) return;
-      // Recalcular fim
-      const medMin = parseInt(btn.getAttribute('data-min')) || null;
-      // Buscar tempo médio do elemento
-      let fimVal = fimEl?.value || '';
+      // Recalcular fim com o novo ini
       const etapasRef = p.startsWith('b') ? ETAPAS_INF : ETAPAS_SUP;
       const etapa = etapasRef.find(e => e.key === key);
+      let fimVal = fimEl?.value || '';
       if (etapa?.min) {
         const [h,m] = novoVal.split(':').map(Number);
         const base = new Date(2000,0,1,h,m,0,0);
@@ -2204,13 +2215,26 @@
       const histKey = `${p}_${key}_histedicao`;
       let hist = [];
       try { hist = JSON.parse(cacheFirebase[histKey] || '[]'); } catch(e) {}
-      hist.push({usuario: sessao.usuario.toUpperCase(), quando: agora, antigo: valorAntigo, novo: novoVal});
+      hist.push({usuario: sessao.usuario.toUpperCase(), quando: agora, antigo: valorAntigo || '—', novo: novoVal});
       const divId = `hist_${p}_${key}`;
       const div = document.getElementById(divId);
-      if (div) div.innerHTML = hist.map(h => `<div>✏️ ${h.usuario} ${h.quando}: ${h.antigo} → ${h.novo}</div>`).join('');
+      if (div) div.innerHTML = hist.map(h => `<div class="hist-linha">✏️ <b>${h.usuario}</b> ${h.quando} | ${h.antigo} → <b>${h.novo}</b></div>`).join('');
       salvarCampos(p, key, novoVal, fimVal, sessao.usuario, JSON.stringify(hist));
       setTimeout(verificarAtrasos, 300);
     };
+    // Blur sem mudança também rebloqueia
+    const onBlur = () => {
+      setTimeout(() => {
+        if (iniEl.readOnly === false) {
+          iniEl.readOnly = true;
+          iniEl.style.background = '';
+          iniEl.removeEventListener('change', onEdit);
+          iniEl.removeEventListener('blur', onBlur);
+        }
+      }, 200);
+    };
+    iniEl.addEventListener('change', onEdit);
+    iniEl.addEventListener('blur', onBlur);
   };
 
   function salvarCampos(p, key, iniVal, fimVal, usuario, histJson) {
