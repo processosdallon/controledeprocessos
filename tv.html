@@ -335,7 +335,7 @@
     const liga   = dados[`${p}_liga`]||'';
     const obs    = dados[`${p}_obs`]||'';
     const setup  = dados[`${p}_setup_motivo`]||'';
-    const atr    = isAtrasado(p,etapas);
+    let atr      = isAtrasado(p,etapas);
 
     let ultimaIdx=-1;
     etapas.forEach((e,i)=>{ if(dados[`${p}_${e.k}`]) ultimaIdx=i; });
