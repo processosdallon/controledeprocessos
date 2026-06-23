@@ -1457,13 +1457,27 @@
 
           // Só verifica atraso na última etapa com início preenchido
           let atrasada = false;
-          if (idx === ultimaIdx && iniEl.value && e.min) {
-            const [h, m] = iniEl.value.split(':').map(Number);
-            const iniDate = new Date(agora);
-            iniDate.setHours(h, m, 0, 0);
-            if (iniDate > agora) iniDate.setDate(iniDate.getDate() - 1);
-            const prevFim = new Date(iniDate.getTime() + e.min * 60000);
-            atrasada = agora > prevFim;
+          if (idx === ultimaIdx && iniEl.value) {
+            const fimField = e.ini.replace('_ini', '_fim');
+            const fimEl = document.querySelector(`[data-field="${p}_${fimField}"]`);
+            const fimVal = fimEl ? fimEl.value : null;
+            let limiteDate = null;
+
+            if (fimVal) {
+              // Usa previsão de fim preenchida como limite
+              const [hf, mf] = fimVal.split(':').map(Number);
+              limiteDate = new Date(agora);
+              limiteDate.setHours(hf, mf, 0, 0);
+              if (limiteDate > agora) limiteDate.setDate(limiteDate.getDate() - 1);
+            } else if (e.min) {
+              // Sem previsão, usa início + tempo médio
+              const [h, m] = iniEl.value.split(':').map(Number);
+              const iniDate = new Date(agora);
+              iniDate.setHours(h, m, 0, 0);
+              if (iniDate > agora) iniDate.setDate(iniDate.getDate() - 1);
+              limiteDate = new Date(iniDate.getTime() + e.min * 60000);
+            }
+            atrasada = limiteDate && agora > limiteDate;
           }
 
           row.classList.toggle('atrasada-form', atrasada);
