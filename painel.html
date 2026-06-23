@@ -80,6 +80,9 @@
   .card.ativo tr.preenchida td.etapa { color: #1e4d2b; font-weight: bold; }
 
   /* BADGE EM ANDAMENTO */
+  .tempo-total { font-size: 11px; color: #a8d44d; font-weight: bold; margin-left: 8px; }
+  .card.ativo .tempo-total { color: #a8d44d; }
+  .card:not(.ativo) .tempo-total { color: #5a8a5a; }
   .badge-andamento {
     display: inline-block; background: #a8d44d; color: #1e4d2b;
     font-size: 9px; font-weight: bold; padding: 1px 6px; border-radius: 8px;
@@ -302,6 +305,19 @@
     }
 
     const ativo = dados[`${prefix}_lote`] ? 'ativo' : '';
+
+    // Tempo total de processo: agora - início da primeira etapa preenchida
+    let tempoTotalHtml = '';
+    const primeiraIni = etapas.map(e => dados[`${prefix}_${e.key}`]).find(v => v);
+    if (primeiraIni) {
+      const agora2 = new Date();
+      const [hp, mp] = primeiraIni.split(':').map(Number);
+      const ini2 = new Date(agora2); ini2.setHours(hp, mp, 0, 0);
+      if (ini2 > agora2) ini2.setDate(ini2.getDate() - 1);
+      const diffTotal = Math.floor((agora2 - ini2) / 60000);
+      const ht = Math.floor(diffTotal / 60), mt = diffTotal % 60;
+      tempoTotalHtml = `<span class="tempo-total">⏳ ${ht}:${String(mt).padStart(2,'0')}h em processo</span>`;
+    }
     const agora = new Date();
     const agoraMin = agora.getHours() * 60 + agora.getMinutes();
 
@@ -378,7 +394,7 @@
 
     return `<div class="card ${ativo} ${atrasadoCard ? 'card-atrasado' : ''}">
       ${liga ? `<div class="liga-bar">⚗️ LIGA: ${liga}</div>` : ''}
-      <div class="card-header"><h2>Lote: ${lote}${ativo ? '<span class="badge-andamento">● EM ANDAMENTO</span>' : ''}</h2><span class="info">Panela: ${panela}</span></div>
+      <div class="card-header"><h2>Lote: ${lote}${ativo ? '<span class="badge-andamento">● EM ANDAMENTO</span>' : ''}${tempoTotalHtml}</h2><span class="info">Panela: ${panela}</span></div>
       <table><thead><tr><th>Etapa</th><th>Início</th><th>Prev. Fim</th><th>Última Edição</th></tr></thead><tbody>${linhas}</tbody></table>
       ${obs ? `<div class="obs-box"><strong>OBS:</strong> ${obs}</div>` : ''}
       ${setupMotivo ? `<div class="setup-alert"><span>⚠️</span> SETUP: ${setupMotivo}${setupIni?' | Início: '+setupIni:''}${setupFim?' | Fim: '+setupFim:''}</div>` : ''}
