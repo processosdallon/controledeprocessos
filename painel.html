@@ -276,15 +276,23 @@
 
       // Alerta de atraso: só verifica a última etapa com início preenchido
       let atrasada = false;
-      if (idx === ultimaComIni && ini && e.medio) {
-        const [h, m] = ini.split(':').map(Number);
-        const iniDate = new Date(agora);
-        iniDate.setHours(h, m, 0, 0);
-        // Ajuste virada de dia
-        if (iniDate > agora) iniDate.setDate(iniDate.getDate() - 1);
-        const prevFim = new Date(iniDate.getTime() + e.medio * 60000);
-        // Atrasado se horário atual passou do início + tempo médio
-        if (agora > prevFim) atrasada = true;
+      if (idx === ultimaComIni && ini) {
+        let limiteDate = null;
+        if (fim) {
+          // Se tem previsão de fim preenchida, usa ela como limite
+          const [hf, mf] = fim.split(':').map(Number);
+          limiteDate = new Date(agora);
+          limiteDate.setHours(hf, mf, 0, 0);
+          if (limiteDate > agora) limiteDate.setDate(limiteDate.getDate() - 1);
+        } else if (e.medio) {
+          // Sem previsão, usa início + tempo médio
+          const [h, m] = ini.split(':').map(Number);
+          const iniDate = new Date(agora);
+          iniDate.setHours(h, m, 0, 0);
+          if (iniDate > agora) iniDate.setDate(iniDate.getDate() - 1);
+          limiteDate = new Date(iniDate.getTime() + e.medio * 60000);
+        }
+        if (limiteDate && agora > limiteDate) atrasada = true;
       }
 
       // Label com tempo médio
