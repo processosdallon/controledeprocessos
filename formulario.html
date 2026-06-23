@@ -36,7 +36,7 @@
   .btn-lapis:hover { opacity: 1; }
   .autoria { font-size: 10px; color: #888; display: block; font-style: italic; }
   .hist-edicao { display: none; } /* histórico inline oculto — exibido no acordeão */
-  .exec-time { font-size: 10px; color: #2d7a9a; display: block; margin-top: 1px; font-style: italic; }
+  .exec-time { font-size: 10px; color: #2d7a9a; display: block; margin-top: 2px; font-weight: bold; }
   /* ACORDEÃO DE HISTÓRICO */
   .hist-acord-wrap { border-top: 2px solid #1e4d2b; margin: 0; }
   .hist-acord-btn { padding: 6px 10px; font-size: 12px; color: #1e4d2b; cursor: pointer; background: #f0f7f0; display: flex; justify-content: space-between; align-items: center; user-select: none; font-weight: bold; }
@@ -2745,7 +2745,7 @@
           const eh = Math.floor(diff/60), em = diff%60;
           const span = document.createElement('span');
           span.className = 'exec-time';
-          span.textContent = `⏱ Execução: ${eh}:${String(em).padStart(2,'0')}h`;
+          span.textContent = `Tempo de Execução: ${eh}:${String(em).padStart(2,'0')}h`;
           labelEl.appendChild(span);
         });
       });
