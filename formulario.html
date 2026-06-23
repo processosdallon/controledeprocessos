@@ -2116,6 +2116,7 @@
     cacheFirebase = snapshot.val() || {};
     verificarSetupsAtivos(cacheFirebase);
     carregarCalculadora(cacheFirebase);
+    setTimeout(verificarAtrasos, 200);
     if (ignorarUpdate) return;
     document.querySelectorAll('[data-field]').forEach(el => {
       const key = el.dataset.field;
@@ -2127,6 +2128,10 @@
       }
       const autorEl = document.querySelector(`.autoria[data-autor="${key}"]`);
       if (autorEl) autorEl.textContent = cacheFirebase[key+'_autor'] ? `✏️ ${cacheFirebase[key+'_autor']}` : '';
+      // Restaurar readonly no campo fim se tiver valor
+      if (key.endsWith('_fim') && el.classList.contains('inp-fim') && el.value) {
+        el.readOnly = true;
+      }
     });
     // Restaurar históricos de edição
     Object.keys(cacheFirebase).forEach(k => {
@@ -2157,13 +2162,13 @@
     let fimVal = '';
     if (medMin) {
       const [h,m] = iniVal.split(':').map(Number);
-      const d = new Date(); d.setHours(h,m,0,0);
-      d.setMinutes(d.getMinutes() + medMin);
-      fimVal = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+      // Usar timestamp para calcular corretamente horas + minutos
+      const base = new Date(2000,0,1,h,m,0,0);
+      const result = new Date(base.getTime() + medMin * 60000);
+      fimVal = `${String(result.getHours()).padStart(2,'0')}:${String(result.getMinutes()).padStart(2,'0')}`;
     }
     fimEl.value = fimVal;
     fimEl.readOnly = true;
-    // Salvar no Firebase
     salvarCampos(p, key, iniVal, fimVal, sessao.usuario);
     setTimeout(verificarAtrasos, 300);
   };
@@ -2189,9 +2194,9 @@
       const etapa = etapasRef.find(e => e.key === key);
       if (etapa?.min) {
         const [h,m] = novoVal.split(':').map(Number);
-        const d = new Date(); d.setHours(h,m,0,0);
-        d.setMinutes(d.getMinutes() + etapa.min);
-        fimVal = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+        const base = new Date(2000,0,1,h,m,0,0);
+        const result = new Date(base.getTime() + etapa.min * 60000);
+        fimVal = `${String(result.getHours()).padStart(2,'0')}:${String(result.getMinutes()).padStart(2,'0')}`;
         if (fimEl) { fimEl.value = fimVal; fimEl.readOnly = true; }
       }
       // Registrar histórico de edição
