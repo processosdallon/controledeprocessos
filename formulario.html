@@ -1036,7 +1036,7 @@
 
   // ============================================================
   // USUÁRIOS E SENHAS
-  const USUARIOS = { eqp1: 'rph', eqp2: 'alx', eqp3: 'mrl', eqp4: 'dgo', nicolas: 'nicolas' };
+  const USUARIOS = { eqp1: 'rph', eqp2: 'alx', eqp3: 'mrl', eqp4: 'dgo' };
   const SESSAO_HORAS = 10;
 
   function verificarSessao() {
@@ -1443,45 +1443,41 @@
 
     function checar(prefixos, etapas) {
       prefixos.forEach(p => {
-        etapas.forEach(e => {
+        // Encontrar a última etapa com início preenchido neste prefixo
+        let ultimaIdx = -1;
+        etapas.forEach((e, idx) => {
+          const el = document.querySelector(`[data-field="${p}_${e.ini}"]`);
+          if (el && el.value) ultimaIdx = idx;
+        });
+
+        etapas.forEach((e, idx) => {
           const iniEl = document.querySelector(`[data-field="${p}_${e.ini}"]`);
-          const proxEl = e.prox ? document.querySelector(`[data-field="${p}_${e.prox}"]`) : null;
-          const fimEl = document.querySelector(`[data-field="${p}_${e.ini.replace('_ini','_fim')}"]`);
           const row = iniEl?.closest('tr');
           if (!iniEl || !row) return;
 
-          const iniVal = iniEl.value;
-          const proxVal = proxEl ? proxEl.value : null;
-          const fimVal = fimEl ? fimEl.value : null;
-
-          if (iniVal && e.min) {
-            const [h, m] = iniVal.split(':').map(Number);
+          // Só verifica atraso na última etapa com início preenchido
+          let atrasada = false;
+          if (idx === ultimaIdx && iniEl.value && e.min) {
+            const [h, m] = iniEl.value.split(':').map(Number);
             const iniDate = new Date(agora);
             iniDate.setHours(h, m, 0, 0);
             if (iniDate > agora) iniDate.setDate(iniDate.getDate() - 1);
             const prevFim = new Date(iniDate.getTime() + e.min * 60000);
+            atrasada = agora > prevFim;
+          }
 
-            // Atrasada: passou do tempo médio, próxima não iniciou e fim não preenchido
-            const atrasada = agora > prevFim && !proxVal && !fimVal;
-            row.classList.toggle('atrasada-form', atrasada);
-
-            // Badge na célula de etapa
-            const tdEtapa = row.querySelector('td.etapa-label');
-            if (tdEtapa) {
-              let badge = tdEtapa.querySelector('.badge-atraso-form');
-              if (atrasada && !badge) {
-                badge = document.createElement('span');
-                badge.className = 'badge-atraso-form';
-                badge.textContent = '⚠ ATRASO';
-                tdEtapa.appendChild(badge);
-              } else if (!atrasada && badge) {
-                badge.remove();
-              }
+          row.classList.toggle('atrasada-form', atrasada);
+          const tdEtapa = row.querySelector('td.etapa-label');
+          if (tdEtapa) {
+            let badge = tdEtapa.querySelector('.badge-atraso-form');
+            if (atrasada && !badge) {
+              badge = document.createElement('span');
+              badge.className = 'badge-atraso-form';
+              badge.textContent = '⚠ ATRASO';
+              tdEtapa.appendChild(badge);
+            } else if (!atrasada && badge) {
+              badge.remove();
             }
-          } else {
-            row.classList.remove('atrasada-form');
-            const tdEtapa = row.querySelector('td.etapa-label');
-            tdEtapa?.querySelector('.badge-atraso-form')?.remove();
           }
         });
       });
