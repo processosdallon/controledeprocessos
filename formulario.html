@@ -2436,21 +2436,7 @@
         el.readOnly = true;
       }
     });
-    // Restaurar históricos de edição
-    Object.keys(cacheFirebase).forEach(k => {
-      if (k.endsWith('_histedicao')) {
-        const [p, ...rest] = k.split('_');
-        const etapaKey = rest.slice(0,-1).join('_');
-        const divId = `hist_${p}_${etapaKey}`;
-        const div = document.getElementById(divId);
-        if (div) {
-          try {
-            const hist = JSON.parse(cacheFirebase[k]);
-            div.innerHTML = hist.map(h => `<div>✏️ ${h.usuario} ${h.quando}: ${h.antigo} → ${h.novo}</div>`).join('');
-          } catch(e) {}
-        }
-      }
-    });
+    // Histórico de edição → apenas no acordeão (não inline)
     setTimeout(verificarAtrasos, 300);
   }, () => { dot.className='dot'; statusTxt.textContent='🔴 Sem conexão'; });
 
@@ -2515,9 +2501,7 @@
       let hist = [];
       try { hist = JSON.parse(cacheFirebase[histKey] || '[]'); } catch(e) {}
       hist.push({usuario: sessao.usuario.toUpperCase(), quando: agora, antigo: valorAntigo || '—', novo: novoVal});
-      const divId = `hist_${p}_${key}`;
-      const div = document.getElementById(divId);
-      if (div) div.innerHTML = hist.map(h => `<div class="hist-linha">✏️ <b>${h.usuario}</b> ${h.quando} | ${h.antigo} → <b>${h.novo}</b></div>`).join('');
+      // histórico salvo no Firebase e exibido apenas no acordeão
       salvarCampos(p, key, novoVal, fimVal, sessao.usuario, JSON.stringify(hist));
       setTimeout(verificarAtrasos, 300);
     };
