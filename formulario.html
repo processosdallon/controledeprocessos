@@ -40,6 +40,13 @@
   .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #2d6a3f; color: white; padding: 10px 24px; border-radius: 6px; font-size: 13px; display: none; z-index: 999; }
   @media print { .btn-container,.status-bar,.secao-titulo,.btn-concluido,.usuario-bar,#tela-login { display: none; } body { background: white; padding: 5px; } }
 
+  /* ALERTA DE ATRASO NO FORMULÁRIO */
+  tr.atrasada-form td { background: #ffe0e0 !important; }
+  tr.atrasada-form td.etapa-label { background: #ffcccc !important; color: #900 !important; font-weight: bold; }
+  tr.atrasada-form input[type="time"] { background: #ffe0e0 !important; }
+  .badge-atraso-form { display: inline-block; background: #c00; color: #fff; font-size: 9px; font-weight: bold; padding: 1px 5px; border-radius: 8px; margin-left: 4px; animation: pisca 1s infinite; vertical-align: middle; }
+  @keyframes pisca { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
   /* CALCULADORA SB/SN */
   .calc-box { border-top: 2px solid #1e4d2b; margin-top: 0; padding: 12px; background: #f8fff8; }
   .calc-titulo { font-size: 13px; font-weight: bold; color: #1e4d2b; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
@@ -1150,6 +1157,7 @@
 
     verificarSetupsAtivos(cacheFirebase);
     carregarCalculadora(cacheFirebase);
+    verificarAtrasoForm();
 
     document.querySelectorAll('[data-field]').forEach(el => {
       const key = el.dataset.field;
@@ -1198,7 +1206,7 @@
         dados[key + '_autor'] = autorValor;
         cacheFirebase[key + '_autor'] = autorValor;
 
-        set(dbRef, dados).finally(() => setTimeout(() => { ignorarUpdate = false; }, 500));
+        set(dbRef, dados).finally(() => { setTimeout(() => { ignorarUpdate = false; }, 500); setTimeout(verificarAtrasoForm, 700); });
       }, 600);
     });
   });
@@ -1405,6 +1413,87 @@
     });
   }
   // ── FIM CALCULADORA ──
+
+
+  // ── ALERTA DE ATRASO NO FORMULÁRIO ──
+  const etapasMedioSup = [
+    {ini:'desest_ini',  prox:'lanca_ini',    min:110},
+    {ini:'lanca_ini',   prox:'desant1_ini',  min:240},
+    {ini:'desant1_ini', prox:'decup_ini',    min:90},
+    {ini:'decup_ini',   prox:'transf_ini',   min:130},
+    {ini:'transf_ini',  prox:'desant2_ini',  min:40},
+    {ini:'desant2_ini', prox:'limpeza1_ini', min:330},
+    {ini:'limpeza1_ini',prox:'transf2_ini',  min:90},
+    {ini:'transf2_ini', prox:'limpeza2_ini', min:40},
+    {ini:'limpeza2_ini',prox:'metais_ini',   min:135},
+    {ini:'metais_ini',  prox:'lingot_ini',   min:180},
+  ];
+  const etapasMedioInf = [
+    {ini:'limp1_ini',   prox:'enxofre_ini',  min:60},
+    {ini:'enxofre_ini', prox:'desest_ini',   min:170},
+    {ini:'desest_ini',  prox:'transf_ini',   min:180},
+    {ini:'transf_ini',  prox:'soda_ini',     min:40},
+    {ini:'soda_ini',    prox:'carvao_ini',   min:150},
+    {ini:'carvao_ini',  prox:'metais_ini',   min:150},
+    {ini:'metais_ini',  prox:'lingot_ini',   min:120},
+  ];
+
+  function verificarAtrasoForm() {
+    const agora = new Date();
+
+    function checar(prefixos, etapas) {
+      prefixos.forEach(p => {
+        etapas.forEach(e => {
+          const iniEl = document.querySelector(`[data-field="${p}_${e.ini}"]`);
+          const proxEl = e.prox ? document.querySelector(`[data-field="${p}_${e.prox}"]`) : null;
+          const fimEl = document.querySelector(`[data-field="${p}_${e.ini.replace('_ini','_fim')}"]`);
+          const row = iniEl?.closest('tr');
+          if (!iniEl || !row) return;
+
+          const iniVal = iniEl.value;
+          const proxVal = proxEl ? proxEl.value : null;
+          const fimVal = fimEl ? fimEl.value : null;
+
+          if (iniVal && e.min) {
+            const [h, m] = iniVal.split(':').map(Number);
+            const iniDate = new Date(agora);
+            iniDate.setHours(h, m, 0, 0);
+            if (iniDate > agora) iniDate.setDate(iniDate.getDate() - 1);
+            const prevFim = new Date(iniDate.getTime() + e.min * 60000);
+
+            // Atrasada: passou do tempo médio, próxima não iniciou e fim não preenchido
+            const atrasada = agora > prevFim && !proxVal && !fimVal;
+            row.classList.toggle('atrasada-form', atrasada);
+
+            // Badge na célula de etapa
+            const tdEtapa = row.querySelector('td.etapa-label');
+            if (tdEtapa) {
+              let badge = tdEtapa.querySelector('.badge-atraso-form');
+              if (atrasada && !badge) {
+                badge = document.createElement('span');
+                badge.className = 'badge-atraso-form';
+                badge.textContent = '⚠ ATRASO';
+                tdEtapa.appendChild(badge);
+              } else if (!atrasada && badge) {
+                badge.remove();
+              }
+            }
+          } else {
+            row.classList.remove('atrasada-form');
+            const tdEtapa = row.querySelector('td.etapa-label');
+            tdEtapa?.querySelector('.badge-atraso-form')?.remove();
+          }
+        });
+      });
+    }
+
+    checar(['a1','a2','a3','a4','a5','a6','a7','a8'], etapasMedioSup);
+    checar(['b1','b2'], etapasMedioInf);
+  }
+
+  // Verificar ao carregar e a cada minuto
+  setInterval(verificarAtrasoForm, 60000);
+  // ── FIM ALERTA ATRASO ──
 
   window.limparTudo = () => {
     if (!confirm('Tem certeza que deseja limpar TODOS os dados?')) return;
