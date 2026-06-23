@@ -50,6 +50,8 @@
   textarea { width: 100%; border: none; background: transparent; font-size: 12px; font-family: Arial; color: #111; outline: none; padding: 2px; resize: none; }
   .obs-section { border-top: 2px solid #1e4d2b; padding: 6px 8px; }
   .obs-label { font-weight: bold; font-size: 12px; margin-bottom: 4px; }
+  .tempo-total-form { font-size: 11px; color: #a8d44d; font-weight: bold; margin-left: auto; white-space: nowrap; }
+  .bloco.atrasado .tempo-total-form { color: #ffcccc; }
   .btn-concluido { display: block; width: calc(100% - 16px); margin: 8px; padding: 9px; background: #28a745; color: white; border: none; font-size: 13px; font-weight: bold; border-radius: 4px; cursor: pointer; }
   .btn-concluido:hover { background: #1e7e34; }
   .btn-container { text-align: center; margin: 10px 0 30px; max-width: 900px; margin-left: auto; margin-right: auto; }
@@ -170,6 +172,7 @@
 <option value="DL PBSB 3,5%">DL PBSB 3,5%</option>
       </select>
     </span>
+    <span class="tempo-total-form" id="tempo-total-a1"></span>
   </div>
   <table>
     <thead><tr><th style="width:45%">Etapa</th><th style="width:25%">Início</th><th style="width:30%">Previsão de Fim</th></tr></thead>
@@ -408,6 +411,7 @@
 <option value="DL PBSB 3,5%">DL PBSB 3,5%</option>
       </select>
     </span>
+    <span class="tempo-total-form" id="tempo-total-a2"></span>
   </div>
   <table>
     <thead><tr><th style="width:45%">Etapa</th><th style="width:25%">Início</th><th style="width:30%">Previsão de Fim</th></tr></thead>
@@ -646,6 +650,7 @@
 <option value="DL PBSB 3,5%">DL PBSB 3,5%</option>
       </select>
     </span>
+    <span class="tempo-total-form" id="tempo-total-a3"></span>
   </div>
   <table>
     <thead><tr><th style="width:45%">Etapa</th><th style="width:25%">Início</th><th style="width:30%">Previsão de Fim</th></tr></thead>
@@ -884,6 +889,7 @@
 <option value="DL PBSB 3,5%">DL PBSB 3,5%</option>
       </select>
     </span>
+    <span class="tempo-total-form" id="tempo-total-a4"></span>
   </div>
   <table>
     <thead><tr><th style="width:45%">Etapa</th><th style="width:25%">Início</th><th style="width:30%">Previsão de Fim</th></tr></thead>
@@ -1122,6 +1128,7 @@
 <option value="DL PBSB 3,5%">DL PBSB 3,5%</option>
       </select>
     </span>
+    <span class="tempo-total-form" id="tempo-total-a5"></span>
   </div>
   <table>
     <thead><tr><th style="width:45%">Etapa</th><th style="width:25%">Início</th><th style="width:30%">Previsão de Fim</th></tr></thead>
@@ -1360,6 +1367,7 @@
 <option value="DL PBSB 3,5%">DL PBSB 3,5%</option>
       </select>
     </span>
+    <span class="tempo-total-form" id="tempo-total-a6"></span>
   </div>
   <table>
     <thead><tr><th style="width:45%">Etapa</th><th style="width:25%">Início</th><th style="width:30%">Previsão de Fim</th></tr></thead>
@@ -1598,6 +1606,7 @@
 <option value="DL PBSB 3,5%">DL PBSB 3,5%</option>
       </select>
     </span>
+    <span class="tempo-total-form" id="tempo-total-a7"></span>
   </div>
   <table>
     <thead><tr><th style="width:45%">Etapa</th><th style="width:25%">Início</th><th style="width:30%">Previsão de Fim</th></tr></thead>
@@ -1836,6 +1845,7 @@
 <option value="DL PBSB 3,5%">DL PBSB 3,5%</option>
       </select>
     </span>
+    <span class="tempo-total-form" id="tempo-total-a8"></span>
   </div>
   <table>
     <thead><tr><th style="width:45%">Etapa</th><th style="width:25%">Início</th><th style="width:30%">Previsão de Fim</th></tr></thead>
@@ -2031,6 +2041,8 @@
   <div class="bloco-header">
     <span><label>Lote: </label><input type="text" class="campo-lote" data-field="b1_lote" placeholder="Ex: L-001"></span>
     <span><label>Panela: </label><input type="text" class="campo-panela" data-field="b1_panela" placeholder="P-01"></span>
+  
+    <span class="tempo-total-form" id="tempo-total-b1"></span>
   </div>
   <table>
     <thead><tr><th style="width:45%">Etapa</th><th style="width:25%">Início</th><th style="width:30%">Previsão de Fim</th></tr></thead>
@@ -2178,6 +2190,8 @@
   <div class="bloco-header">
     <span><label>Lote: </label><input type="text" class="campo-lote" data-field="b2_lote" placeholder="Ex: L-002"></span>
     <span><label>Panela: </label><input type="text" class="campo-panela" data-field="b2_panela" placeholder="P-02"></span>
+  
+    <span class="tempo-total-form" id="tempo-total-b2"></span>
   </div>
   <table>
     <thead><tr><th style="width:45%">Etapa</th><th style="width:25%">Início</th><th style="width:30%">Previsão de Fim</th></tr></thead>
@@ -2417,6 +2431,7 @@
     setTimeout(verificarAtrasos, 200);
     setTimeout(calcularExecucao, 250);
     setTimeout(atualizarAcords, 300);
+    setTimeout(atualizarTempoTotal, 300);
     if (ignorarUpdate) return;
     document.querySelectorAll('[data-field]').forEach(el => {
       const key = el.dataset.field;
@@ -2599,6 +2614,33 @@
   }
   setInterval(verificarAtrasos, 60000);
 
+
+
+  // Tempo total de processo por bloco
+  function atualizarTempoTotal() {
+    const prefixosSup = ['a1','a2','a3','a4','a5','a6','a7','a8'];
+    const prefixosInf = ['b1','b2'];
+    const keysSup = ['limp1','desest','lanca','setuptemp','desant1','decup','transf','desant2','limpeza1','transf2','limpeza2','metais','lingot'];
+    const keysInf = ['limp1','enxofre','desest','transf','soda','carvao','metais','lingot'];
+
+    function processar(prefixos, keys) {
+      prefixos.forEach(p => {
+        const el = document.getElementById(`tempo-total-${p}`);
+        if (!el) return;
+        const primeiraIni = keys.map(k => cacheFirebase[`${p}_${k}_ini`]).find(v => v);
+        if (!primeiraIni) { el.textContent = ''; return; }
+        const agora = new Date();
+        const [h,m] = primeiraIni.split(':').map(Number);
+        const ini = new Date(agora); ini.setHours(h,m,0,0);
+        if (ini > agora) ini.setDate(ini.getDate()-1);
+        const diff = Math.floor((agora-ini)/60000);
+        el.textContent = `⏳ ${Math.floor(diff/60)}:${String(diff%60).padStart(2,'0')}h em processo`;
+      });
+    }
+    processar(prefixosSup, keysSup);
+    processar(prefixosInf, keysInf);
+  }
+  setInterval(atualizarTempoTotal, 60000);
 
   // ACORDEÃO DE HISTÓRICO
   window.toggleAcord = (p) => {
