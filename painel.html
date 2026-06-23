@@ -259,6 +259,13 @@
     }
     const ativo = dados[`${prefix}_lote`] ? 'ativo' : '';
     const agora = new Date();
+
+    // Encontrar o índice da última etapa com início preenchido
+    let ultimaComIni = -1;
+    etapas.forEach((e, idx) => {
+      if (dados[`${prefix}_${e.key}`]) ultimaComIni = idx;
+    });
+
     const linhas = etapas.map((e, idx) => {
       const ini = dados[`${prefix}_${e.key}`] || '';
       const fim = dados[`${prefix}_${e.key2}`] || '';
@@ -267,19 +274,17 @@
       const autor = autorFim || autorIni || '';
       const preenchida = ini || fim;
 
-      // Verificar atraso: início preenchido + tempo médio ultrapassado + próxima etapa sem início
+      // Alerta de atraso: só verifica a última etapa com início preenchido
       let atrasada = false;
-      if (ini && e.medio) {
+      if (idx === ultimaComIni && ini && e.medio) {
         const [h, m] = ini.split(':').map(Number);
         const iniDate = new Date(agora);
         iniDate.setHours(h, m, 0, 0);
-        // Se hora de início for maior que agora (virada de dia), subtrai 1 dia
+        // Ajuste virada de dia
         if (iniDate > agora) iniDate.setDate(iniDate.getDate() - 1);
         const prevFim = new Date(iniDate.getTime() + e.medio * 60000);
-        const proximaEtapa = etapas[idx + 1];
-        const proximaIni = proximaEtapa ? dados[`${prefix}_${proximaEtapa.key}`] : null;
-        // Alerta se: passou do tempo médio E próxima etapa ainda não iniciou
-        if (agora > prevFim && !proximaIni && !fim) atrasada = true;
+        // Atrasado se horário atual passou do início + tempo médio
+        if (agora > prevFim) atrasada = true;
       }
 
       // Label com tempo médio
