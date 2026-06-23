@@ -129,6 +129,10 @@
   .card:not(.ativo) .calc-resumo-bica { color: #d4f5a0; }
   .calc-resumo-alerta { background: #ffe0e0; color: #900; padding: 3px 10px; font-size: 10px; text-align: center; }
 
+
+  .card-atrasado { border: 2px solid #c00 !important; box-shadow: 0 0 10px #f005 !important; }
+  .card-atrasado .card-header { background: #8b0000 !important; }
+  .card-atrasado.ativo .card-header { background: #8b0000 !important; }
   /* ALERTA DE ATRASO */
   tr.atrasada { background: #ffe0e0 !important; }
   tr.atrasada td { border-bottom: 1px solid #f5a0a0 !important; }
@@ -197,17 +201,18 @@
   };
 
   const etapasSup = [
-    {key:'desest_ini', key2:'desest_fim', label:'Desest', medio:110},
-    {key:'lanca_ini', key2:'lanca_fim', label:'Lança', medio:240},
-    {key:'desant1_ini', key2:'desant1_fim', label:'1ª Desant. S/S', medio:90},
-    {key:'decup_ini', key2:'decup_fim', label:'Decup. S/P/E', medio:130},
-    {key:'transf_ini', key2:'transf_fim', label:'Transferência', medio:40},
-    {key:'desant2_ini', key2:'desant2_fim', label:'2ª Desant. S/S', medio:330},
-    {key:'limpeza1_ini', key2:'limpeza1_fim', label:'Limpeza Final', medio:90},
-    {key:'transf2_ini', key2:'transf2_fim', label:'2ª Transf.', medio:40},
-    {key:'limpeza2_ini', key2:'limpeza2_fim', label:'2ª Limpeza Final', medio:135},
-    {key:'metais_ini', key2:'metais_fim', label:'Agregar Metais', medio:180},
-    {key:'lingot_ini', key2:'lingot_fim', label:'Lingotamento', medio:null},
+    {key:'limp1_ini',   key2:'limp1_fim',   label:'1ª Limpeza',          medio:60},
+    {key:'desest_ini',  key2:'desest_fim',   label:'Desestanhação',        medio:120},
+    {key:'lanca_ini',   key2:'lanca_fim',    label:'Desant. com Lança',    medio:330},
+    {key:'desant1_ini', key2:'desant1_fim',  label:'1ª Desantimoniação',   medio:120},
+    {key:'decup_ini',   key2:'decup_fim',    label:'Decuprização',         medio:150},
+    {key:'transf_ini',  key2:'transf_fim',   label:'1ª Transferência',     medio:60},
+    {key:'desant2_ini', key2:'desant2_fim',  label:'2ª Desantimoniação',   medio:330},
+    {key:'limpeza1_ini',key2:'limpeza1_fim', label:'1ª Limpeza Final',     medio:120},
+    {key:'transf2_ini', key2:'transf2_fim',  label:'2ª Transferência',     medio:60},
+    {key:'limpeza2_ini',key2:'limpeza2_fim', label:'2ª Limpeza Final',     medio:120},
+    {key:'metais_ini',  key2:'metais_fim',   label:'Agregar Metais',       medio:300},
+    {key:'lingot_ini',  key2:'lingot_fim',   label:'Lingotamento',         medio:null},
   ];
 
   const etapasInf = [
@@ -306,7 +311,8 @@
         <td class="td-autor">${autor ? `<span class="tag-autor">✏️ ${autor}</span>` : '<span class="sem-autor">—</span>'}</td>
       </tr>`;
     }).join('');
-    return `<div class="card ${ativo}">
+    const atrasadoCard = linhas.includes('atrasada');
+    return `<div class="card ${ativo} ${atrasadoCard ? 'card-atrasado' : ''}">
       ${liga ? `<div class="liga-bar">⚗️ LIGA: ${liga}</div>` : ''}
       <div class="card-header"><h2>Lote: ${lote}${ativo ? '<span class="badge-andamento">● EM ANDAMENTO</span>' : ''}</h2><span class="info">Panela: ${panela}</span></div>
       <table><thead><tr><th>Etapa</th><th>Início</th><th>Prev. Fim</th><th>Última Edição</th></tr></thead><tbody>${linhas}</tbody></table>
