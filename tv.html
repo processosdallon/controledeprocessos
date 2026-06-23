@@ -80,10 +80,10 @@
   .slide-page {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
+    grid-template-rows: 1fr;
+    gap: 14px;
     min-width: 100%;
     height: 100%;
-    align-content: start;
   }
 
   /* CARD */
@@ -95,6 +95,7 @@
     display: flex;
     flex-direction: column;
     font-size: 12px;
+    height: 100%;
   }
   .card-tv.atrasado {
     border: 2px solid #c00 !important;
@@ -121,7 +122,7 @@
   }
   .card-tv.atrasado .card-header-tv { background: #c00; }
   .card-lote {
-    font-size: 15px;
+    font-size: 17px;
     font-weight: bold;
     color: #fff;
     white-space: nowrap;
@@ -363,7 +364,6 @@
     const rows = etapas.map((e, idx) => {
       const ini = dados[`${p}_${e.k}`]  || '';
       const fim = dados[`${p}_${e.k2}`] || '';
-      if (!ini && !fim) return '';
       const ativa = idx === ultimaIdx;
       const medStr = e.m ? `<span class="medio-tv">T.M: ${Math.floor(e.m/60)}:${String(e.m%60).padStart(2,'0')}h</span>` : '';
       return `<tr class="${ativa?'tr-ativa':''}">
@@ -371,7 +371,7 @@
         <td class="${ini?'val':'vz'}">${ini||'—'}</td>
         <td class="${fim?'val':'vz'}">${fim||'—'}</td>
       </tr>`;
-    }).filter(Boolean).join('');
+    }).join('');
 
     const badgeAtraso = atrasado ? '<span class="badge-atraso">⚠ ATRASO</span>' : '<span class="badge-andamento">● EM ANDAMENTO</span>';
 
