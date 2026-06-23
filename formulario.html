@@ -37,6 +37,7 @@
   .autoria { font-size: 10px; color: #888; display: block; font-style: italic; }
   .hist-edicao { font-size: 10px; color: #555; margin-top: 3px; }
   .hist-linha { background: #fff8e1; border-left: 2px solid #f0a000; padding: 2px 5px; margin-bottom: 2px; border-radius: 2px; }
+  .exec-time { font-size: 10px; color: #2d7a9a; display: block; margin-top: 1px; font-style: italic; }
   .hist-edicao div { border-top: 1px dashed #ecc; padding: 1px 0; }
   textarea { width: 100%; border: none; background: transparent; font-size: 12px; font-family: Arial; color: #111; outline: none; padding: 2px; resize: none; }
   .obs-section { border-top: 2px solid #1e4d2b; padding: 6px 8px; }
@@ -199,6 +200,18 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a1_lanca_fim" class="inp-fim" readonly>
+        </td>
+      </tr>
+      <tr data-etapa="a1_setuptemp">
+        <td class="etapa-label">Setup de Temperatura</td>
+        <td class="td-ini">
+          <input type="time" data-field="a1_setuptemp_ini" class="inp-ini" readonly>
+          <button class="btn-lapis" data-p="a1" data-key="setuptemp" title="Editar horário">✏️</button>
+          <span class="autoria" data-autor="a1_setuptemp_ini"></span>
+          <div class="hist-edicao" id="hist_a1_setuptemp"></div>
+        </td>
+        <td class="td-fim">
+          <input type="time" data-field="a1_setuptemp_fim" class="inp-fim">
         </td>
       </tr>
       <tr data-etapa="a1_desant1">
@@ -419,6 +432,18 @@
           <input type="time" data-field="a2_lanca_fim" class="inp-fim" readonly>
         </td>
       </tr>
+      <tr data-etapa="a2_setuptemp">
+        <td class="etapa-label">Setup de Temperatura</td>
+        <td class="td-ini">
+          <input type="time" data-field="a2_setuptemp_ini" class="inp-ini" readonly>
+          <button class="btn-lapis" data-p="a2" data-key="setuptemp" title="Editar horário">✏️</button>
+          <span class="autoria" data-autor="a2_setuptemp_ini"></span>
+          <div class="hist-edicao" id="hist_a2_setuptemp"></div>
+        </td>
+        <td class="td-fim">
+          <input type="time" data-field="a2_setuptemp_fim" class="inp-fim">
+        </td>
+      </tr>
       <tr data-etapa="a2_desant1">
         <td class="etapa-label">1ª Desantimoniação (T.M: 2:00h)</td>
         <td class="td-ini">
@@ -635,6 +660,18 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a3_lanca_fim" class="inp-fim" readonly>
+        </td>
+      </tr>
+      <tr data-etapa="a3_setuptemp">
+        <td class="etapa-label">Setup de Temperatura</td>
+        <td class="td-ini">
+          <input type="time" data-field="a3_setuptemp_ini" class="inp-ini" readonly>
+          <button class="btn-lapis" data-p="a3" data-key="setuptemp" title="Editar horário">✏️</button>
+          <span class="autoria" data-autor="a3_setuptemp_ini"></span>
+          <div class="hist-edicao" id="hist_a3_setuptemp"></div>
+        </td>
+        <td class="td-fim">
+          <input type="time" data-field="a3_setuptemp_fim" class="inp-fim">
         </td>
       </tr>
       <tr data-etapa="a3_desant1">
@@ -855,6 +892,18 @@
           <input type="time" data-field="a4_lanca_fim" class="inp-fim" readonly>
         </td>
       </tr>
+      <tr data-etapa="a4_setuptemp">
+        <td class="etapa-label">Setup de Temperatura</td>
+        <td class="td-ini">
+          <input type="time" data-field="a4_setuptemp_ini" class="inp-ini" readonly>
+          <button class="btn-lapis" data-p="a4" data-key="setuptemp" title="Editar horário">✏️</button>
+          <span class="autoria" data-autor="a4_setuptemp_ini"></span>
+          <div class="hist-edicao" id="hist_a4_setuptemp"></div>
+        </td>
+        <td class="td-fim">
+          <input type="time" data-field="a4_setuptemp_fim" class="inp-fim">
+        </td>
+      </tr>
       <tr data-etapa="a4_desant1">
         <td class="etapa-label">1ª Desantimoniação (T.M: 2:00h)</td>
         <td class="td-ini">
@@ -1071,6 +1120,18 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a5_lanca_fim" class="inp-fim" readonly>
+        </td>
+      </tr>
+      <tr data-etapa="a5_setuptemp">
+        <td class="etapa-label">Setup de Temperatura</td>
+        <td class="td-ini">
+          <input type="time" data-field="a5_setuptemp_ini" class="inp-ini" readonly>
+          <button class="btn-lapis" data-p="a5" data-key="setuptemp" title="Editar horário">✏️</button>
+          <span class="autoria" data-autor="a5_setuptemp_ini"></span>
+          <div class="hist-edicao" id="hist_a5_setuptemp"></div>
+        </td>
+        <td class="td-fim">
+          <input type="time" data-field="a5_setuptemp_fim" class="inp-fim">
         </td>
       </tr>
       <tr data-etapa="a5_desant1">
@@ -1291,6 +1352,18 @@
           <input type="time" data-field="a6_lanca_fim" class="inp-fim" readonly>
         </td>
       </tr>
+      <tr data-etapa="a6_setuptemp">
+        <td class="etapa-label">Setup de Temperatura</td>
+        <td class="td-ini">
+          <input type="time" data-field="a6_setuptemp_ini" class="inp-ini" readonly>
+          <button class="btn-lapis" data-p="a6" data-key="setuptemp" title="Editar horário">✏️</button>
+          <span class="autoria" data-autor="a6_setuptemp_ini"></span>
+          <div class="hist-edicao" id="hist_a6_setuptemp"></div>
+        </td>
+        <td class="td-fim">
+          <input type="time" data-field="a6_setuptemp_fim" class="inp-fim">
+        </td>
+      </tr>
       <tr data-etapa="a6_desant1">
         <td class="etapa-label">1ª Desantimoniação (T.M: 2:00h)</td>
         <td class="td-ini">
@@ -1509,6 +1582,18 @@
           <input type="time" data-field="a7_lanca_fim" class="inp-fim" readonly>
         </td>
       </tr>
+      <tr data-etapa="a7_setuptemp">
+        <td class="etapa-label">Setup de Temperatura</td>
+        <td class="td-ini">
+          <input type="time" data-field="a7_setuptemp_ini" class="inp-ini" readonly>
+          <button class="btn-lapis" data-p="a7" data-key="setuptemp" title="Editar horário">✏️</button>
+          <span class="autoria" data-autor="a7_setuptemp_ini"></span>
+          <div class="hist-edicao" id="hist_a7_setuptemp"></div>
+        </td>
+        <td class="td-fim">
+          <input type="time" data-field="a7_setuptemp_fim" class="inp-fim">
+        </td>
+      </tr>
       <tr data-etapa="a7_desant1">
         <td class="etapa-label">1ª Desantimoniação (T.M: 2:00h)</td>
         <td class="td-ini">
@@ -1725,6 +1810,18 @@
         </td>
         <td class="td-fim">
           <input type="time" data-field="a8_lanca_fim" class="inp-fim" readonly>
+        </td>
+      </tr>
+      <tr data-etapa="a8_setuptemp">
+        <td class="etapa-label">Setup de Temperatura</td>
+        <td class="td-ini">
+          <input type="time" data-field="a8_setuptemp_ini" class="inp-ini" readonly>
+          <button class="btn-lapis" data-p="a8" data-key="setuptemp" title="Editar horário">✏️</button>
+          <span class="autoria" data-autor="a8_setuptemp_ini"></span>
+          <div class="hist-edicao" id="hist_a8_setuptemp"></div>
+        </td>
+        <td class="td-fim">
+          <input type="time" data-field="a8_setuptemp_fim" class="inp-fim">
         </td>
       </tr>
       <tr data-etapa="a8_desant1">
@@ -2230,6 +2327,7 @@
     verificarSetupsAtivos(cacheFirebase);
     carregarCalculadora(cacheFirebase);
     setTimeout(verificarAtrasos, 200);
+    setTimeout(calcularExecucao, 250);
     if (ignorarUpdate) return;
     document.querySelectorAll('[data-field]').forEach(el => {
       const key = el.dataset.field;
@@ -2489,6 +2587,42 @@
       const toast=document.getElementById('toast'); toast.style.display='block'; setTimeout(()=>toast.style.display='none',3000);
     });
   };
+
+
+  // Tempo de execução por etapa
+  const ETAPAS_KEYS_SUP = ['limp1','desest','lanca','setuptemp','desant1','decup','transf','desant2','limpeza1','transf2','limpeza2','metais','lingot'];
+  const ETAPAS_KEYS_INF = ['limp1','enxofre','desest','transf','soda','carvao','metais','lingot'];
+
+  function calcularExecucao() {
+    function processar(prefixos, keys) {
+      prefixos.forEach(p => {
+        keys.forEach((key, idx) => {
+          const iniVal = cacheFirebase[`${p}_${key}_ini`] || '';
+          const labelEl = document.querySelector(`[data-etapa="${p}_${key}"] .etapa-label`);
+          if (!labelEl) return;
+          // Remover exec-time anterior
+          const old = labelEl.querySelector('.exec-time');
+          if (old) old.remove();
+          if (!iniVal) return;
+          // Próxima etapa com início preenchido
+          const proxKey = keys.slice(idx+1).find(k => cacheFirebase[`${p}_${k}_ini`]);
+          if (!proxKey) return;
+          const proxIni = cacheFirebase[`${p}_${proxKey}_ini`];
+          const [h1,m1] = iniVal.split(':').map(Number);
+          const [h2,m2] = proxIni.split(':').map(Number);
+          let diff = (h2*60+m2)-(h1*60+m1);
+          if (diff < 0) diff += 24*60;
+          const eh = Math.floor(diff/60), em = diff%60;
+          const span = document.createElement('span');
+          span.className = 'exec-time';
+          span.textContent = `⏱ Execução: ${eh}:${String(em).padStart(2,'0')}h`;
+          labelEl.appendChild(span);
+        });
+      });
+    }
+    processar(['a1','a2','a3','a4','a5','a6','a7','a8'], ETAPAS_KEYS_SUP);
+    processar(['b1','b2'], ETAPAS_KEYS_INF);
+  }
 
   window.limparTudo = () => {
     if (!confirm('Limpar TODOS os dados?')) return;
