@@ -128,6 +128,18 @@
   .calc-resumo-bica { color: #2d7a3f; font-size: 12px; font-weight: bold; }
   .card:not(.ativo) .calc-resumo-bica { color: #d4f5a0; }
   .calc-resumo-alerta { background: #ffe0e0; color: #900; padding: 3px 10px; font-size: 10px; text-align: center; }
+
+  /* ALERTA DE ATRASO */
+  tr.atrasada { background: #ffe0e0 !important; }
+  tr.atrasada td { border-bottom: 1px solid #f5a0a0 !important; }
+  tr.atrasada td.etapa { color: #900 !important; font-weight: bold !important; }
+  tr.atrasada td.valor { color: #c00 !important; }
+  .card:not(.ativo) tr.atrasada { background: #4a1a1a !important; }
+  .card:not(.ativo) tr.atrasada td.etapa { color: #ff9999 !important; }
+  .badge-atraso { display: inline-block; background: #c00; color: #fff; font-size: 9px; font-weight: bold; padding: 1px 5px; border-radius: 8px; margin-left: 4px; animation: blink 1s infinite; }
+  .medio-label { font-size: 9px; color: #aaa; font-weight: normal; margin-left: 4px; }
+  .card.ativo tr.atrasada .medio-label { color: #e88; }
+  .card:not(.ativo) .medio-label { color: #5a7a5a; }
   /* SETUP ALERT NO PAINEL */
   .setup-alert { margin: 6px 8px; padding: 5px 10px; border-radius: 5px; font-size: 11px; font-weight: bold; background: #ffe0e0; color: #900; border: 1px solid #f00; display: flex; align-items: center; gap: 6px; }
   .setup-alert span { animation: blink 1.2s infinite; }
@@ -185,28 +197,28 @@
   };
 
   const etapasSup = [
-    {key:'desest_ini', key2:'desest_fim', label:'Desest'},
-    {key:'lanca_ini', key2:'lanca_fim', label:'Lança'},
-    {key:'desant1_ini', key2:'desant1_fim', label:'1ª Desant. S/S'},
-    {key:'decup_ini', key2:'decup_fim', label:'Decup. S/P/E'},
-    {key:'transf_ini', key2:'transf_fim', label:'Transferência'},
-    {key:'desant2_ini', key2:'desant2_fim', label:'2ª Desant. S/S'},
-    {key:'limpeza1_ini', key2:'limpeza1_fim', label:'Limpeza Final'},
-    {key:'transf2_ini', key2:'transf2_fim', label:'2ª Transf.'},
-    {key:'limpeza2_ini', key2:'limpeza2_fim', label:'2ª Limpeza Final'},
-    {key:'metais_ini', key2:'metais_fim', label:'Agregar Metais'},
-    {key:'lingot_ini', key2:'lingot_fim', label:'Lingotamento'},
+    {key:'desest_ini', key2:'desest_fim', label:'Desest', medio:110},
+    {key:'lanca_ini', key2:'lanca_fim', label:'Lança', medio:240},
+    {key:'desant1_ini', key2:'desant1_fim', label:'1ª Desant. S/S', medio:90},
+    {key:'decup_ini', key2:'decup_fim', label:'Decup. S/P/E', medio:130},
+    {key:'transf_ini', key2:'transf_fim', label:'Transferência', medio:40},
+    {key:'desant2_ini', key2:'desant2_fim', label:'2ª Desant. S/S', medio:330},
+    {key:'limpeza1_ini', key2:'limpeza1_fim', label:'Limpeza Final', medio:90},
+    {key:'transf2_ini', key2:'transf2_fim', label:'2ª Transf.', medio:40},
+    {key:'limpeza2_ini', key2:'limpeza2_fim', label:'2ª Limpeza Final', medio:135},
+    {key:'metais_ini', key2:'metais_fim', label:'Agregar Metais', medio:180},
+    {key:'lingot_ini', key2:'lingot_fim', label:'Lingotamento', medio:null},
   ];
 
   const etapasInf = [
-    {key:'limp1_ini', key2:'limp1_fim', label:'1ª Limpeza'},
-    {key:'enxofre_ini', key2:'enxofre_fim', label:'Dec. Com Enxofre'},
-    {key:'desest_ini', key2:'desest_fim', label:'Desestanhação'},
-    {key:'transf_ini', key2:'transf_fim', label:'Transferência'},
-    {key:'soda_ini', key2:'soda_fim', label:'Limpeza com Soda'},
-    {key:'carvao_ini', key2:'carvao_fim', label:'Limpeza com Carvão'},
-    {key:'metais_ini', key2:'metais_fim', label:'Agregar Metais'},
-    {key:'lingot_ini', key2:'lingot_fim', label:'Lingotamento'},
+    {key:'limp1_ini', key2:'limp1_fim', label:'1ª Limpeza', medio:60},
+    {key:'enxofre_ini', key2:'enxofre_fim', label:'Dec. Com Enxofre', medio:170},
+    {key:'desest_ini', key2:'desest_fim', label:'Desestanhação', medio:180},
+    {key:'transf_ini', key2:'transf_fim', label:'Transferência', medio:40},
+    {key:'soda_ini', key2:'soda_fim', label:'Limpeza com Soda', medio:150},
+    {key:'carvao_ini', key2:'carvao_fim', label:'Limpeza com Carvão', medio:150},
+    {key:'metais_ini', key2:'metais_fim', label:'Agregar Metais', medio:120},
+    {key:'lingot_ini', key2:'lingot_fim', label:'Lingotamento', medio:null},
   ];
 
   function renderCard(prefix, dados, num, etapas) {
@@ -246,16 +258,36 @@
       } catch(e) {}
     }
     const ativo = dados[`${prefix}_lote`] ? 'ativo' : '';
-    const linhas = etapas.map(e => {
+    const agora = new Date();
+    const linhas = etapas.map((e, idx) => {
       const ini = dados[`${prefix}_${e.key}`] || '';
       const fim = dados[`${prefix}_${e.key2}`] || '';
-      // Pega o autor mais recente entre ini e fim
       const autorIni = dados[`${prefix}_${e.key}_autor`] || '';
       const autorFim = dados[`${prefix}_${e.key2}_autor`] || '';
       const autor = autorFim || autorIni || '';
       const preenchida = ini || fim;
-      return `<tr class="${preenchida?'preenchida':''}">
-        <td class="etapa">${e.label}</td>
+
+      // Verificar atraso: início preenchido + tempo médio ultrapassado + próxima etapa sem início
+      let atrasada = false;
+      if (ini && e.medio) {
+        const [h, m] = ini.split(':').map(Number);
+        const iniDate = new Date(agora);
+        iniDate.setHours(h, m, 0, 0);
+        // Se hora de início for maior que agora (virada de dia), subtrai 1 dia
+        if (iniDate > agora) iniDate.setDate(iniDate.getDate() - 1);
+        const prevFim = new Date(iniDate.getTime() + e.medio * 60000);
+        const proximaEtapa = etapas[idx + 1];
+        const proximaIni = proximaEtapa ? dados[`${prefix}_${proximaEtapa.key}`] : null;
+        // Alerta se: passou do tempo médio E próxima etapa ainda não iniciou
+        if (agora > prevFim && !proximaIni && !fim) atrasada = true;
+      }
+
+      // Label com tempo médio
+      const medioStr = e.medio ? `<span class="medio-label">(T.M: ${Math.floor(e.medio/60)}:${String(e.medio%60).padStart(2,'0')}h)</span>` : '';
+      const badgeAtraso = atrasada ? '<span class="badge-atraso">⚠ ATRASO</span>' : '';
+
+      return `<tr class="${preenchida?'preenchida':''} ${atrasada?'atrasada':''}">
+        <td class="etapa">${e.label}${medioStr}${badgeAtraso}</td>
         <td class="${ini?'valor':'vazio'}">${ini||'—'}</td>
         <td class="${fim?'valor':'vazio'}">${fim||'—'}</td>
         <td class="td-autor">${autor ? `<span class="tag-autor">✏️ ${autor}</span>` : '<span class="sem-autor">—</span>'}</td>
@@ -264,7 +296,7 @@
     return `<div class="card ${ativo}">
       ${liga ? `<div class="liga-bar">⚗️ LIGA: ${liga}</div>` : ''}
       <div class="card-header"><h2>Lote: ${lote}${ativo ? '<span class="badge-andamento">● EM ANDAMENTO</span>' : ''}</h2><span class="info">Panela: ${panela}</span></div>
-      <table><thead><tr><th>Etapa</th><th>Início</th><th>Fim</th><th>Última Edição</th></tr></thead><tbody>${linhas}</tbody></table>
+      <table><thead><tr><th>Etapa</th><th>Início</th><th>Prev. Fim</th><th>Última Edição</th></tr></thead><tbody>${linhas}</tbody></table>
       <div class="obs-box"><strong>OBS:</strong><span>${obs||'<em style="color:#bbb">—</em>'}</span></div>
       ${setupMotivo ? `<div class="setup-alert"><span>⚠️</span> SETUP: ${setupMotivo}${setupIni ? ' | Início: '+setupIni : ''}${setupFim ? ' | Prev. Fim: '+setupFim : ''}</div>` : ''}
       ${calcResumoHtml}
@@ -324,11 +356,13 @@
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
+  let ultimosDados = null;
   onValue(ref(db, 'formulario/dados'), (snapshot) => {
     document.getElementById('dot').className = 'dot connected';
     document.getElementById('status-txt').textContent = '🟢 Conectado — tempo real ativo';
     document.getElementById('atualizado').textContent = `Última atualização: ${new Date().toLocaleTimeString('pt-BR')}`;
     const d = snapshot.val() || {};
+    ultimosDados = d;
     let sup = '';
     for (let i = 1; i <= 8; i++) sup += renderCard(`a${i}`, d, i, etapasSup);
     document.getElementById('grid-sup').innerHTML = sup;
@@ -339,6 +373,18 @@
     document.getElementById('dot').className = 'dot';
     document.getElementById('status-txt').textContent = '🔴 Sem conexão';
   });
+
+  // Re-renderiza cards a cada minuto para atualizar alertas de atraso
+  setInterval(() => {
+    if (ultimosDados) {
+      let sup = '';
+      for (let i = 1; i <= 8; i++) sup += renderCard(`a${i}`, ultimosDados, i, etapasSup);
+      document.getElementById('grid-sup').innerHTML = sup;
+      let inf = '';
+      for (let i = 1; i <= 2; i++) inf += renderCard(`b${i}`, ultimosDados, i, etapasInf);
+      document.getElementById('grid-inf').innerHTML = inf;
+    }
+  }, 60000);
 
   onValue(ref(db, 'historico'), (snapshot) => {
     const lista = document.getElementById('historico-lista');
