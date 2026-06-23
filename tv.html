@@ -218,6 +218,32 @@
   }
   .sem-ativos span { font-size: 52px; }
 
+
+  /* NAVEGAÇÃO MANUAL */
+  .nav-btn {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(30,77,43,0.7);
+    border: 2px solid #a8d44d;
+    color: #a8d44d;
+    font-size: 32px;
+    width: 52px;
+    height: 80px;
+    border-radius: 8px;
+    cursor: pointer;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+    user-select: none;
+  }
+  .nav-btn:hover { background: rgba(30,77,43,0.95); color: #fff; }
+  .nav-btn:active { background: #1e4d2b; }
+  .nav-prev { left: 8px; }
+  .nav-next { right: 8px; }
+  .nav-btn.oculto { opacity: 0; pointer-events: none; }
   /* DOTS */
   .slide-dots {
     display: flex; justify-content: center; gap: 8px;
@@ -253,6 +279,8 @@
   </div>
 </div>
 
+<button class="nav-btn nav-prev" id="btn-prev" onclick="navManual(-1)">‹</button>
+<button class="nav-btn nav-next" id="btn-next" onclick="navManual(1)">›</button>
 <div class="slide-outer">
   <div class="slide-viewport" id="viewport">
     <div class="slide-page">
@@ -471,7 +499,33 @@
       document.getElementById('secao-badge').textContent=slidesMeta[idx].tipo;
       document.getElementById('slide-info').textContent=totalSlides>1?`Slide ${idx+1} de ${totalSlides}`:'';
     }
+    // Atualizar visibilidade dos botões
+    const btnPrev = document.getElementById('btn-prev');
+    const btnNext = document.getElementById('btn-next');
+    if(btnPrev) btnPrev.classList.toggle('oculto', totalSlides<=1);
+    if(btnNext) btnNext.classList.toggle('oculto', totalSlides<=1);
   }
+
+  window.navManual = (dir) => {
+    if(totalSlides<=1) return;
+    goTo((slideAtual + dir + totalSlides) % totalSlides);
+    // Reiniciar timer para dar tempo completo após navegação manual
+    iniciarTimer();
+  };
+
+  // Suporte a teclado (setas) e swipe em touch
+  document.addEventListener('keydown', e => {
+    if(e.key==='ArrowRight') navManual(1);
+    if(e.key==='ArrowLeft') navManual(-1);
+  });
+
+  // Swipe touch
+  let touchStartX = 0;
+  document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, {passive:true});
+  document.addEventListener('touchend', e => {
+    const diff = touchStartX - e.changedTouches[0].clientX;
+    if(Math.abs(diff) > 50) navManual(diff > 0 ? 1 : -1);
+  }, {passive:true});
 
   function nextSlide() {
     if(totalSlides<=1) return;
