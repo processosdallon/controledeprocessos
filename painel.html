@@ -171,6 +171,27 @@
   .card:not(.ativo) .td-autor { color: #5a9e2f; }
   .card:not(.ativo) .tag-autor { background: #1a3d25; color: #a8d44d; border-color: #2d6a3f; }
 
+  /* EXEC LABEL */
+  .exec-label { font-size: 9px; color: #5ab8d4; display: block; margin-top: 1px; }
+  .card:not(.ativo) .exec-label { color: #3a7a8a; }
+
+  /* TABELA COMPACTA */
+  th { font-size: 10px; color: #7ecff5; text-align: left; padding: 3px 6px; border-bottom: 1px solid #0f3460; background: #0d2a4a; }
+  td { padding: 3px 6px; font-size: 11px; border-bottom: 1px solid #1e3a5f; }
+
+  /* HISTÓRICO ACORDEÃO */
+  .hist-acord-wrap { border-top: 1px solid #2d6a3f; }
+  .hist-acord-btn { padding: 5px 10px; font-size: 11px; color: #a8d44d; cursor: pointer; background: #0f2218; display: flex; justify-content: space-between; align-items: center; user-select: none; }
+  .hist-acord-btn:hover { background: #163d21; }
+  .hist-acord-btn.aberto .hist-seta { transform: rotate(180deg); }
+  .hist-seta { display: inline-block; transition: transform 0.2s; font-size: 10px; }
+  .hist-acord-body { display: none; padding: 6px 10px; background: #0a1a0e; border-top: 1px solid #1a3a20; }
+  .hist-acord-body.aberto { display: block; }
+  .hist-acord-linha { font-size: 10px; color: #aaa; padding: 2px 0; border-bottom: 1px solid #1a2a1a; }
+  .hist-acord-linha b { color: #a8d44d; }
+  .card:not(.ativo) .hist-acord-btn { background: #1a3d21; color: #7ab830; }
+  .card:not(.ativo) .hist-acord-body { background: #0a1a0a; }
+
   /* HISTÓRICO DE EDIÇÃO NO PAINEL */
   .hist-painel { margin-top: 3px; }
   .hist-painel-linha { font-size: 9px; color: #888; background: #fffbe6; border-left: 2px solid #f0a000; padding: 1px 4px; margin-bottom: 1px; border-radius: 2px; white-space: normal; }
@@ -255,6 +276,7 @@
     const setupMotivo = dados[`${prefix}_setup_motivo`] || '';
     const setupIni = dados[`${prefix}_setup_ini`] || '';
     const setupFim = dados[`${prefix}_setup_fim`] || '';
+
     // Calculadora SB/SN
     let calcResumoHtml = '';
     const calcRaw = dados[`${prefix}_calc`];
@@ -266,61 +288,74 @@
         const bicaSb = calc.bica || 0.5;
         const lotes = (calc.lotes || []).filter(l => l && l.kg && l.sb !== '');
         if (lotes.length > 0) {
-          const totalKg = lotes.reduce((s,l) => s + (parseFloat(l.kg)||0), 0);
-          const totalSbKg = lotes.reduce((s,l) => s + (parseFloat(l.kg)||0)*(parseFloat(l.sb)||0)/100, 0);
-          // Bica mole completa o espaço restante
+          const totalKg = lotes.reduce((s,l) => s+(parseFloat(l.kg)||0), 0);
+          const totalSbKg = lotes.reduce((s,l) => s+(parseFloat(l.kg)||0)*(parseFloat(l.sb)||0)/100, 0);
           const kgBica = Math.max(0, capKg - totalKg);
-          const sbFinal = capKg > 0 ? ((totalSbKg + kgBica * bicaSb / 100) / capKg * 100) : 0;
+          const sbFinal = capKg > 0 ? ((totalSbKg + kgBica*bicaSb/100)/capKg*100) : 0;
           const lotesHtml = lotes.map(l => `<div class="calc-resumo-linha"><span class="calc-resumo-label">Lote ${l.lote||'?'} (${l.sb}% Sb)</span><span class="calc-resumo-valor">${parseFloat(l.kg).toLocaleString('pt-BR')} kg</span></div>`).join('');
-          const ultrapass = (totalKg + kgBica) > capKg;
           calcResumoHtml = `<div class="calc-resumo">
             <div class="calc-resumo-titulo">🧮 CALCULADORA — Obj: ${obj}% Sb | Panela: ${calc.cap}t</div>
             ${lotesHtml}
             <div class="calc-resumo-linha"><span class="calc-resumo-label">Bica Mole a adicionar</span><span class="calc-resumo-bica">${kgBica.toLocaleString('pt-BR',{maximumFractionDigits:0})} kg</span></div>
             <div class="calc-resumo-linha"><span class="calc-resumo-label">% Sb final estimado</span><span class="calc-resumo-valor">${sbFinal.toFixed(2)}%</span></div>
-            ${ultrapass ? '<div class="calc-resumo-alerta">⚠️ Carga ultrapassa capacidade!</div>' : ''}
           </div>`;
         }
       } catch(e) {}
     }
+
     const ativo = dados[`${prefix}_lote`] ? 'ativo' : '';
     const agora = new Date();
-
-    // Encontrar o índice da última etapa com início preenchido
-    let ultimaComIni = -1;
-    etapas.forEach((e, idx) => {
-      if (dados[`${prefix}_${e.key}`]) ultimaComIni = idx;
-    });
-
     const agoraMin = agora.getHours() * 60 + agora.getMinutes();
+
+    // Índice da última etapa com início preenchido
+    let ultimaComIni = -1;
+    etapas.forEach((e, idx) => { if (dados[`${prefix}_${e.key}`]) ultimaComIni = idx; });
+
+    // Se lingotamento iniciado → nunca atraso
+    const lingotKey = etapas.find(e => e.key.includes('lingot'));
+    const lingotIniciado = lingotKey ? !!dados[`${prefix}_${lingotKey.key}`] : false;
+
     let atrasadoCard = false;
+    // Coletar histórico global de edições do card
+    let todasEdicoes = [];
 
     const linhas = etapas.map((e, idx) => {
-      // e.key já inclui _ini, e.key2 inclui _fim
       const ini = dados[`${prefix}_${e.key}`] || '';
       const fim = dados[`${prefix}_${e.key2}`] || '';
       const autorIni = dados[`${prefix}_${e.key}_autor`] || '';
-      const autor = autorIni || '';
 
-      // Histórico de edição — chave: prefix_etapakey_histedicao (ex: a1_limp1_histedicao)
+      // Tempo de execução: ini desta até ini da próxima com início preenchido
+      let execStr = '';
+      if (ini) {
+        const proxEtapa = etapas.slice(idx+1).find(e2 => dados[`${prefix}_${e2.key}`]);
+        if (proxEtapa) {
+          const proxIni = dados[`${prefix}_${proxEtapa.key}`];
+          const [h1,m1] = ini.split(':').map(Number);
+          const [h2,m2] = proxIni.split(':').map(Number);
+          let diff = (h2*60+m2)-(h1*60+m1);
+          if (diff < 0) diff += 24*60;
+          execStr = `<span class="exec-label">⏱ ${Math.floor(diff/60)}:${String(diff%60).padStart(2,'0')}h</span>`;
+        }
+      }
+
+      // Coletar histórico para acordeão global
       const etapaBase = e.key.replace('_ini','');
       const histRaw = dados[`${prefix}_${etapaBase}_histedicao`] || '';
-      let histHtml = '';
       if (histRaw) {
         try {
           const hist = JSON.parse(histRaw);
-          histHtml = hist.map(h => `<div class="hist-painel-linha">✏️ <b>${h.usuario}</b> ${h.quando} | ${h.antigo} → <b>${h.novo}</b></div>`).join('');
+          hist.forEach(h => todasEdicoes.push({etapa: e.label, ...h}));
         } catch(e2) {}
       }
 
       const preenchida = ini || fim;
 
-      // Atraso: só na última etapa com início preenchido, só se tem fim e passou dele
+      // Atraso: só na última etapa, só se tem fim preenchido, e lingotamento não iniciado
       let atrasada = false;
-      if (idx === ultimaComIni && fim) {
+      if (!lingotIniciado && idx === ultimaComIni && fim) {
         const [hf, mf] = fim.split(':').map(Number);
         const fimMin = hf * 60 + mf;
-        const virada = fimMin > 22 * 60 && agoraMin < 2 * 60;
+        const virada = fimMin > 22*60 && agoraMin < 2*60;
         if (!virada && agoraMin > fimMin) { atrasada = true; atrasadoCard = true; }
       }
 
@@ -328,18 +363,36 @@
       const badgeAtraso = atrasada ? '<span class="badge-atraso">⚠ ATRASO</span>' : '';
 
       return `<tr class="${preenchida?'preenchida':''} ${atrasada?'atrasada':''}">
-        <td class="etapa">${e.label}${medioStr}${badgeAtraso}${histHtml ? `<div class="hist-painel">${histHtml}</div>` : ''}</td>
+        <td class="etapa">${e.label}${medioStr}${badgeAtraso}${execStr}</td>
         <td class="${ini?'valor':'vazio'}">${ini||'—'}</td>
         <td class="${fim?'valor':'vazio'}">${fim||'—'}</td>
-        <td class="td-autor">${autor ? `<span class="tag-autor">✏️ ${autor}</span>` : '<span class="sem-autor">—</span>'}</td>
+        <td class="td-autor">${autorIni ? `<span class="tag-autor">✏️ ${autorIni}</span>` : '<span class="sem-autor">—</span>'}</td>
       </tr>`;
     }).join('');
+
+    // Acordeão de histórico de edições
+    const cardId = `hist-acord-${prefix}`;
+    let histAcordHtml = '';
+    if (todasEdicoes.length > 0) {
+      const linhasHist = todasEdicoes.map(h =>
+        `<div class="hist-acord-linha"><b>${h.etapa}</b> — ✏️ ${h.usuario} ${h.quando}: ${h.antigo} → <b>${h.novo}</b></div>`
+      ).join('');
+      histAcordHtml = `
+        <div class="hist-acord-wrap">
+          <div class="hist-acord-btn" onclick="this.classList.toggle('aberto');this.nextElementSibling.classList.toggle('aberto')">
+            📋 Histórico de edições (${todasEdicoes.length}) <span class="hist-seta">▼</span>
+          </div>
+          <div class="hist-acord-body" id="${cardId}">${linhasHist}</div>
+        </div>`;
+    }
+
     return `<div class="card ${ativo} ${atrasadoCard ? 'card-atrasado' : ''}">
       ${liga ? `<div class="liga-bar">⚗️ LIGA: ${liga}</div>` : ''}
       <div class="card-header"><h2>Lote: ${lote}${ativo ? '<span class="badge-andamento">● EM ANDAMENTO</span>' : ''}</h2><span class="info">Panela: ${panela}</span></div>
       <table><thead><tr><th>Etapa</th><th>Início</th><th>Prev. Fim</th><th>Última Edição</th></tr></thead><tbody>${linhas}</tbody></table>
-      <div class="obs-box"><strong>OBS:</strong><span>${obs||'<em style="color:#bbb">—</em>'}</span></div>
-      ${setupMotivo ? `<div class="setup-alert"><span>⚠️</span> SETUP: ${setupMotivo}${setupIni ? ' | Início: '+setupIni : ''}${setupFim ? ' | Prev. Fim: '+setupFim : ''}</div>` : ''}
+      ${obs ? `<div class="obs-box"><strong>OBS:</strong> ${obs}</div>` : ''}
+      ${setupMotivo ? `<div class="setup-alert"><span>⚠️</span> SETUP: ${setupMotivo}${setupIni?' | Início: '+setupIni:''}${setupFim?' | Fim: '+setupFim:''}</div>` : ''}
+      ${histAcordHtml}
       ${calcResumoHtml}
     </div>`;
   }
