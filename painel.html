@@ -341,11 +341,18 @@
     if (primeiraIni) {
       const agora2 = new Date();
       const [hp, mp] = primeiraIni.split(':').map(Number);
-      // Calcular minutos desde início, considerando virada de dia
-      const agoraMin2 = agora2.getHours() * 60 + agora2.getMinutes();
-      const iniMin2 = hp * 60 + mp;
-      let diffTotal = agoraMin2 - iniMin2;
-      if (diffTotal < 0) diffTotal += 1440; // virada de dia
+      // Usar timestamp real se disponível
+      const tsKey2 = `${prefix}_processo_inicio_ts`;
+      const ts2 = dados[tsKey2];
+      let diffTotal;
+      if (ts2) {
+        diffTotal = Math.floor((agora2.getTime() - ts2) / 60000);
+      } else {
+        const agoraMin2 = agora2.getHours() * 60 + agora2.getMinutes();
+        const iniMin2 = hp * 60 + mp;
+        diffTotal = agoraMin2 - iniMin2;
+        if (diffTotal < 0) diffTotal += 1440;
+      }
       const ht = Math.floor(diffTotal / 60), mt = diffTotal % 60;
       tempoTotalHtml = `<span class="tempo-total">⏳ ${ht}:${String(mt).padStart(2,'0')}h em processo</span>`;
     }
