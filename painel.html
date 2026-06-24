@@ -341,12 +341,11 @@
     if (primeiraIni) {
       const agora2 = new Date();
       const [hp, mp] = primeiraIni.split(':').map(Number);
-      const ini2 = new Date(agora2); ini2.setHours(hp, mp, 0, 0);
-      // Se ini2 > agora2 significa virada de dia — recua 1 dia
-      if (ini2 > agora2) ini2.setDate(ini2.getDate() - 1);
-      let diffTotal = Math.floor((agora2 - ini2) / 60000);
-      // Garantir positivo (segurança extra)
-      if (diffTotal < 0) diffTotal += 1440;
+      // Calcular minutos desde início, considerando virada de dia
+      const agoraMin2 = agora2.getHours() * 60 + agora2.getMinutes();
+      const iniMin2 = hp * 60 + mp;
+      let diffTotal = agoraMin2 - iniMin2;
+      if (diffTotal < 0) diffTotal += 1440; // virada de dia
       const ht = Math.floor(diffTotal / 60), mt = diffTotal % 60;
       tempoTotalHtml = `<span class="tempo-total">⏳ ${ht}:${String(mt).padStart(2,'0')}h em processo</span>`;
     }
