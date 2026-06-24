@@ -276,6 +276,37 @@
     .setup-tv { font-size: 10px; }
     .card-obs { font-size: 9px; }
   }
+
+  @media (max-width: 768px) {
+    .tv-header { padding: 6px 10px; }
+    .tv-header img { height: 30px; }
+    .tv-header-center h1 { font-size: 13px; letter-spacing: 1px; }
+    .tv-header-center p { display: none; }
+    .tv-header-right .relogio { font-size: 18px; }
+    .tv-header-right .data { font-size: 9px; }
+    .tv-status { padding: 3px 10px; font-size: 11px; }
+    .nav-btn { width: 32px; height: 52px; font-size: 20px; }
+    .slide-page { padding: 6px 6px 4px; gap: 6px; }
+    .cards-row { gap: 8px; }
+    .card-tv { max-width: 100%; }
+    .card-top { padding: 5px 8px; }
+    .card-liga-tv { font-size: 12px; }
+    .card-panela-box { font-size: 17px; padding: 2px 10px; }
+    .tempo-total-tv { font-size: 10px; }
+    .card-header-tv { padding: 4px 8px; }
+    .card-lote-tv { font-size: 12px; }
+    .card-table th { font-size: 10px; padding: 3px 5px; }
+    .card-table td { font-size: 11px; padding: 3px 5px; }
+    .etapa-tv { font-size: 11px; }
+    .medio-tv, .exec-tv { font-size: 9px; }
+    .val { font-size: 11px; }
+    .secao-titulo-slide { font-size: 11px; padding: 3px 10px; }
+    .badge-andamento, .badge-atraso { font-size: 8px; padding: 1px 5px; }
+    .setup-tv { font-size: 10px; }
+    .card-obs { font-size: 9px; }
+    .slide-dots { padding: 2px 0; gap: 5px; }
+    .slide-dot { width: 6px; height: 6px; }
+  }
   /* DOTS */
   .slide-dots {
     display: flex; justify-content: center; gap: 8px;
@@ -492,6 +523,8 @@
     return {sup,inf};
   }
 
+  const isMobile = () => window.innerWidth <= 768;
+
   function buildUI() {
     const vp=document.getElementById('viewport');
     const dotsEl=document.getElementById('dots');
@@ -507,14 +540,35 @@
       return;
     }
 
-    const pagesHtml = slidesMeta.map(s=>{
-      const cardsHtml = s.cards.map(c=>renderCard(c.p,c.etapas)).join('');
-      const titulo = s.tipo==='PURO/CÁLCIO' ? '🏭 PANELAS DE PURO/CÁLCIO' : '⚗️ PANELAS DE SB/SN';
-      return `<div class="slide-page">
-        <div class="secao-titulo-slide">${titulo}</div>
-        <div class="cards-row">${cardsHtml}</div>
-      </div>`;
-    }).join('');
+    let pagesHtml = '';
+
+    if (isMobile()) {
+      // MOBILE: 1 card por slide, cada card é uma página independente
+      const todosCards = [];
+      [...sup, ...inf].forEach(c => {
+        todosCards.push({card: c, tipo: c.tipo});
+      });
+      slidesMeta = todosCards.map(({card, tipo}) => ({tipo, cards:[card]}));
+      totalSlides = slidesMeta.length;
+      pagesHtml = slidesMeta.map(s => {
+        const cardsHtml = s.cards.map(c=>renderCard(c.p,c.etapas)).join('');
+        const titulo = s.tipo==='PURO/CÁLCIO' ? '🏭 PURO/CÁLCIO' : '⚗️ SB/SN';
+        return `<div class="slide-page">
+          <div class="secao-titulo-slide">${titulo}</div>
+          <div class="cards-row">${cardsHtml}</div>
+        </div>`;
+      }).join('');
+    } else {
+      // DESKTOP: 4 cards por slide (comportamento original)
+      pagesHtml = slidesMeta.map(s=>{
+        const cardsHtml = s.cards.map(c=>renderCard(c.p,c.etapas)).join('');
+        const titulo = s.tipo==='PURO/CÁLCIO' ? '🏭 PANELAS DE PURO/CÁLCIO' : '⚗️ PANELAS DE SB/SN';
+        return `<div class="slide-page">
+          <div class="secao-titulo-slide">${titulo}</div>
+          <div class="cards-row">${cardsHtml}</div>
+        </div>`;
+      }).join('');
+    }
 
     vp.style.transition='none';
     vp.innerHTML=pagesHtml;
@@ -526,6 +580,9 @@
     const cur = slideAtual<totalSlides?slideAtual:0;
     goTo(cur,false);
   }
+
+  // Reconstruir ao redimensionar (ex: rotação do celular)
+  window.addEventListener('resize', () => { buildUI(); iniciarTimer(); });
 
   function goTo(idx,animate=true) {
     slideAtual=idx;
