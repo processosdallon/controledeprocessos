@@ -2665,7 +2665,8 @@
         const [h,m] = primeiraIni.split(':').map(Number);
         const ini = new Date(agora); ini.setHours(h,m,0,0);
         if (ini > agora) ini.setDate(ini.getDate()-1);
-        const diff = Math.floor((agora-ini)/60000);
+        let diff = Math.floor((agora-ini)/60000);
+        if (diff < 0) diff += 1440; // virada de dia
         el.textContent = `⏳ ${Math.floor(diff/60)}:${String(diff%60).padStart(2,'0')}h em processo`;
       });
     }
@@ -2815,7 +2816,7 @@
           const [h1,m1] = iniVal.split(':').map(Number);
           const [h2,m2] = proxIni.split(':').map(Number);
           let diff = (h2*60+m2)-(h1*60+m1);
-          if (diff < 0) diff += 24*60;
+          if (diff < 0) diff += 1440; // virada de dia
           const eh = Math.floor(diff/60), em = diff%60;
           const span = document.createElement('span');
           span.className = 'exec-time';
