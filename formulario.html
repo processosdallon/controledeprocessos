@@ -93,6 +93,38 @@
   .usuario-bar { background: #1a3a2a; border: 1px solid #28a745; border-radius: 6px; padding: 6px 14px; max-width: 900px; margin: 0 auto 14px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #a8f0b8; }
   .usuario-bar button { background: transparent; border: 1px solid #28a745; color: #a8f0b8; padding: 3px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; }
   .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #2d6a3f; color: white; padding: 10px 24px; border-radius: 6px; font-size: 13px; display: none; z-index: 999; }
+  
+  @media (max-width: 768px) {
+    body { padding: 8px; font-size: 12px; }
+    .bloco { max-width: 100%; margin-left: 0; margin-right: 0; }
+    .secao-titulo { max-width: 100%; margin-left: 0; margin-right: 0; font-size: 12px; }
+    .btn-container { max-width: 100%; }
+    .usuario-bar { max-width: 100%; flex-wrap: wrap; gap: 6px; font-size: 11px; }
+    .bloco-header { flex-wrap: wrap; gap: 6px; padding: 6px 8px; }
+    .bloco-header input[type="text"] { font-size: 11px; }
+    .bloco-header .campo-lote { width: 100px; }
+    .bloco-header .campo-panela { width: 60px; }
+    .bloco-header select { max-width: 120px; font-size: 11px; }
+    table { font-size: 11px; }
+    th, td { padding: 3px 4px; }
+    .etapa-label { font-size: 11px; width: 40%; }
+    .td-ini, .td-fim { width: 30%; }
+    .inp-ini, .inp-fim { font-size: 11px; }
+    .btn-lapis { font-size: 10px; }
+    .autoria { font-size: 9px; }
+    .exec-time { font-size: 9px; }
+    .btn-concluido { font-size: 12px; padding: 8px; }
+    .btn-limpar, .btn-imprimir { padding: 8px 16px; font-size: 12px; }
+    .calc-box { padding: 8px; }
+    .calc-config { flex-direction: column; gap: 6px; }
+    .calc-config input { width: 100%; }
+    .hist-acord-btn { font-size: 11px; }
+    .login-box { width: 90%; padding: 20px; }
+    .login-box img { height: 80px; }
+    h1 { font-size: 14px; }
+    .setup-select { font-size: 10px; }
+    .tempo-total-form { font-size: 10px; }
+  }
   @media print { #tela-login,.btn-container,.status-bar,.secao-titulo,.btn-concluido,.usuario-bar,.toast { display: none; } body { background: white; padding: 5px; } }
 </style>
 </head>
