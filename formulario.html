@@ -2464,6 +2464,7 @@
     setTimeout(calcularExecucao, 250);
     setTimeout(atualizarAcords, 300);
     setTimeout(atualizarTempoTotal, 300);
+    setTimeout(salvarTimestampsRetroativos, 400);
     if (ignorarUpdate) return;
     document.querySelectorAll('[data-field]').forEach(el => {
       const key = el.dataset.field;
@@ -2578,6 +2579,24 @@
     if (fimVal) cacheFirebase[`${p}_${key}_fim`] = fimVal;
     cacheFirebase[`${p}_${key}_ini_autor`] = dados[`${p}_${key}_ini_autor`];
     if (histJson) { dados[`${p}_${key}_histedicao`] = histJson; cacheFirebase[`${p}_${key}_histedicao`] = histJson; }
+    // Salvar timestamp do inicio do processo (primeira etapa do bloco)
+    // só se ainda não existir, para não sobrescrever com etapas subsequentes
+    const tsKey = `${p}_processo_inicio_ts`;
+    const keysSup = ['limp1','desest','lanca','setuptemp','desant1','decup','transf','desant2','limpeza1','transf2','limpeza2','metais','lingot'];
+    const keysInf = ['limp1','enxofre','desest','transf','soda','carvao','metais','lingot'];
+    const keys = p.startsWith('b') ? keysInf : keysSup;
+    const jaPossuiOutraEtapa = keys.filter(k => k !== key).some(k => cacheFirebase[`${p}_${k}_ini`]);
+    if (!jaPossuiOutraEtapa && !cacheFirebase[tsKey]) {
+      // Esta é a primeira etapa — salvar timestamp agora com a hora informada
+      const [h,m] = iniVal.split(':').map(Number);
+      const now = new Date();
+      // Se hora informada > hora atual, provavelmente é de ontem
+      const inicioTs = new Date(now);
+      inicioTs.setHours(h, m, 0, 0);
+      if (inicioTs > now) inicioTs.setDate(inicioTs.getDate() - 1);
+      dados[tsKey] = inicioTs.getTime();
+      cacheFirebase[tsKey] = inicioTs.getTime();
+    }
     set(dbRef, dados).finally(() => setTimeout(() => { ignorarUpdate = false; }, 500));
   }
 
@@ -2664,10 +2683,18 @@
         const agora = new Date();
         const [h,m] = primeiraIni.split(':').map(Number);
         // Calcular minutos desde início, considerando virada de dia
-        const agoraMin3 = agora.getHours() * 60 + agora.getMinutes();
-        const iniMin3 = h * 60 + m;
-        let diff = agoraMin3 - iniMin3;
-        if (diff < 0) diff += 1440; // virada de dia
+        // Usar timestamp real se disponível (resolve virada de dia e múltiplos dias)
+        const tsKey = `${p}_processo_inicio_ts`;
+        const ts = cacheFirebase[tsKey];
+        let diff;
+        if (ts) {
+          diff = Math.floor((agora.getTime() - ts) / 60000);
+        } else {
+          const agoraMin3 = agora.getHours() * 60 + agora.getMinutes();
+          const iniMin3 = h * 60 + m;
+          diff = agoraMin3 - iniMin3;
+          if (diff < 0) diff += 1440;
+        }
         el.textContent = `⏳ ${Math.floor(diff/60)}:${String(diff%60).padStart(2,'0')}h em processo`;
       });
     }
@@ -2734,6 +2761,46 @@
     processar(prefixosInf, keysInf, ETAPA_LABELS_INF);
   }
 
+
+  // Salvar timestamps retroativamente para lotes já em andamento sem timestamp
+  function salvarTimestampsRetroativos() {
+    const keysSup = ['limp1','desest','lanca','setuptemp','desant1','decup','transf','desant2','limpeza1','transf2','limpeza2','metais','lingot'];
+    const keysInf = ['limp1','enxofre','desest','transf','soda','carvao','metais','lingot'];
+    const prefixosSup = ['a1','a2','a3','a4','a5','a6','a7','a8'];
+    const prefixosInf = ['b1','b2'];
+    let houveAlteracao = false;
+    const dados = Object.assign({}, cacheFirebase);
+
+    function processar(prefixos, keys) {
+      prefixos.forEach(p => {
+        const tsKey = `${p}_processo_inicio_ts`;
+        if (cacheFirebase[tsKey]) return; // já tem timestamp, pular
+        // Encontrar a primeira etapa com início preenchido
+        const primeiraKey = keys.find(k => cacheFirebase[`${p}_${k}_ini`]);
+        if (!primeiraKey) return;
+        const iniVal = cacheFirebase[`${p}_${primeiraKey}_ini`];
+        // Calcular timestamp: se hora > agora, foi ontem
+        const [h, m] = iniVal.split(':').map(Number);
+        const now = new Date();
+        const inicioTs = new Date(now);
+        inicioTs.setHours(h, m, 0, 0);
+        if (inicioTs > now) inicioTs.setDate(inicioTs.getDate() - 1);
+        dados[tsKey] = inicioTs.getTime();
+        cacheFirebase[tsKey] = inicioTs.getTime();
+        houveAlteracao = true;
+        console.log(`Timestamp retroativo salvo para ${p}: ${inicioTs.toLocaleString('pt-BR')}`);
+      });
+    }
+
+    processar(prefixosSup, keysSup);
+    processar(prefixosInf, keysInf);
+
+    if (houveAlteracao) {
+      ignorarUpdate = true;
+      set(dbRef, dados).finally(() => setTimeout(() => { ignorarUpdate = false; }, 500));
+    }
+  }
+
   // Listener global para botões lápis (evita problema de escopo em type="module")
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('.btn-lapis');
@@ -2779,6 +2846,8 @@
         setTimeout(() => { ignorarUpdate = false; }, 500);
       });
       document.querySelectorAll(`[data-field^="${prefix}_"]`).forEach(el => el.value='');
+      // Limpar timestamp do processo
+      delete cacheFirebase[`${prefix}_processo_inicio_ts`];
       document.querySelectorAll(`.autoria[data-autor^="${prefix}_"]`).forEach(el => el.textContent='');
       [...document.querySelectorAll(`[id^="hist_${prefix}_"]`)].forEach(d => d.innerHTML='');
       if (prefix==='b1'||prefix==='b2') {
