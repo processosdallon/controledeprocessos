@@ -201,6 +201,35 @@
   /* LARGURA DOS CARDS */
   .grid-8 { grid-template-columns: repeat(4, 1fr); gap: 14px; max-width: 1400px; }
   .grid-2 { gap: 20px; max-width: 1400px; }
+
+  @media (max-width: 768px) {
+    body { padding: 8px; font-size: 11px; }
+    h1 { font-size: 15px; }
+    .secao-titulo { font-size: 11px; padding: 5px 10px; margin-left: 0; margin-right: 0; max-width: 100%; }
+    .grid-8 { grid-template-columns: 1fr; max-width: 100%; gap: 10px; }
+    .grid-2 { grid-template-columns: 1fr; max-width: 100%; gap: 10px; }
+    .card { font-size: 11px; }
+    .card-header h2 { font-size: 12px; flex-wrap: wrap; gap: 4px; }
+    .card-header { flex-wrap: wrap; gap: 4px; padding: 6px 10px; }
+    th { font-size: 10px; padding: 3px 5px; }
+    td { font-size: 11px; padding: 3px 5px; }
+    .etapa { font-size: 11px; }
+    .medio-label { font-size: 8px; }
+    .exec-label { font-size: 9px; }
+    .tag-autor { font-size: 9px; padding: 1px 5px; }
+    .obs-box { font-size: 11px; }
+    .hist-acord-btn { font-size: 11px; padding: 5px 8px; }
+    .liga-bar { font-size: 11px; }
+    .badge-andamento, .badge-atraso { font-size: 9px; }
+    .tempo-total { font-size: 10px; }
+    .hist-secao { margin-top: 16px; }
+    .hist-titulo { font-size: 13px; }
+    .hist-table th, .hist-table td { font-size: 10px; padding: 3px 6px; }
+    .hist-toggle { flex-wrap: wrap; gap: 4px; padding: 8px 10px; }
+    .hist-toggle .hl { font-size: 12px; }
+    .calc-resumo { font-size: 11px; }
+    .setup-alert { font-size: 10px; }
+  }
   .footer { text-align: center; margin-top: 28px; font-size: 11px; color: #aaa; }
 </style>
 </head>
