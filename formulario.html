@@ -2663,9 +2663,10 @@
         if (!primeiraIni) { el.textContent = ''; return; }
         const agora = new Date();
         const [h,m] = primeiraIni.split(':').map(Number);
-        const ini = new Date(agora); ini.setHours(h,m,0,0);
-        if (ini > agora) ini.setDate(ini.getDate()-1);
-        let diff = Math.floor((agora-ini)/60000);
+        // Calcular minutos desde início, considerando virada de dia
+        const agoraMin3 = agora.getHours() * 60 + agora.getMinutes();
+        const iniMin3 = h * 60 + m;
+        let diff = agoraMin3 - iniMin3;
         if (diff < 0) diff += 1440; // virada de dia
         el.textContent = `⏳ ${Math.floor(diff/60)}:${String(diff%60).padStart(2,'0')}h em processo`;
       });
