@@ -407,7 +407,8 @@
       const [hpi,mpi] = etapasComIni.split(':').map(Number);
       const iniT = new Date(agr); iniT.setHours(hpi,mpi,0,0);
       if (iniT > agr) iniT.setDate(iniT.getDate()-1);
-      const dT = Math.floor((agr-iniT)/60000);
+      let dT = Math.floor((agr-iniT)/60000);
+      if (dT < 0) dT += 1440; // virada de dia
       tempoTotalTv = `<span class="tempo-total-tv">⏳ ${Math.floor(dT/60)}:${String(dT%60).padStart(2,'0')}h em processo</span>`;
     }
 
@@ -433,7 +434,7 @@
           const [h1,m1]=ini.split(':').map(Number);
           const [h2,m2]=pi.split(':').map(Number);
           let diff=(h2*60+m2)-(h1*60+m1);
-          if(diff<0) diff+=24*60;
+          if(diff<0) diff+=1440; // virada de dia
           exec=`<span class="exec-tv">Tempo de Execução: ${Math.floor(diff/60)}:${String(diff%60).padStart(2,'0')}h</span>`;
         }
       }
