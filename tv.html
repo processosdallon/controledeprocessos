@@ -405,11 +405,18 @@
     if (etapasComIni) {
       const agr = new Date();
       const [hpi,mpi] = etapasComIni.split(':').map(Number);
-      // Calcular minutos desde início, considerando virada de dia
-      const agrMin = agr.getHours() * 60 + agr.getMinutes();
-      const iniMinT = hpi * 60 + mpi;
-      let dT = agrMin - iniMinT;
-      if (dT < 0) dT += 1440; // virada de dia
+      // Usar timestamp real se disponível
+      const tsKeyT = `${p}_processo_inicio_ts`;
+      const tsT = dados[`${p}_processo_inicio_ts`];
+      let dT;
+      if (tsT) {
+        dT = Math.floor((agr.getTime() - tsT) / 60000);
+      } else {
+        const agrMin = agr.getHours() * 60 + agr.getMinutes();
+        const iniMinT = hpi * 60 + mpi;
+        dT = agrMin - iniMinT;
+        if (dT < 0) dT += 1440;
+      }
       tempoTotalTv = `<span class="tempo-total-tv">⏳ ${Math.floor(dT/60)}:${String(dT%60).padStart(2,'0')}h em processo</span>`;
     }
 
