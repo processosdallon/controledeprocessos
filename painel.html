@@ -342,8 +342,11 @@
       const agora2 = new Date();
       const [hp, mp] = primeiraIni.split(':').map(Number);
       const ini2 = new Date(agora2); ini2.setHours(hp, mp, 0, 0);
+      // Se ini2 > agora2 significa virada de dia — recua 1 dia
       if (ini2 > agora2) ini2.setDate(ini2.getDate() - 1);
-      const diffTotal = Math.floor((agora2 - ini2) / 60000);
+      let diffTotal = Math.floor((agora2 - ini2) / 60000);
+      // Garantir positivo (segurança extra)
+      if (diffTotal < 0) diffTotal += 1440;
       const ht = Math.floor(diffTotal / 60), mt = diffTotal % 60;
       tempoTotalHtml = `<span class="tempo-total">⏳ ${ht}:${String(mt).padStart(2,'0')}h em processo</span>`;
     }
@@ -372,7 +375,7 @@
           const [h1,m1] = ini.split(':').map(Number);
           const [h2,m2] = proxIni.split(':').map(Number);
           let diff = (h2*60+m2)-(h1*60+m1);
-          if (diff < 0) diff += 24*60;
+          if (diff < 0) diff += 1440; // virada de dia
           execStr = `<span class="exec-label">Tempo de Execução: ${Math.floor(diff/60)}:${String(diff%60).padStart(2,'0')}h</span>`;
         }
       }
