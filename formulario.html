@@ -2732,42 +2732,78 @@
     const agoraMin = agora.getHours() * 60 + agora.getMinutes();
 
     function toMin(str) {
-      // Converte "HH:MM" para minutos do dia
       const [h,m] = str.split(':').map(Number);
       return h * 60 + m;
     }
 
+    // Compara dois horários HH:MM considerando que podem ser de dias diferentes
+    // Retorna true se horário A é "depois" de horário B no contexto do dia atual
+    function isDepois(horaA, horaB) {
+      const mA = toMin(horaA), mB = toMin(horaB);
+      // Se diferença > 12h, provavelmente cruzou meia-noite
+      const diff = mA - mB;
+      if (Math.abs(diff) > 720) return diff < 0; // virada de dia
+      return diff > 0;
+    }
+
     function checar(prefixos, etapas) {
       prefixos.forEach(p => {
-        // Se lingotamento iniciado → nunca atraso, volta ao verde
+        // Lingotamento iniciado → nunca atraso
         const lingotIniciado = !!cacheFirebase[`${p}_lingot_ini`];
+        if (lingotIniciado) {
+          document.getElementById(`bloco-${p}`)?.classList.remove('atrasado');
+          return;
+        }
 
-        // Encontrar última etapa com início preenchido
-        let ultimaIdx = -1;
+        // Encontrar última etapa normal com início preenchido
+        let ultimaEtapaIdx = -1;
+        let ultimaEtapaIni = null;
         etapas.forEach((e, idx) => {
-          if (cacheFirebase[`${p}_${e.key}_ini`]) ultimaIdx = idx;
+          const ini = cacheFirebase[`${p}_${e.key}_ini`];
+          if (ini) { ultimaEtapaIdx = idx; ultimaEtapaIni = ini; }
         });
 
+        // Setup: verificar se está preenchido e qual o horário
+        const setupMotivo = cacheFirebase[`${p}_setup_motivo`] || '';
+        const setupIni = cacheFirebase[`${p}_setup_ini`] || '';
+        const setupFim = cacheFirebase[`${p}_setup_fim`] || '';
+
         let blocoAtrasado = false;
-        if (!lingotIniciado && ultimaIdx >= 0) {
-          const e = etapas[ultimaIdx];
-          // Ignorar etapa opcional não preenchida (ex: setuptemp)
-          if (e.opcional && !cacheFirebase[`${p}_${e.key}_ini`]) {
-            // pular — etapa não foi usada neste lote
-          } else {
-            const fimVal = cacheFirebase[`${p}_${e.key}_fim`];
-            if (fimVal) {
-              const fimMin = toMin(fimVal);
-              const virada = fimMin > 22 * 60 && agoraMin < 2 * 60;
+
+        if (ultimaEtapaIdx >= 0) {
+          // Verificar se o setup está "ativo" agora:
+          // Setup ativo = tem motivo + tem início + nenhuma etapa normal foi iniciada DEPOIS do setup
+          const setupAtivo = setupMotivo && setupIni &&
+            (!ultimaEtapaIni || !isDepois(ultimaEtapaIni, setupIni));
+
+          if (setupAtivo) {
+            // Setup comanda: só fica vermelho se passou do fim do setup
+            if (setupFim) {
+              const fimMin = toMin(setupFim);
+              const virada = fimMin > 22*60 && agoraMin < 2*60;
               if (!virada && agoraMin > fimMin) blocoAtrasado = true;
+            }
+            // Sem fim do setup → não marca atraso
+          } else {
+            // Etapa normal comanda
+            const e = etapas[ultimaEtapaIdx];
+            if (e.opcional && !cacheFirebase[`${p}_${e.key}_ini`]) {
+              // etapa opcional não preenchida — pular
+            } else {
+              const fimVal = cacheFirebase[`${p}_${e.key}_fim`];
+              if (fimVal) {
+                const fimMin = toMin(fimVal);
+                const virada = fimMin > 22*60 && agoraMin < 2*60;
+                if (!virada && agoraMin > fimMin) blocoAtrasado = true;
+              }
             }
           }
         }
 
-        const blocoEl = document.getElementById(`bloco-${p}`);
-        if (blocoEl) blocoEl.classList.toggle('atrasado', blocoAtrasado);
+        document.getElementById(`bloco-${p}`)?.classList.toggle('atrasado', blocoAtrasado);
       });
     }
+
     checar(PREFIXOS_SUP, ETAPAS_SUP);
     checar(PREFIXOS_INF, ETAPAS_INF);
   }
