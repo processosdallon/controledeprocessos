@@ -249,6 +249,7 @@
         <td class="etapa-label">Setup de Temperatura (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a1_setuptemp_ini" class="inp-ini" onchange="calcularFimSetuptemp(this,'a1')">
+          <button class="btn-lapis" data-p="a1" data-key="setuptemp" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a1_setuptemp_ini"></span>
           <div class="hist-edicao" id="hist_a1_setuptemp"></div>
         </td>
@@ -486,6 +487,7 @@
         <td class="etapa-label">Setup de Temperatura (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a2_setuptemp_ini" class="inp-ini" onchange="calcularFimSetuptemp(this,'a2')">
+          <button class="btn-lapis" data-p="a2" data-key="setuptemp" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a2_setuptemp_ini"></span>
           <div class="hist-edicao" id="hist_a2_setuptemp"></div>
         </td>
@@ -723,6 +725,7 @@
         <td class="etapa-label">Setup de Temperatura (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a3_setuptemp_ini" class="inp-ini" onchange="calcularFimSetuptemp(this,'a3')">
+          <button class="btn-lapis" data-p="a3" data-key="setuptemp" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a3_setuptemp_ini"></span>
           <div class="hist-edicao" id="hist_a3_setuptemp"></div>
         </td>
@@ -960,6 +963,7 @@
         <td class="etapa-label">Setup de Temperatura (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a4_setuptemp_ini" class="inp-ini" onchange="calcularFimSetuptemp(this,'a4')">
+          <button class="btn-lapis" data-p="a4" data-key="setuptemp" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a4_setuptemp_ini"></span>
           <div class="hist-edicao" id="hist_a4_setuptemp"></div>
         </td>
@@ -1197,6 +1201,7 @@
         <td class="etapa-label">Setup de Temperatura (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a5_setuptemp_ini" class="inp-ini" onchange="calcularFimSetuptemp(this,'a5')">
+          <button class="btn-lapis" data-p="a5" data-key="setuptemp" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a5_setuptemp_ini"></span>
           <div class="hist-edicao" id="hist_a5_setuptemp"></div>
         </td>
@@ -1434,6 +1439,7 @@
         <td class="etapa-label">Setup de Temperatura (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a6_setuptemp_ini" class="inp-ini" onchange="calcularFimSetuptemp(this,'a6')">
+          <button class="btn-lapis" data-p="a6" data-key="setuptemp" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a6_setuptemp_ini"></span>
           <div class="hist-edicao" id="hist_a6_setuptemp"></div>
         </td>
@@ -1671,6 +1677,7 @@
         <td class="etapa-label">Setup de Temperatura (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a7_setuptemp_ini" class="inp-ini" onchange="calcularFimSetuptemp(this,'a7')">
+          <button class="btn-lapis" data-p="a7" data-key="setuptemp" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a7_setuptemp_ini"></span>
           <div class="hist-edicao" id="hist_a7_setuptemp"></div>
         </td>
@@ -1908,6 +1915,7 @@
         <td class="etapa-label">Setup de Temperatura (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a8_setuptemp_ini" class="inp-ini" onchange="calcularFimSetuptemp(this,'a8')">
+          <button class="btn-lapis" data-p="a8" data-key="setuptemp" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a8_setuptemp_ini"></span>
           <div class="hist-edicao" id="hist_a8_setuptemp"></div>
         </td>
@@ -2595,6 +2603,7 @@
     const fimEl = document.querySelector(`[data-field="${p}_${key}_fim"]`);
     if (!iniEl) return;
     const valorAntigo = iniEl.value;
+    const campoLivre = (key === 'setuptemp' || key === 'lingot');
     // Desbloquear para edição
     iniEl.readOnly = false;
     iniEl.style.background = '#fffbe6';
@@ -2602,17 +2611,40 @@
     // Registrar mudança ao sair do campo
     const onEdit = () => {
       const novoVal = iniEl.value;
-      // Rebloquear sempre
-      iniEl.readOnly = true;
+      // Rebloquear apenas se não for campo livre
+      if (!campoLivre) {
+        iniEl.readOnly = true;
+      }
       iniEl.style.background = '';
       iniEl.removeEventListener('change', onEdit);
       iniEl.removeEventListener('blur', onBlur);
-      if (!novoVal || novoVal === valorAntigo) return;
+      if (novoVal === valorAntigo) return;
+      // Se campo livre e apagou o valor
+      if (campoLivre && !novoVal) {
+        ignorarUpdate = true;
+        const dados = Object.assign({}, cacheFirebase);
+        delete dados[`${p}_${key}_ini`];
+        delete dados[`${p}_${key}_fim`];
+        delete cacheFirebase[`${p}_${key}_ini`];
+        delete cacheFirebase[`${p}_${key}_fim`];
+        if (fimEl) fimEl.value = '';
+        set(dbRef, dados).finally(() => setTimeout(() => { ignorarUpdate = false; }, 500));
+        setTimeout(verificarAtrasos, 300);
+        return;
+      }
+      if (!novoVal) return;
       // Recalcular fim com o novo ini
       const etapasRef = p.startsWith('b') ? ETAPAS_INF : ETAPAS_SUP;
       const etapa = etapasRef.find(e => e.key === key);
       let fimVal = fimEl?.value || '';
-      if (etapa?.min) {
+      if (etapa?.min && campoLivre && !fimEl?.value) {
+        // Para setuptemp: só recalcula fim se estiver vazio
+        const [h,m] = novoVal.split(':').map(Number);
+        const base = new Date(2000,0,1,h,m,0,0);
+        const result = new Date(base.getTime() + etapa.min * 60000);
+        fimVal = `${String(result.getHours()).padStart(2,'0')}:${String(result.getMinutes()).padStart(2,'0')}`;
+        if (fimEl) { fimEl.value = fimVal; }
+      } else if (etapa?.min && !campoLivre) {
         const [h,m] = novoVal.split(':').map(Number);
         const base = new Date(2000,0,1,h,m,0,0);
         const result = new Date(base.getTime() + etapa.min * 60000);
@@ -2625,14 +2657,13 @@
       let hist = [];
       try { hist = JSON.parse(cacheFirebase[histKey] || '[]'); } catch(e) {}
       hist.push({usuario: sessao.usuario.toUpperCase(), quando: agora, antigo: valorAntigo || '—', novo: novoVal});
-      // histórico salvo no Firebase e exibido apenas no acordeão
       salvarCampos(p, key, novoVal, fimVal, sessao.usuario, JSON.stringify(hist));
       setTimeout(verificarAtrasos, 300);
     };
-    // Blur sem mudança também rebloqueia
+    // Blur sem mudança também rebloqueia (só para campos não livres)
     const onBlur = () => {
       setTimeout(() => {
-        if (iniEl.readOnly === false) {
+        if (iniEl.readOnly === false && !campoLivre) {
           iniEl.readOnly = true;
           iniEl.style.background = '';
           iniEl.removeEventListener('change', onEdit);
