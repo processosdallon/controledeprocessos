@@ -249,12 +249,11 @@
         <td class="etapa-label">Setup de Temperatura (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a1_setuptemp_ini" class="inp-ini" onchange="calcularFimSetuptemp(this,'a1')">
-          <button class="btn-lapis" data-p="a1" data-key="setuptemp" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a1_setuptemp_ini"></span>
           <div class="hist-edicao" id="hist_a1_setuptemp"></div>
         </td>
         <td class="td-fim">
-          <input type="time" data-field="a1_setuptemp_fim" class="inp-fim">
+          <input type="time" data-field="a1_setuptemp_fim" class="inp-fim" onchange="salvarCampoLivre(this)">
         </td>
       </tr>
       <tr data-etapa="a1_desant1">
@@ -356,13 +355,12 @@
       <tr data-etapa="a1_lingot">
         <td class="etapa-label">Lingotamento</td>
         <td class="td-ini">
-          <input type="time" data-field="a1_lingot_ini" class="inp-ini" onchange="aoPreencherIni(this,'a1','lingot',null)">
-          <button class="btn-lapis" data-p="a1" data-key="lingot" title="Editar horário">✏️</button>
+          <input type="time" data-field="a1_lingot_ini" class="inp-ini" onchange="salvarCampoLivre(this)">
           <span class="autoria" data-autor="a1_lingot_ini"></span>
           <div class="hist-edicao" id="hist_a1_lingot"></div>
         </td>
         <td class="td-fim">
-          <input type="time" data-field="a1_lingot_fim" class="inp-fim" readonly>
+          <input type="time" data-field="a1_lingot_fim" class="inp-fim" onchange="salvarCampoLivre(this)">
         </td>
       </tr>
     </tbody>
@@ -488,12 +486,11 @@
         <td class="etapa-label">Setup de Temperatura (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a2_setuptemp_ini" class="inp-ini" onchange="calcularFimSetuptemp(this,'a2')">
-          <button class="btn-lapis" data-p="a2" data-key="setuptemp" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a2_setuptemp_ini"></span>
           <div class="hist-edicao" id="hist_a2_setuptemp"></div>
         </td>
         <td class="td-fim">
-          <input type="time" data-field="a2_setuptemp_fim" class="inp-fim">
+          <input type="time" data-field="a2_setuptemp_fim" class="inp-fim" onchange="salvarCampoLivre(this)">
         </td>
       </tr>
       <tr data-etapa="a2_desant1">
@@ -595,13 +592,12 @@
       <tr data-etapa="a2_lingot">
         <td class="etapa-label">Lingotamento</td>
         <td class="td-ini">
-          <input type="time" data-field="a2_lingot_ini" class="inp-ini" onchange="aoPreencherIni(this,'a2','lingot',null)">
-          <button class="btn-lapis" data-p="a2" data-key="lingot" title="Editar horário">✏️</button>
+          <input type="time" data-field="a2_lingot_ini" class="inp-ini" onchange="salvarCampoLivre(this)">
           <span class="autoria" data-autor="a2_lingot_ini"></span>
           <div class="hist-edicao" id="hist_a2_lingot"></div>
         </td>
         <td class="td-fim">
-          <input type="time" data-field="a2_lingot_fim" class="inp-fim" readonly>
+          <input type="time" data-field="a2_lingot_fim" class="inp-fim" onchange="salvarCampoLivre(this)">
         </td>
       </tr>
     </tbody>
@@ -727,12 +723,11 @@
         <td class="etapa-label">Setup de Temperatura (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a3_setuptemp_ini" class="inp-ini" onchange="calcularFimSetuptemp(this,'a3')">
-          <button class="btn-lapis" data-p="a3" data-key="setuptemp" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a3_setuptemp_ini"></span>
           <div class="hist-edicao" id="hist_a3_setuptemp"></div>
         </td>
         <td class="td-fim">
-          <input type="time" data-field="a3_setuptemp_fim" class="inp-fim">
+          <input type="time" data-field="a3_setuptemp_fim" class="inp-fim" onchange="salvarCampoLivre(this)">
         </td>
       </tr>
       <tr data-etapa="a3_desant1">
@@ -834,13 +829,12 @@
       <tr data-etapa="a3_lingot">
         <td class="etapa-label">Lingotamento</td>
         <td class="td-ini">
-          <input type="time" data-field="a3_lingot_ini" class="inp-ini" onchange="aoPreencherIni(this,'a3','lingot',null)">
-          <button class="btn-lapis" data-p="a3" data-key="lingot" title="Editar horário">✏️</button>
+          <input type="time" data-field="a3_lingot_ini" class="inp-ini" onchange="salvarCampoLivre(this)">
           <span class="autoria" data-autor="a3_lingot_ini"></span>
           <div class="hist-edicao" id="hist_a3_lingot"></div>
         </td>
         <td class="td-fim">
-          <input type="time" data-field="a3_lingot_fim" class="inp-fim" readonly>
+          <input type="time" data-field="a3_lingot_fim" class="inp-fim" onchange="salvarCampoLivre(this)">
         </td>
       </tr>
     </tbody>
@@ -966,12 +960,11 @@
         <td class="etapa-label">Setup de Temperatura (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a4_setuptemp_ini" class="inp-ini" onchange="calcularFimSetuptemp(this,'a4')">
-          <button class="btn-lapis" data-p="a4" data-key="setuptemp" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a4_setuptemp_ini"></span>
           <div class="hist-edicao" id="hist_a4_setuptemp"></div>
         </td>
         <td class="td-fim">
-          <input type="time" data-field="a4_setuptemp_fim" class="inp-fim">
+          <input type="time" data-field="a4_setuptemp_fim" class="inp-fim" onchange="salvarCampoLivre(this)">
         </td>
       </tr>
       <tr data-etapa="a4_desant1">
@@ -1073,13 +1066,12 @@
       <tr data-etapa="a4_lingot">
         <td class="etapa-label">Lingotamento</td>
         <td class="td-ini">
-          <input type="time" data-field="a4_lingot_ini" class="inp-ini" onchange="aoPreencherIni(this,'a4','lingot',null)">
-          <button class="btn-lapis" data-p="a4" data-key="lingot" title="Editar horário">✏️</button>
+          <input type="time" data-field="a4_lingot_ini" class="inp-ini" onchange="salvarCampoLivre(this)">
           <span class="autoria" data-autor="a4_lingot_ini"></span>
           <div class="hist-edicao" id="hist_a4_lingot"></div>
         </td>
         <td class="td-fim">
-          <input type="time" data-field="a4_lingot_fim" class="inp-fim" readonly>
+          <input type="time" data-field="a4_lingot_fim" class="inp-fim" onchange="salvarCampoLivre(this)">
         </td>
       </tr>
     </tbody>
@@ -1205,12 +1197,11 @@
         <td class="etapa-label">Setup de Temperatura (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a5_setuptemp_ini" class="inp-ini" onchange="calcularFimSetuptemp(this,'a5')">
-          <button class="btn-lapis" data-p="a5" data-key="setuptemp" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a5_setuptemp_ini"></span>
           <div class="hist-edicao" id="hist_a5_setuptemp"></div>
         </td>
         <td class="td-fim">
-          <input type="time" data-field="a5_setuptemp_fim" class="inp-fim">
+          <input type="time" data-field="a5_setuptemp_fim" class="inp-fim" onchange="salvarCampoLivre(this)">
         </td>
       </tr>
       <tr data-etapa="a5_desant1">
@@ -1312,13 +1303,12 @@
       <tr data-etapa="a5_lingot">
         <td class="etapa-label">Lingotamento</td>
         <td class="td-ini">
-          <input type="time" data-field="a5_lingot_ini" class="inp-ini" onchange="aoPreencherIni(this,'a5','lingot',null)">
-          <button class="btn-lapis" data-p="a5" data-key="lingot" title="Editar horário">✏️</button>
+          <input type="time" data-field="a5_lingot_ini" class="inp-ini" onchange="salvarCampoLivre(this)">
           <span class="autoria" data-autor="a5_lingot_ini"></span>
           <div class="hist-edicao" id="hist_a5_lingot"></div>
         </td>
         <td class="td-fim">
-          <input type="time" data-field="a5_lingot_fim" class="inp-fim" readonly>
+          <input type="time" data-field="a5_lingot_fim" class="inp-fim" onchange="salvarCampoLivre(this)">
         </td>
       </tr>
     </tbody>
@@ -1444,12 +1434,11 @@
         <td class="etapa-label">Setup de Temperatura (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a6_setuptemp_ini" class="inp-ini" onchange="calcularFimSetuptemp(this,'a6')">
-          <button class="btn-lapis" data-p="a6" data-key="setuptemp" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a6_setuptemp_ini"></span>
           <div class="hist-edicao" id="hist_a6_setuptemp"></div>
         </td>
         <td class="td-fim">
-          <input type="time" data-field="a6_setuptemp_fim" class="inp-fim">
+          <input type="time" data-field="a6_setuptemp_fim" class="inp-fim" onchange="salvarCampoLivre(this)">
         </td>
       </tr>
       <tr data-etapa="a6_desant1">
@@ -1551,13 +1540,12 @@
       <tr data-etapa="a6_lingot">
         <td class="etapa-label">Lingotamento</td>
         <td class="td-ini">
-          <input type="time" data-field="a6_lingot_ini" class="inp-ini" onchange="aoPreencherIni(this,'a6','lingot',null)">
-          <button class="btn-lapis" data-p="a6" data-key="lingot" title="Editar horário">✏️</button>
+          <input type="time" data-field="a6_lingot_ini" class="inp-ini" onchange="salvarCampoLivre(this)">
           <span class="autoria" data-autor="a6_lingot_ini"></span>
           <div class="hist-edicao" id="hist_a6_lingot"></div>
         </td>
         <td class="td-fim">
-          <input type="time" data-field="a6_lingot_fim" class="inp-fim" readonly>
+          <input type="time" data-field="a6_lingot_fim" class="inp-fim" onchange="salvarCampoLivre(this)">
         </td>
       </tr>
     </tbody>
@@ -1683,12 +1671,11 @@
         <td class="etapa-label">Setup de Temperatura (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a7_setuptemp_ini" class="inp-ini" onchange="calcularFimSetuptemp(this,'a7')">
-          <button class="btn-lapis" data-p="a7" data-key="setuptemp" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a7_setuptemp_ini"></span>
           <div class="hist-edicao" id="hist_a7_setuptemp"></div>
         </td>
         <td class="td-fim">
-          <input type="time" data-field="a7_setuptemp_fim" class="inp-fim">
+          <input type="time" data-field="a7_setuptemp_fim" class="inp-fim" onchange="salvarCampoLivre(this)">
         </td>
       </tr>
       <tr data-etapa="a7_desant1">
@@ -1790,13 +1777,12 @@
       <tr data-etapa="a7_lingot">
         <td class="etapa-label">Lingotamento</td>
         <td class="td-ini">
-          <input type="time" data-field="a7_lingot_ini" class="inp-ini" onchange="aoPreencherIni(this,'a7','lingot',null)">
-          <button class="btn-lapis" data-p="a7" data-key="lingot" title="Editar horário">✏️</button>
+          <input type="time" data-field="a7_lingot_ini" class="inp-ini" onchange="salvarCampoLivre(this)">
           <span class="autoria" data-autor="a7_lingot_ini"></span>
           <div class="hist-edicao" id="hist_a7_lingot"></div>
         </td>
         <td class="td-fim">
-          <input type="time" data-field="a7_lingot_fim" class="inp-fim" readonly>
+          <input type="time" data-field="a7_lingot_fim" class="inp-fim" onchange="salvarCampoLivre(this)">
         </td>
       </tr>
     </tbody>
@@ -1922,12 +1908,11 @@
         <td class="etapa-label">Setup de Temperatura (T.M: 2:00h)</td>
         <td class="td-ini">
           <input type="time" data-field="a8_setuptemp_ini" class="inp-ini" onchange="calcularFimSetuptemp(this,'a8')">
-          <button class="btn-lapis" data-p="a8" data-key="setuptemp" title="Editar horário">✏️</button>
           <span class="autoria" data-autor="a8_setuptemp_ini"></span>
           <div class="hist-edicao" id="hist_a8_setuptemp"></div>
         </td>
         <td class="td-fim">
-          <input type="time" data-field="a8_setuptemp_fim" class="inp-fim">
+          <input type="time" data-field="a8_setuptemp_fim" class="inp-fim" onchange="salvarCampoLivre(this)">
         </td>
       </tr>
       <tr data-etapa="a8_desant1">
@@ -2029,13 +2014,12 @@
       <tr data-etapa="a8_lingot">
         <td class="etapa-label">Lingotamento</td>
         <td class="td-ini">
-          <input type="time" data-field="a8_lingot_ini" class="inp-ini" onchange="aoPreencherIni(this,'a8','lingot',null)">
-          <button class="btn-lapis" data-p="a8" data-key="lingot" title="Editar horário">✏️</button>
+          <input type="time" data-field="a8_lingot_ini" class="inp-ini" onchange="salvarCampoLivre(this)">
           <span class="autoria" data-autor="a8_lingot_ini"></span>
           <div class="hist-edicao" id="hist_a8_lingot"></div>
         </td>
         <td class="td-fim">
-          <input type="time" data-field="a8_lingot_fim" class="inp-fim" readonly>
+          <input type="time" data-field="a8_lingot_fim" class="inp-fim" onchange="salvarCampoLivre(this)">
         </td>
       </tr>
     </tbody>
@@ -2209,13 +2193,12 @@
       <tr data-etapa="b1_lingot">
         <td class="etapa-label">Lingotamento</td>
         <td class="td-ini">
-          <input type="time" data-field="b1_lingot_ini" class="inp-ini" onchange="aoPreencherIni(this,'b1','lingot',null)">
-          <button class="btn-lapis" data-p="b1" data-key="lingot" title="Editar horário">✏️</button>
+          <input type="time" data-field="b1_lingot_ini" class="inp-ini" onchange="salvarCampoLivre(this)">
           <span class="autoria" data-autor="b1_lingot_ini"></span>
           <div class="hist-edicao" id="hist_b1_lingot"></div>
         </td>
         <td class="td-fim">
-          <input type="time" data-field="b1_lingot_fim" class="inp-fim" readonly>
+          <input type="time" data-field="b1_lingot_fim" class="inp-fim" onchange="salvarCampoLivre(this)">
         </td>
       </tr>
     </tbody>
@@ -2401,13 +2384,12 @@
       <tr data-etapa="b2_lingot">
         <td class="etapa-label">Lingotamento</td>
         <td class="td-ini">
-          <input type="time" data-field="b2_lingot_ini" class="inp-ini" onchange="aoPreencherIni(this,'b2','lingot',null)">
-          <button class="btn-lapis" data-p="b2" data-key="lingot" title="Editar horário">✏️</button>
+          <input type="time" data-field="b2_lingot_ini" class="inp-ini" onchange="salvarCampoLivre(this)">
           <span class="autoria" data-autor="b2_lingot_ini"></span>
           <div class="hist-edicao" id="hist_b2_lingot"></div>
         </td>
         <td class="td-fim">
-          <input type="time" data-field="b2_lingot_fim" class="inp-fim" readonly>
+          <input type="time" data-field="b2_lingot_fim" class="inp-fim" onchange="salvarCampoLivre(this)">
         </td>
       </tr>
     </tbody>
@@ -2855,18 +2837,59 @@
     const sessao = verificarSessao();
     if (!sessao) { alert('Sessão expirada.'); fazerLogout(); return; }
     const iniVal = el.value;
-    if (!iniVal) return;
+    // Permite apagar o valor (iniVal vazio)
     const fimEl = document.querySelector(`[data-field="${p}_setuptemp_fim"]`);
-    if (fimEl && !fimEl.value) {
-      // Só preenche o fim se estiver vazio
+    if (iniVal && fimEl && !fimEl.value) {
+      // Só preenche o fim automaticamente se estiver vazio
       const [h,m] = iniVal.split(':').map(Number);
       const base = new Date(2000,0,1,h,m,0,0);
       const result = new Date(base.getTime() + 120 * 60000);
       fimEl.value = `${String(result.getHours()).padStart(2,'0')}:${String(result.getMinutes()).padStart(2,'0')}`;
     }
-    salvarCampos(p, 'setuptemp', iniVal, fimEl?.value || '', sessao.usuario);
+    // Salvar inclusive vazio
+    ignorarUpdate = true;
+    const dados = Object.assign({}, cacheFirebase);
+    const agora = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    if (iniVal) {
+      dados[`${p}_setuptemp_ini`] = iniVal;
+      cacheFirebase[`${p}_setuptemp_ini`] = iniVal;
+    } else {
+      delete dados[`${p}_setuptemp_ini`];
+      delete cacheFirebase[`${p}_setuptemp_ini`];
+      // Também limpar fim se ini foi apagado
+      delete dados[`${p}_setuptemp_fim`];
+      delete cacheFirebase[`${p}_setuptemp_fim`];
+      if (fimEl) fimEl.value = '';
+    }
+    dados[`${p}_setuptemp_ini_autor`] = `${sessao.usuario.toUpperCase()} ${agora}`;
+    cacheFirebase[`${p}_setuptemp_ini_autor`] = dados[`${p}_setuptemp_ini_autor`];
+    set(dbRef, dados).finally(() => setTimeout(() => { ignorarUpdate = false; }, 500));
     setTimeout(verificarAtrasos, 300);
   };
+
+
+  // Campos de livre edição (setuptemp e lingotamento) — salva inclusive vazio
+  function salvarCampoLivre(el) {
+    const sessao = verificarSessao();
+    if (!sessao) { alert('Sessão expirada.'); fazerLogout(); return; }
+    const key = el.dataset.field;
+    if (!key) return;
+    ignorarUpdate = true;
+    const dados = Object.assign({}, cacheFirebase);
+    if (el.value) {
+      dados[key] = el.value;
+      cacheFirebase[key] = el.value;
+    } else {
+      // Permite apagar — remove do Firebase
+      delete dados[key];
+      delete cacheFirebase[key];
+    }
+    const agora = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    dados[key + '_autor'] = `${sessao.usuario.toUpperCase()} ${agora}`;
+    cacheFirebase[key + '_autor'] = dados[key + '_autor'];
+    set(dbRef, dados).finally(() => setTimeout(() => { ignorarUpdate = false; }, 500));
+    setTimeout(verificarAtrasos, 300);
+  }
 
   // Listener global para botões lápis (evita problema de escopo em type="module")
   document.addEventListener('click', (e) => {
