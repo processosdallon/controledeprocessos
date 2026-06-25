@@ -413,9 +413,31 @@
 
   function isAtrasado(p, etapas) {
     const agoraMin = new Date().getHours()*60+new Date().getMinutes();
+    // Lingotamento → nunca atraso
+    if(dados[`${p}_lingot_ini`]) return false;
     let ultimaIdx=-1;
-    etapas.forEach((e,i)=>{ if(dados[`${p}_${e.k}`]) ultimaIdx=i; });
+    let ultimaIni='';
+    etapas.forEach((e,i)=>{
+      const ini=dados[`${p}_${e.k}`]||'';
+      if(ini){ultimaIdx=i;ultimaIni=ini;}
+    });
     if(ultimaIdx<0) return false;
+    // Verificar se setup está ativo (foi preenchido depois da última etapa)
+    const setupMotivo=dados[`${p}_setup_motivo`]||'';
+    const setupIni=dados[`${p}_setup_ini`]||'';
+    const setupFim=dados[`${p}_setup_fim`]||'';
+    if(setupMotivo && setupIni && ultimaIni){
+      const mS=toMin(setupIni), mE=toMin(ultimaIni);
+      const diff=mS-mE;
+      const setupDepois=Math.abs(diff)>720?diff<0:diff>0;
+      if(setupDepois){
+        // Setup comanda
+        if(!setupFim) return false;
+        const fimMin=toMin(setupFim);
+        return !(fimMin>22*60&&agoraMin<2*60) && agoraMin>fimMin;
+      }
+    }
+    // Etapa normal comanda
     const fim=dados[`${p}_${etapas[ultimaIdx].k2}`]||'';
     if(!fim) return false;
     const fimMin=toMin(fim);
