@@ -399,10 +399,30 @@
       // Atraso
       let atrasada = false;
       if (!lingotIniciado && idx === ultimaComIni && fim) {
-        const [hf,mf] = fim.split(':').map(Number);
-        const fimMin = hf*60+mf;
-        const virada = fimMin > 22*60 && agoraMin < 2*60;
-        if (!virada && agoraMin > fimMin) { atrasada = true; atrasadoCard = true; }
+        // Verificar se setup está ativo (preenchido depois desta etapa)
+        const setupIniVal = dados[`${prefix}_setup_ini`] || '';
+        const setupFimVal = dados[`${prefix}_setup_fim`] || '';
+        const setupMotivoVal = dados[`${prefix}_setup_motivo`] || '';
+        let setupAtivo = false;
+        if (setupMotivoVal && setupIniVal && ini) {
+          const mS = (()=>{ const [h,m]=setupIniVal.split(':').map(Number); return h*60+m; })();
+          const mE = (()=>{ const [h,m]=ini.split(':').map(Number); return h*60+m; })();
+          const diff = mS - mE;
+          setupAtivo = Math.abs(diff) > 720 ? diff < 0 : diff > 0;
+        }
+        if (setupAtivo) {
+          if (setupFimVal) {
+            const [hf,mf] = setupFimVal.split(':').map(Number);
+            const fimMin = hf*60+mf;
+            const virada = fimMin > 22*60 && agoraMin < 2*60;
+            if (!virada && agoraMin > fimMin) { atrasada = true; atrasadoCard = true; }
+          }
+        } else {
+          const [hf,mf] = fim.split(':').map(Number);
+          const fimMin = hf*60+mf;
+          const virada = fimMin > 22*60 && agoraMin < 2*60;
+          if (!virada && agoraMin > fimMin) { atrasada = true; atrasadoCard = true; }
+        }
       }
 
       const medioStr = e.medio ? `<span class="medio-label">(T.M: ${Math.floor(e.medio/60)}:${String(e.medio%60).padStart(2,'0')}h)</span>` : '';
