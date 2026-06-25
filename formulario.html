@@ -2545,11 +2545,19 @@
       const autorEl = document.querySelector(`.autoria[data-autor="${key}"]`);
       if (autorEl) autorEl.textContent = cacheFirebase[key+'_autor'] ? `✏️ ${cacheFirebase[key+'_autor']}` : '';
       // Restaurar readonly nos campos ini e fim se tiverem valor
-      if (key.endsWith('_fim') && el.classList.contains('inp-fim') && el.value) {
-        el.readOnly = true;
-      }
-      if (key.endsWith('_ini') && el.classList.contains('inp-ini') && el.value) {
-        el.readOnly = true;
+      // Exceção: setuptemp e lingot são sempre livres para edição
+      const camposLivres = ['setuptemp_ini', 'setuptemp_fim', 'lingot_ini', 'lingot_fim'];
+      const isCampoLivre = camposLivres.some(c => key.endsWith(c));
+      if (!isCampoLivre) {
+        if (key.endsWith('_fim') && el.classList.contains('inp-fim') && el.value) {
+          el.readOnly = true;
+        }
+        if (key.endsWith('_ini') && el.classList.contains('inp-ini') && el.value) {
+          el.readOnly = true;
+        }
+      } else {
+        // Garantir que campos livres nunca ficam readonly
+        el.readOnly = false;
       }
     });
     // Histórico de edição → apenas no acordeão (não inline)
