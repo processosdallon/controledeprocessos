@@ -2534,7 +2534,16 @@
   onValue(dbRef, (snapshot) => {
     dot.className = 'dot connected';
     statusTxt.textContent = '🟢 Conectado — tempo real ativo';
-    cacheFirebase = snapshot.val() || {};
+    const novosDados = snapshot.val() || {};
+    // Mesclar: se ignorarUpdate, preservar valores locais pendentes
+    if (!ignorarUpdate) {
+      cacheFirebase = novosDados;
+    } else {
+      // Adicionar apenas chaves que não temos localmente
+      Object.keys(novosDados).forEach(k => {
+        if (!(k in cacheFirebase)) cacheFirebase[k] = novosDados[k];
+      });
+    }
     verificarSetupsAtivos(cacheFirebase);
     carregarCalculadora(cacheFirebase);
     setTimeout(verificarAtrasos, 200);
