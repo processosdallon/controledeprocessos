@@ -2451,7 +2451,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getDatabase, ref, onValue, set, remove, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  import { getDatabase, ref, onValue, set, remove, push, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
   const USUARIOS = {'eqp1':'rph','eqp2':'alx','eqp3':'mrl','eqp4':'dgo','nicolas':'nicolasv'};
   const SESSAO_HORAS = 10;
@@ -2949,32 +2949,27 @@
     if (!sessao) { alert('Sessão expirada.'); fazerLogout(); return; }
     const key = el.dataset.field;
     if (!key) return;
-    ignorarUpdate = true;
-    const dados = Object.assign({}, cacheFirebase);
-    if (el.value) {
-      dados[key] = el.value;
-      cacheFirebase[key] = el.value;
-    } else {
-      delete dados[key];
-      delete cacheFirebase[key];
-    }
+
     const agora = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
     const autor = `${sessao.usuario.toUpperCase()} ${agora}`;
-    dados[key + '_autor'] = autor;
+
+    // update salva APENAS esses campos sem sobrescrever o restante do Firebase
+    const atualizacao = {};
+    atualizacao[key] = el.value || null; // null remove no Firebase
+    atualizacao[key + '_autor'] = autor;
+
+    if (el.value) cacheFirebase[key] = el.value;
+    else delete cacheFirebase[key];
     cacheFirebase[key + '_autor'] = autor;
-    set(dbRef, dados).finally(() => {
-      setTimeout(() => { ignorarUpdate = false; }, 500);
-      // Se preencheu lingotamento, remover vermelho imediatamente
+
+    update(dbRef, atualizacao).then(() => {
       if (key.includes('_lingot_ini') && el.value) {
         const prefix = key.replace('_lingot_ini','');
         document.getElementById(`bloco-${prefix}`)?.classList.remove('atrasado');
       }
-      setTimeout(verificarAtrasos, 600);
-    });
+      setTimeout(verificarAtrasos, 300);
+    }).catch(err => console.error('Erro ao salvar:', err));
   }
-
-  // Excluir lingot e setuptemp do listener geral (eles usam salvarCampoLivre)
-  const camposExcluidos = ['lingot_ini','lingot_fim','setuptemp_ini','setuptemp_fim'];
 
   // Listener global para botões lápis (evita problema de escopo em type="module")
   document.addEventListener('click', (e) => {
