@@ -460,14 +460,18 @@
       const medioStr = e.medio ? `<span class="medio-label">(T.M: ${Math.floor(e.medio/60)}:${String(e.medio%60).padStart(2,'0')}h)</span>` : '';
       const badgeAtraso = atrasada ? '<span class="badge-atraso">⚠ ATRASO</span>' : '';
 
-      // Verificar se etapa já concluída demorou mais que a média
+      // Linha vermelha: Tempo de Execução (ini_próxima - ini_atual) > T.M
       let linhaAtrasada = false;
-      if (ini && fim && e.medio && !atrasada) {
-        const [h1,m1]=ini.split(':').map(Number);
-        const [h2,m2]=fim.split(':').map(Number);
-        let diffReal=(h2*60+m2)-(h1*60+m1);
-        if(diffReal<0) diffReal+=1440;
-        if(diffReal > e.medio) linhaAtrasada = true;
+      if (ini && e.medio && !atrasada) {
+        const proxEtapa = etapas.slice(idx+1).find(e2 => dados[`${prefix}_${e2.key}`]);
+        if (proxEtapa) {
+          const proxIni = dados[`${prefix}_${proxEtapa.key}`];
+          const [h1,m1] = ini.split(':').map(Number);
+          const [h2,m2] = proxIni.split(':').map(Number);
+          let execMin = (h2*60+m2)-(h1*60+m1);
+          if (execMin < 0) execMin += 1440;
+          if (execMin > e.medio) linhaAtrasada = true;
+        }
       }
 
       return `<tr class="${preenchida?'preenchida':''} ${atrasada?'atrasada':''} ${linhaAtrasada?'linha-hist-atrasada':''}">
