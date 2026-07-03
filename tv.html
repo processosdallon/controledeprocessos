@@ -457,10 +457,55 @@
     let atr      = isAtrasado(p,etapas);
     const dataIniTv = dados[`${p}_data_ini`] || '';
     const horaIniTv = dados[`${p}_hora_ini`] || '';
-    // Previsão de fim: hora inicial + soma tempos médios
+    // Previsão de fim considerando família da liga
+    const LIGA_FAM_TV = {
+  "C-P7": "CALCIO",
+  "C-NCA": "CALCIO",
+  "DL-CALCIO": "CALCIO",
+  "E-BX-CASNAL": "CALCIO",
+  "E-BX-SN3": "CALCIO",
+  "T-CASN": "CALCIO",
+  "T-MASTER ALLOY": "CALCIO",
+  "T-PB-CA": "CALCIO",
+  "ELO-CA": "CALCIO",
+  "C-NCA LINGOTE": "CALCIO",
+  "DL-PBCA LINGOTE": "CALCIO",
+  "AMP-PBCA": "CALCIO",
+  "B-CA POSITIVO LINGOTE": "CALCIO",
+  "B-CA NEGATIVO LINGOTE": "CALCIO",
+  "K-PBCASN": "CALCIO",
+  "C-P4 LINGOTE": "CALCIO",
+  "O-PBCA LINGOTE": "CALCIO",
+  "C-7.1.5B HOG": "PURO",
+  "C-7.1.5B LINGOTE": "PURO",
+  "DL-PURO": "PURO",
+  "E-BX-PURO": "PURO",
+  "T-PURO": "PURO",
+  "T-BLEND": "PURO",
+  "PRE LIGA": "PURO",
+  "E-PURO": "PURO",
+  "JP-PURO": "PURO",
+  "AMP-PURO LINGOTE": "PURO",
+  "C-P7 LINGOTE": "PURO",
+  "C-PBSE": "SBSN",
+  "DL-PBSE": "SBSN",
+  "DL-CONECTOR": "SBSN",
+  "E-BX-SB (FARMER)": "SBSN",
+  "T-PB-SB-SE": "SBSN",
+  "T-SB": "SBSN",
+  "T-SE": "SBSN",
+  "C-ALLOY3%SB": "SBSN",
+  "DL-PB-SB": "SBSN",
+  "DLN TECNOLOGIA": "SBSN",
+  "DL PBSB 3,5%": "SBSN"
+};
+    const ligaTv = dados[`${p}_liga`] || '';
+    const familiaTv = LIGA_FAM_TV[ligaTv] || 'CALCIO';
+    const totalMedioTvBase = etapas.reduce((s,e) => s+(e.m||0), 0);
+    // PURO: descontar transf2(60)+limpeza2(120)+metais(300) = 480min
+    const totalMedioTv = familiaTv === 'PURO' ? totalMedioTvBase - 480 : totalMedioTvBase;
     let prevFimTv = '';
     if (horaIniTv) {
-      const totalMedioTv = etapas.reduce((s,e) => s+(e.m||0), 0);
       const [hv,mv] = horaIniTv.split(':').map(Number);
       const baseV = new Date(2000,0,1,hv,mv,0,0);
       const resultV = new Date(baseV.getTime() + totalMedioTv*60000);
