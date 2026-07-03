@@ -3139,7 +3139,6 @@
 
   // Marcar linhas individuais como atrasadas (etapa passou do tempo médio)
   function marcarLinhasAtrasadas() {
-    const agoraMin = new Date().getHours()*60+new Date().getMinutes();
     const keysSup = ['limp1','desest','lanca','setuptemp','desant1','decup','transf','setuptemp2','desant2','limpeza1','transf2','limpeza2','metais'];
     const keysInf = ['limp1','enxofre','desest','transf','soda','carvao','metais'];
     const mediosSup = {limp1:60,desest:120,lanca:330,setuptemp:120,desant1:120,decup:150,transf:60,setuptemp2:120,desant2:330,limpeza1:120,transf2:60,limpeza2:120,metais:300};
@@ -3147,7 +3146,6 @@
 
     function processarLinhas(prefixos, keys, medios) {
       prefixos.forEach(p => {
-        // Encontrar índice da última etapa preenchida
         let ultimaIdx = -1;
         keys.forEach((k,i) => { if(cacheFirebase[`${p}_${k}_ini`]) ultimaIdx=i; });
 
@@ -3155,21 +3153,20 @@
           const row = document.querySelector(`[data-etapa="${p}_${k}"]`);
           if (!row) return;
           const ini = cacheFirebase[`${p}_${k}_ini`] || '';
-          const fim = cacheFirebase[`${p}_${k}_fim`] || '';
           const med = medios[k];
           if (!ini || !med || idx === ultimaIdx) {
-            // Não marcar a etapa atual (ela é tratada pelo bloco inteiro)
             row.classList.remove('linha-atrasada');
             return;
           }
-          // Etapa já passou (tem próxima etapa iniciada) — verificar se demorou mais que a média
-          if (fim) {
-            const [h1,m1] = ini.split(':').map(Number);
-            const [h2,m2] = fim.split(':').map(Number);
-            let diff = (h2*60+m2)-(h1*60+m1);
-            if(diff<0) diff+=1440;
-            row.classList.toggle('linha-atrasada', diff > med);
-          }
+          // Tempo de Execução = ini da próxima etapa - ini desta
+          const proxKey = keys.slice(idx+1).find(k2 => cacheFirebase[`${p}_${k2}_ini`]);
+          if (!proxKey) { row.classList.remove('linha-atrasada'); return; }
+          const proxIni = cacheFirebase[`${p}_${proxKey}_ini`];
+          const [h1,m1] = ini.split(':').map(Number);
+          const [h2,m2] = proxIni.split(':').map(Number);
+          let execMin = (h2*60+m2)-(h1*60+m1);
+          if (execMin < 0) execMin += 1440;
+          row.classList.toggle('linha-atrasada', execMin > med);
         });
       });
     }
