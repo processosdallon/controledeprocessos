@@ -549,15 +549,15 @@
         <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:4px;">
           <div style="display:flex;flex-direction:column;align-items:flex-start;min-width:90px;">
             ${(dataIniTv||horaIniTv) ? `
-              <span style="font-size:9px;color:#a8d44d;font-weight:bold;letter-spacing:0.5px;text-transform:uppercase;">Início</span>
-              <span style="font-size:13px;color:#fff;font-weight:bold;">${dataIniTv?dataIniTv.split('-').reverse().slice(0,2).join('/'):''}${horaIniTv?' '+horaIniTv:''}</span>
+              <span style="font-size:12px;color:#a8d44d;font-weight:bold;letter-spacing:0.5px;text-transform:uppercase;">Início</span>
+              <span style="font-size:16px;color:#fff;font-weight:bold;">${dataIniTv?dataIniTv.split('-').reverse().slice(0,2).join('/'):''}${horaIniTv?' '+horaIniTv:''}</span>
             ` : '<span></span>'}
           </div>
           <div class="card-panela-box">Panela ${panela}</div>
           <div style="display:flex;flex-direction:column;align-items:flex-end;min-width:90px;">
             ${prevFimTv ? `
-              <span style="font-size:9px;color:#a8d44d;font-weight:bold;letter-spacing:0.5px;text-transform:uppercase;">Prev. Fim</span>
-              <span style="font-size:13px;color:#fff;font-weight:bold;">${prevFimTv}</span>
+              <span style="font-size:12px;color:#a8d44d;font-weight:bold;letter-spacing:0.5px;text-transform:uppercase;">Prev. Fim</span>
+              <span style="font-size:16px;color:#fff;font-weight:bold;">${prevFimTv}</span>
             ` : '<span></span>'}
           </div>
         </div>
