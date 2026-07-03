@@ -111,7 +111,7 @@
   /* TOPO: Liga + Panela */
   .card-top {
     background: #163d21;
-    padding: 6px 10px 6px;
+    padding: 4px 8px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -121,7 +121,7 @@
   }
   .card-tv.atrasado .card-top { background: #5a0000; border-bottom: 2px solid #c00; }
   .card-liga-tv {
-    font-size: 13px;
+    font-size: 11px;
     font-weight: bold;
     color: #a8d44d;
     text-align: center;
@@ -129,7 +129,7 @@
   }
   .card-tv.atrasado .card-liga-tv { color: #ffaaaa; }
   .card-panela-box {
-    font-size: 20px;
+    font-size: 16px;
     font-weight: bold;
     color: #fff;
     background: #1e4d2b;
@@ -147,15 +147,15 @@
   /* HEADER: Lote + Badge */
   .card-header-tv {
     background: #1e4d2b;
-    padding: 5px 10px;
+    padding: 3px 8px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-shrink: 0;
   }
   .card-tv.atrasado .card-header-tv { background: #c00; }
-  .card-lote-tv { font-size: 15px; font-weight: bold; color: #fff; }
-  .tempo-total-tv { font-size: 13px; color: #a8d44d; font-weight: bold; display: block; text-align: center; margin-top: 2px; }
+  .card-lote-tv { font-size: 12px; font-weight: bold; color: #fff; }
+  .tempo-total-tv { font-size: 10px; color: #a8d44d; font-weight: bold; display: block; text-align: center; margin-top: 1px; }
   .card-tv.atrasado .tempo-total-tv { color: #ffaaaa; }
   .badge-andamento {
     background: #a8d44d; color: #1e4d2b;
@@ -174,24 +174,24 @@
   .card-table { width: 100%; border-collapse: collapse; flex: 1; }
   .card-table th {
     background: #163d21; color: #a8d44d;
-    font-size: 11px; padding: 4px 7px;
+    font-size: 10px; padding: 2px 5px;
     text-align: left; border-bottom: 1px solid #2d6a3f;
   }
   .card-tv.atrasado .card-table th { background: #5a0000; color: #ffd0d0; }
   .card-table td {
-    padding: 4px 7px;
+    padding: 2px 5px;
     border-bottom: 1px solid #1a3a20;
-    font-size: 12px; color: #bbb;
+    font-size: 11px; color: #bbb;
   }
   .card-tv.atrasado .card-table td { background: #ffe0e0 !important; border-bottom: 1px solid #f5a0a0 !important; color: #900; }
-  .etapa-tv { color: #ccc !important; font-size: 12px; }
+  .etapa-tv { color: #ccc !important; font-size: 11px; }
   .card-tv.atrasado .etapa-tv { color: #900 !important; font-weight: bold; }
-  .medio-tv { font-size: 11px; color: #3a6a3a; display: block; }
-  .exec-tv { font-size: 12px; color: #5ab8d4; display: block; font-weight: bold; margin-top: 2px; }
+  .medio-tv { font-size: 9px; color: #3a6a3a; display: block; }
+  .exec-tv { font-size: 10px; color: #5ab8d4; display: block; font-weight: bold; margin-top: 1px; }
   .linha-atr-tv { background: #ffe0e0 !important; }
   .linha-atr-tv td { color: #900 !important; }
   .card-tv.atrasado .linha-atr-tv { background: #5a1010 !important; }
-  .val { color: #fff !important; font-weight: bold; font-size: 13px; }
+  .val { color: #fff !important; font-weight: bold; font-size: 12px; }
   .card-tv.atrasado .val { color: #c00 !important; }
   .vz { color: #2a4a2a !important; font-style: italic; }
   .tr-ativa { background: #0d2a18 !important; }
@@ -521,14 +521,18 @@
           exec=`<span class="exec-tv">Tempo de Execução: ${Math.floor(diff/60)}:${String(diff%60).padStart(2,'0')}h</span>`;
         }
       }
-      // Linha atrasada: etapa já concluída demorou mais que a média
+      // Linha vermelha: Tempo de Execução (ini_próxima - ini_atual) > T.M
       let linhaAtr = false;
-      if(ini && fim && e.m) {
-        const [h1,m1]=ini.split(':').map(Number);
-        const [h2,m2]=fim.split(':').map(Number);
-        let dr=(h2*60+m2)-(h1*60+m1);
-        if(dr<0) dr+=1440;
-        if(dr>e.m) linhaAtr=true;
+      if(ini && e.m) {
+        const proxEtapaL = etapas.slice(idx+1).find(e2=>dados[`${p}_${e2.k}`]);
+        if(proxEtapaL) {
+          const proxIniL = dados[`${p}_${proxEtapaL.k}`];
+          const [h1,m1]=ini.split(':').map(Number);
+          const [h2,m2]=proxIniL.split(':').map(Number);
+          let execL=(h2*60+m2)-(h1*60+m1);
+          if(execL<0) execL+=1440;
+          if(execL>e.m) linhaAtr=true;
+        }
       }
       return `<tr class="${ativa?'tr-ativa':''} ${linhaAtr?'linha-atr-tv':''}">
         <td class="etapa-tv">${e.l}${med}${exec}</td>
