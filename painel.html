@@ -150,6 +150,10 @@
   .card-atrasado:not(.ativo) td.etapa { color: #ffaaaa !important; background: #4a0000 !important; }
   .card-atrasado:not(.ativo) td.valor { color: #ffcccc !important; }
   .card-atrasado:not(.ativo) .obs-box { background: #3a0000 !important; color: #ffaaaa !important; }
+  .linha-hist-atrasada td { background: #ffe0e0 !important; }
+  .linha-hist-atrasada td.etapa { color: #900 !important; font-weight: bold; }
+  .card:not(.ativo) .linha-hist-atrasada td { background: #3d1010 !important; }
+  .card:not(.ativo) .linha-hist-atrasada td.etapa { color: #ff9999 !important; }
   /* ALERTA DE ATRASO */
 
   .badge-atraso { display: inline-block; background: #c00; color: #fff; font-size: 9px; font-weight: bold; padding: 1px 5px; border-radius: 8px; margin-left: 4px; animation: blink 1s infinite; }
@@ -174,6 +178,12 @@
   .card:not(.ativo) .td-autor { color: #5a9e2f; }
   .card:not(.ativo) .tag-autor { background: #1a3d25; color: #a8d44d; border-color: #2d6a3f; }
 
+  .card-datas { display: flex; justify-content: space-between; padding: 3px 10px; background: #0a1a0e; font-size: 10px; flex-wrap: wrap; gap: 4px; }
+  .data-ini-label { color: #7ecff5; }
+  .prev-fim-label { color: #a8d44d; font-weight: bold; }
+  .card.ativo .card-datas { background: #e8f7e8; }
+  .card.ativo .data-ini-label { color: #1e4d2b; }
+  .card.ativo .prev-fim-label { color: #1e4d2b; font-weight: bold; }
   /* EXEC LABEL */
   .exec-label { font-size: 9px; color: #5ab8d4; display: block; margin-top: 1px; white-space: normal; }
   .card:not(.ativo) .exec-label { color: #3a7a8a; }
@@ -279,6 +289,7 @@
     {key:'desant1_ini', key2:'desant1_fim',  label:'1ª Desantimoniação',   medio:120},
     {key:'decup_ini',   key2:'decup_fim',    label:'Decuprização',         medio:150},
     {key:'transf_ini',  key2:'transf_fim',   label:'1ª Transferência',     medio:60},
+    {key:'setuptemp2_ini',key2:'setuptemp2_fim',label:'Setup de Temperatura 2', medio:120},
     {key:'desant2_ini', key2:'desant2_fim',  label:'2ª Desantimoniação',   medio:330},
     {key:'limpeza1_ini',key2:'limpeza1_fim', label:'1ª Limpeza Final',     medio:120},
     {key:'transf2_ini', key2:'transf2_fim',  label:'2ª Transferência',     medio:60},
@@ -303,6 +314,27 @@
     const panela = dados[`${prefix}_panela`] || '—';
     const obs = dados[`${prefix}_obs`] || '';
     const liga = dados[`${prefix}_liga`] || '';
+    const dataIni = dados[`${prefix}_data_ini`] || '';
+    const horaIni = dados[`${prefix}_hora_ini`] || '';
+    // Calcular previsão de fim: hora inicial + soma de todos os tempos médios
+    let prevFimStr = '';
+    if (horaIni) {
+      const totalMedio = etapas.reduce((s,e) => s + (e.medio||0), 0);
+      const [h,m] = horaIni.split(':').map(Number);
+      const base = new Date(2000,0,1,h,m,0,0);
+      const result = new Date(base.getTime() + totalMedio * 60000);
+      const rh = result.getHours(), rm = result.getMinutes();
+      // Verificar se passou para o dia seguinte
+      const diasExtra = Math.floor((base.getTime() + totalMedio*60000 - base.getTime()) / 86400000);
+      prevFimStr = `${String(rh).padStart(2,'0')}:${String(rm).padStart(2,'0')}${diasExtra>0?' (+'+diasExtra+'d)':''}`;
+      // Se tiver data, calcular a data de fim
+      if (dataIni) {
+        const [ano,mes,dia] = dataIni.split('-').map(Number);
+        const dataBase = new Date(ano,mes-1,dia,h,m,0,0);
+        const dataFim = new Date(dataBase.getTime() + totalMedio*60000);
+        prevFimStr = dataFim.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}) + ' ' + prevFimStr.split(' ')[0];
+      }
+    }
     const setupMotivo = dados[`${prefix}_setup_motivo`] || '';
     const setupIni = dados[`${prefix}_setup_ini`] || '';
     const setupFim = dados[`${prefix}_setup_fim`] || '';
@@ -428,7 +460,17 @@
       const medioStr = e.medio ? `<span class="medio-label">(T.M: ${Math.floor(e.medio/60)}:${String(e.medio%60).padStart(2,'0')}h)</span>` : '';
       const badgeAtraso = atrasada ? '<span class="badge-atraso">⚠ ATRASO</span>' : '';
 
-      return `<tr class="${preenchida?'preenchida':''} ${atrasada?'atrasada':''}">
+      // Verificar se etapa já concluída demorou mais que a média
+      let linhaAtrasada = false;
+      if (ini && fim && e.medio && !atrasada) {
+        const [h1,m1]=ini.split(':').map(Number);
+        const [h2,m2]=fim.split(':').map(Number);
+        let diffReal=(h2*60+m2)-(h1*60+m1);
+        if(diffReal<0) diffReal+=1440;
+        if(diffReal > e.medio) linhaAtrasada = true;
+      }
+
+      return `<tr class="${preenchida?'preenchida':''} ${atrasada?'atrasada':''} ${linhaAtrasada?'linha-hist-atrasada':''}">
         <td class="etapa">${e.label}${medioStr}${badgeAtraso}${execStr}</td>
         <td class="${ini?'valor':'vazio'}">${ini||'—'}</td>
         <td class="${fim?'valor':'vazio'}">${fim||'—'}</td>
@@ -452,7 +494,14 @@
 
     return `<div class="card ${ativo} ${atrasadoCard ? 'card-atrasado' : ''}">
       ${liga ? `<div class="liga-bar">⚗️ LIGA: ${liga}</div>` : ''}
-      <div class="card-header"><h2>Lote: ${lote}${ativo ? '<span class="badge-andamento">● EM ANDAMENTO</span>' : ''}${tempoTotalHtml}</h2><span class="info">Panela: ${panela}</span></div>
+      <div class="card-header">
+        <h2>Lote: ${lote}${ativo ? '<span class="badge-andamento">● EM ANDAMENTO</span>' : ''}${tempoTotalHtml}</h2>
+        <span class="info">Panela: ${panela}</span>
+      </div>
+      ${(dataIni||horaIni||prevFimStr) ? `<div class="card-datas">
+        ${dataIni||horaIni ? `<span class="data-ini-label">📅 Início: ${dataIni?dataIni.split('-').reverse().join('/'):''}${horaIni?' '+horaIni:''}</span>` : ''}
+        ${prevFimStr ? `<span class="prev-fim-label">🏁 Prev. Fim: ${prevFimStr}</span>` : ''}
+      </div>` : ''}
       <table><colgroup><col style="width:42%"><col style="width:14%"><col style="width:14%"><col style="width:30%"></colgroup><thead><tr><th>Etapa</th><th>Início</th><th>Prev. Fim</th><th>Última Edição</th></tr></thead><tbody>${linhas}</tbody></table>
       ${obs ? `<div class="obs-box"><strong>OBS:</strong> ${obs}</div>` : ''}
       ${setupMotivo ? `<div class="setup-alert"><span>⚠️</span> SETUP: ${setupMotivo}${setupIni?' | Início: '+setupIni:''}${setupFim?' | Fim: '+setupFim:''}</div>` : ''}
