@@ -316,23 +316,65 @@
     const liga = dados[`${prefix}_liga`] || '';
     const dataIni = dados[`${prefix}_data_ini`] || '';
     const horaIni = dados[`${prefix}_hora_ini`] || '';
-    // Calcular previsão de fim: hora inicial + soma de todos os tempos médios
+    // Mapeamento familia para calcular previsão correta
+    const LIGA_FAM = {
+  "C-P7": "CALCIO",
+  "C-NCA": "CALCIO",
+  "DL-CALCIO": "CALCIO",
+  "E-BX-CASNAL": "CALCIO",
+  "E-BX-SN3": "CALCIO",
+  "T-CASN": "CALCIO",
+  "T-MASTER ALLOY": "CALCIO",
+  "T-PB-CA": "CALCIO",
+  "ELO-CA": "CALCIO",
+  "C-NCA LINGOTE": "CALCIO",
+  "DL-PBCA LINGOTE": "CALCIO",
+  "AMP-PBCA": "CALCIO",
+  "B-CA POSITIVO LINGOTE": "CALCIO",
+  "B-CA NEGATIVO LINGOTE": "CALCIO",
+  "K-PBCASN": "CALCIO",
+  "C-P4 LINGOTE": "CALCIO",
+  "O-PBCA LINGOTE": "CALCIO",
+  "C-7.1.5B HOG": "PURO",
+  "C-7.1.5B LINGOTE": "PURO",
+  "DL-PURO": "PURO",
+  "E-BX-PURO": "PURO",
+  "T-PURO": "PURO",
+  "T-BLEND": "PURO",
+  "PRE LIGA": "PURO",
+  "E-PURO": "PURO",
+  "JP-PURO": "PURO",
+  "AMP-PURO LINGOTE": "PURO",
+  "C-P7 LINGOTE": "PURO",
+  "C-PBSE": "SBSN",
+  "DL-PBSE": "SBSN",
+  "DL-CONECTOR": "SBSN",
+  "E-BX-SB (FARMER)": "SBSN",
+  "T-PB-SB-SE": "SBSN",
+  "T-SB": "SBSN",
+  "T-SE": "SBSN",
+  "C-ALLOY3%SB": "SBSN",
+  "DL-PB-SB": "SBSN",
+  "DLN TECNOLOGIA": "SBSN",
+  "DL PBSB 3,5%": "SBSN"
+};
+    const liga_atual = dados[`${prefix}_liga`] || '';
+    const familia = LIGA_FAM[liga_atual] || 'CALCIO';
+    // PURO: sem transf2(60), limpeza2(120), metais(300) = menos 480min
+    const totalMedioBase = etapas.reduce((s,e) => s + (e.medio||0), 0);
+    const totalMedio = familia === 'PURO' ? totalMedioBase - 480 : totalMedioBase;
     let prevFimStr = '';
     if (horaIni) {
-      const totalMedio = etapas.reduce((s,e) => s + (e.medio||0), 0);
       const [h,m] = horaIni.split(':').map(Number);
       const base = new Date(2000,0,1,h,m,0,0);
       const result = new Date(base.getTime() + totalMedio * 60000);
       const rh = result.getHours(), rm = result.getMinutes();
-      // Verificar se passou para o dia seguinte
-      const diasExtra = Math.floor((base.getTime() + totalMedio*60000 - base.getTime()) / 86400000);
-      prevFimStr = `${String(rh).padStart(2,'0')}:${String(rm).padStart(2,'0')}${diasExtra>0?' (+'+diasExtra+'d)':''}`;
-      // Se tiver data, calcular a data de fim
+      prevFimStr = `${String(rh).padStart(2,'0')}:${String(rm).padStart(2,'0')}`;
       if (dataIni) {
         const [ano,mes,dia] = dataIni.split('-').map(Number);
         const dataBase = new Date(ano,mes-1,dia,h,m,0,0);
         const dataFim = new Date(dataBase.getTime() + totalMedio*60000);
-        prevFimStr = dataFim.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}) + ' ' + prevFimStr.split(' ')[0];
+        prevFimStr = dataFim.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}) + ' ' + prevFimStr;
       }
     }
     const setupMotivo = dados[`${prefix}_setup_motivo`] || '';
