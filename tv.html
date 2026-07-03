@@ -121,7 +121,7 @@
   }
   .card-tv.atrasado .card-top { background: #5a0000; border-bottom: 2px solid #c00; }
   .card-liga-tv {
-    font-size: 15px;
+    font-size: 13px;
     font-weight: bold;
     color: #a8d44d;
     text-align: center;
@@ -129,7 +129,7 @@
   }
   .card-tv.atrasado .card-liga-tv { color: #ffaaaa; }
   .card-panela-box {
-    font-size: 26px;
+    font-size: 20px;
     font-weight: bold;
     color: #fff;
     background: #1e4d2b;
@@ -174,21 +174,24 @@
   .card-table { width: 100%; border-collapse: collapse; flex: 1; }
   .card-table th {
     background: #163d21; color: #a8d44d;
-    font-size: 13px; padding: 5px 9px;
+    font-size: 11px; padding: 4px 7px;
     text-align: left; border-bottom: 1px solid #2d6a3f;
   }
   .card-tv.atrasado .card-table th { background: #5a0000; color: #ffd0d0; }
   .card-table td {
-    padding: 6px 9px;
+    padding: 4px 7px;
     border-bottom: 1px solid #1a3a20;
-    font-size: 13px; color: #bbb;
+    font-size: 12px; color: #bbb;
   }
   .card-tv.atrasado .card-table td { background: #ffe0e0 !important; border-bottom: 1px solid #f5a0a0 !important; color: #900; }
-  .etapa-tv { color: #ccc !important; font-size: 13px; }
+  .etapa-tv { color: #ccc !important; font-size: 12px; }
   .card-tv.atrasado .etapa-tv { color: #900 !important; font-weight: bold; }
   .medio-tv { font-size: 11px; color: #3a6a3a; display: block; }
   .exec-tv { font-size: 12px; color: #5ab8d4; display: block; font-weight: bold; margin-top: 2px; }
-  .val { color: #fff !important; font-weight: bold; font-size: 15px; }
+  .linha-atr-tv { background: #ffe0e0 !important; }
+  .linha-atr-tv td { color: #900 !important; }
+  .card-tv.atrasado .linha-atr-tv { background: #5a1010 !important; }
+  .val { color: #fff !important; font-weight: bold; font-size: 13px; }
   .card-tv.atrasado .val { color: #c00 !important; }
   .vz { color: #2a4a2a !important; font-style: italic; }
   .tr-ativa { background: #0d2a18 !important; }
@@ -384,6 +387,7 @@
     {k:'desant1_ini', k2:'desant1_fim', l:'1ª Desantimoniação', m:120},
     {k:'decup_ini',   k2:'decup_fim',   l:'Decuprização',       m:150},
     {k:'transf_ini',  k2:'transf_fim',  l:'1ª Transferência',   m:60},
+    {k:'setuptemp2_ini',k2:'setuptemp2_fim',l:'Setup de Temperatura 2',m:120},
     {k:'desant2_ini', k2:'desant2_fim', l:'2ª Desantimoniação', m:330},
     {k:'limpeza1_ini',k2:'limpeza1_fim',l:'1ª Limpeza Final',   m:120},
     {k:'transf2_ini', k2:'transf2_fim', l:'2ª Transferência',   m:60},
@@ -451,6 +455,24 @@
     const obs    = dados[`${p}_obs`]||'';
     const setup  = dados[`${p}_setup_motivo`]||'';
     let atr      = isAtrasado(p,etapas);
+    const dataIniTv = dados[`${p}_data_ini`] || '';
+    const horaIniTv = dados[`${p}_hora_ini`] || '';
+    // Previsão de fim: hora inicial + soma tempos médios
+    let prevFimTv = '';
+    if (horaIniTv) {
+      const totalMedioTv = etapas.reduce((s,e) => s+(e.m||0), 0);
+      const [hv,mv] = horaIniTv.split(':').map(Number);
+      const baseV = new Date(2000,0,1,hv,mv,0,0);
+      const resultV = new Date(baseV.getTime() + totalMedioTv*60000);
+      let prevStr = `${String(resultV.getHours()).padStart(2,'0')}:${String(resultV.getMinutes()).padStart(2,'0')}`;
+      if (dataIniTv) {
+        const [ano,mes,dia] = dataIniTv.split('-').map(Number);
+        const dataBaseV = new Date(ano,mes-1,dia,hv,mv,0,0);
+        const dataFimV = new Date(dataBaseV.getTime() + totalMedioTv*60000);
+        prevStr = dataFimV.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})+' '+prevStr;
+      }
+      prevFimTv = prevStr;
+    }
 
     // Tempo total de processo
     let tempoTotalTv = '';
@@ -499,7 +521,16 @@
           exec=`<span class="exec-tv">Tempo de Execução: ${Math.floor(diff/60)}:${String(diff%60).padStart(2,'0')}h</span>`;
         }
       }
-      return `<tr class="${ativa?'tr-ativa':''}">
+      // Linha atrasada: etapa já concluída demorou mais que a média
+      let linhaAtr = false;
+      if(ini && fim && e.m) {
+        const [h1,m1]=ini.split(':').map(Number);
+        const [h2,m2]=fim.split(':').map(Number);
+        let dr=(h2*60+m2)-(h1*60+m1);
+        if(dr<0) dr+=1440;
+        if(dr>e.m) linhaAtr=true;
+      }
+      return `<tr class="${ativa?'tr-ativa':''} ${linhaAtr?'linha-atr-tv':''}">
         <td class="etapa-tv">${e.l}${med}${exec}</td>
         <td class="${ini?'val':'vz'}">${ini||'—'}</td>
         <td class="${fim?'val':'vz'}">${fim||'—'}</td>
@@ -511,7 +542,11 @@
     return `<div class="card-tv${atr?' atrasado':''}">
       <div class="card-top">
         ${liga?`<div class="card-liga-tv">⚗️ ${liga}</div>`:''}
-        <div class="card-panela-box">Panela ${panela}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:6px;flex-wrap:wrap;">
+          ${(dataIniTv||horaIniTv) ? `<span style="font-size:10px;color:#7ecff5;">📅 ${dataIniTv?dataIniTv.split('-').reverse().join('/'):''}${horaIniTv?' '+horaIniTv:''}</span>` : '<span></span>'}
+          <div class="card-panela-box">Panela ${panela}</div>
+          ${prevFimTv ? `<span style="font-size:10px;color:#a8d44d;font-weight:bold;">🏁 ${prevFimTv}</span>` : '<span></span>'}
+        </div>
         ${tempoTotalTv}
       </div>
       <div class="card-header-tv">
