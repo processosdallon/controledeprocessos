@@ -2850,13 +2850,22 @@
       dados[tsKey] = inicioTs.getTime();
       cacheFirebase[tsKey] = inicioTs.getTime();
     }
-    set(dbRef, dados).finally(() => setTimeout(() => { ignorarUpdate = false; }, 500));
+    // update() salva apenas os campos desta etapa sem apagar outros
+    const atualizacaoSalvar = {};
+    atualizacaoSalvar[`${p}_${key}_ini`] = iniVal || null;
+    if (fimVal !== undefined) atualizacaoSalvar[`${p}_${key}_fim`] = fimVal || null;
+    atualizacaoSalvar[`${p}_${key}_ini_autor`] = dados[`${p}_${key}_ini_autor`];
+    if (histJson) atualizacaoSalvar[`${p}_${key}_histedicao`] = histJson;
+    if (dados[tsKey]) atualizacaoSalvar[tsKey] = dados[tsKey];
+    update(dbRef, atualizacaoSalvar).catch(err => console.error('Erro salvarCampos:', err));
   }
 
   // Listener genérico para campos de texto/select/textarea (lote, panela, liga, obs, setup)
   const timers = {};
   document.querySelectorAll('[data-field]').forEach(el => {
-    if (el.classList.contains('inp-ini') || el.classList.contains('inp-fim')) return;
+    // Excluir campos de hora — têm handlers próprios
+    if (el.classList.contains('inp-ini') || el.classList.contains('inp-fim') || el.classList.contains('inp-livre')) return;
+    if (el.type === 'time' || el.type === 'date') return;
     const ev = el.tagName === 'SELECT' ? 'change' : 'input';
     el.addEventListener(ev, () => {
       const sessao = verificarSessao();
@@ -2864,15 +2873,30 @@
       const key = el.dataset.field;
       clearTimeout(timers[key]);
       timers[key] = setTimeout(() => {
-        ignorarUpdate = true;
-        const dados = Object.assign({}, cacheFirebase);
-        if (el.value) dados[key] = el.value; else delete dados[key];
         const agora = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-        dados[key+'_autor'] = `${sessao.usuario.toUpperCase()} ${agora}`;
+        // update() salva APENAS este campo — sem apagar outros dados do Firebase
+        const atualizacao = {};
+        atualizacao[key] = el.value || null;
+        atualizacao[key+'_autor'] = `${sessao.usuario.toUpperCase()} ${agora}`;
         cacheFirebase[key] = el.value;
-        cacheFirebase[key+'_autor'] = dados[key+'_autor'];
-        set(dbRef, dados).finally(() => setTimeout(() => { ignorarUpdate = false; }, 500));
+        cacheFirebase[key+'_autor'] = atualizacao[key+'_autor'];
+        update(dbRef, atualizacao).catch(err => console.error('Erro ao salvar:', err));
       }, 600);
+    });
+  });
+
+  // Listener para campos date e time soltos (data_ini, hora_ini)
+  document.querySelectorAll('input[type="date"][data-field], input[type="time"][data-field]:not(.inp-ini):not(.inp-fim):not(.inp-livre)').forEach(el => {
+    el.addEventListener('change', () => {
+      const sessao = verificarSessao();
+      if (!sessao) return;
+      const key = el.dataset.field;
+      const agora = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+      const atualizacao = {};
+      atualizacao[key] = el.value || null;
+      atualizacao[key+'_autor'] = `${sessao.usuario.toUpperCase()} ${agora}`;
+      cacheFirebase[key] = el.value;
+      update(dbRef, atualizacao).catch(err => console.error('Erro ao salvar data/hora:', err));
     });
   });
 
