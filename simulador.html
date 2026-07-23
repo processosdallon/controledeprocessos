@@ -9,18 +9,19 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg: #17191b;
-  --panel: #1f2224;
-  --panel-2: #262a2d;
-  --border: #34383c;
+  --bg: #12160f;
+  --panel: #181e14;
+  --panel-2: #1f2718;
+  --border: #333e2a;
   --text: #ece8e1;
-  --text-muted: #8d9297;
-  --molten: #d9601c;
-  --molten-bright: #f0813f;
-  --steel: #5b8aa6;
+  --text-muted: #94a189;
+  --molten: #74c34e;
+  --molten-bright: #cbfd60;
+  --steel: #9b9a9b;
   --amber: #e0a526;
-  --green: #4c9a6a;
+  --green: #74c34e;
   --red: #c1544a;
+  --forest: #224c37;
   --mono: 'IBM Plex Mono', monospace;
   --display: 'Space Grotesk', sans-serif;
 }
@@ -39,7 +40,7 @@ body{
 header{
   padding: 28px 32px 20px;
   border-bottom: 1px solid var(--border);
-  background: linear-gradient(180deg, #1c1e20 0%, #17191b 100%);
+  background: linear-gradient(180deg, var(--forest) 0%, var(--bg) 100%);
 }
 header .eyebrow{
   font-family: var(--mono);
@@ -62,6 +63,10 @@ header p{
   font-size: 13px;
   max-width: 720px;
 }
+.header-top{
+  display:flex; align-items:flex-start; justify-content:space-between; gap:16px;
+}
+.header-top .btn{ flex:none; white-space:nowrap; }
 
 /* ---------- Layout ---------- */
 .layout{
@@ -128,7 +133,7 @@ details summary:hover{ background: rgba(217,96,28,0.08); }
   color: var(--text-muted);
   flex: 1;
 }
-.field-row input[type=number]{
+.field-row input[type=number], .field-row input[type=text]{
   width: 84px;
   background: var(--bg);
   border: 1px solid var(--border);
@@ -137,12 +142,17 @@ details summary:hover{ background: rgba(217,96,28,0.08); }
   font-size: 12px;
   padding: 4px 6px;
   border-radius: 4px;
-  text-align: right;
+  text-align: center;
 }
-.field-row input[type=number]:focus{
+.field-row input[type=number]:focus, .field-row input[type=text]:focus{
   outline: none;
   border-color: var(--molten);
 }
+.pct-input-wrap{
+  display:flex; align-items:center; gap:5px;
+}
+.pct-input-wrap input{ width: 64px; }
+.pct-suffix{ font-size:12px; color:var(--text-muted); }
 .stage-group{
   border-top: 1px dashed var(--border);
   padding-top: 6px;
@@ -313,8 +323,13 @@ tr:hover td{ background: rgba(217,96,28,0.05); }
 
 <body>
 <header>
-  <div class="eyebrow">Dallon · Refino de Ligas de Chumbo</div>
-  <h1>Simulador de Capacidade — Refino</h1>
+  <div class="header-top">
+    <div>
+      <div class="eyebrow">Dallon · Refino de Ligas de Chumbo</div>
+      <h1>Simulador de Capacidade — Refino</h1>
+    </div>
+    <button class="btn btn-secondary" id="btn-reset-topo" title="Restaura todos os parâmetros (tempos, probabilidades, pesos) ao padrão validado">↺ Reset</button>
+  </div>
   <p>Modelo de eventos discretos calibrado contra dados reais de produção (Cronoanálise e Controle de Paradas, maio-julho/2026). Ajuste qualquer tempo de processo ou probabilidade na coluna ao lado e rode uma nova simulação — o relatório de gargalos é gerado automaticamente.</p>
 </header>
 
@@ -495,6 +510,35 @@ function hms(texto) {
 }
 
 // ============================================================================
+// CONVERSÃO DE EXIBIÇÃO — tempos em hh:mm e desvio em % (só na camada de UI;
+// internamente os parâmetros continuam em horas decimais, como sempre)
+// ============================================================================
+
+function horasParaHHMM(horasDecimal) {
+  const totalMinRaw = Math.round((horasDecimal || 0) * 60);
+  const neg = totalMinRaw < 0;
+  const totalMin = Math.abs(totalMinRaw);
+  const hh = Math.floor(totalMin / 60);
+  const mm = totalMin % 60;
+  return (neg ? '-' : '') + String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0');
+}
+
+function hhmmParaHoras(texto) {
+  texto = String(texto == null ? '' : texto).trim();
+  if (!texto) return 0;
+  const neg = texto.startsWith('-');
+  if (neg) texto = texto.slice(1);
+  const m = texto.match(/^(\d{1,3}):([0-5]?\d)$/);
+  if (m) {
+    const val = parseInt(m[1], 10) + parseInt(m[2], 10) / 60;
+    return neg ? -val : val;
+  }
+  // aceita também número decimal puro digitado direto (ex: "1.5" ou "1,5")
+  const n = parseFloat(texto.replace(',', '.'));
+  return isNaN(n) ? 0 : n;
+}
+
+// ============================================================================
 // PARÂMETROS PADRÃO (calibração validada contra Cronoanálise, maio-jul/2026)
 // ============================================================================
 
@@ -502,8 +546,9 @@ function defaultParams() {
   return {
     carregamentoInicialH: 12,
     carregamentoSbsnH: 12,
-    resfriamentoSbsnH: 3,
+    setupCarregamentoSbsnH: 3,
     trocaLigaH: 5,
+    panelasIniciaisCheias: 0,
 
     probDesestanhacao: 180 / 381,
     probPulaLanca: 10 / 381,
@@ -522,47 +567,52 @@ function defaultParams() {
     nLotesSinteticos: 400,
     nLotesSbsn: 100,
 
+    // pontos de referência (calibrados na Cronoanálise) usados pra interpolar o tempo
+    // de lingotamento por peso do lote — ref115 = lote grande (~115.000kg, rótulo
+    // histórico "130t"), ref50 = lote pequeno (~50.000kg)
+    saidaTempoRef: {
+      ref115: { Hogueira: hms("9:13:54"), L1: hms("8:40:11"), L2: hms("9:24:53") },
+      ref50: { Hogueira: hms("6:19:48"), L1: hms("4:44:22"), L2: hms("4:21:25") },
+    },
+
     processos: {
-      Puro: {
+      // Tempos comuns a Puro e Cálcio: até aqui o lote ainda não "virou" uma liga
+      // específica — a decisão física acontece só depois da 2ª desantimoniação.
+      // Valores = média ponderada de Puro/Cálcio pela proporção real de lotes (100/64,
+      // ~61%/39%), unificando o que antes eram dois calibrações quase idênticas.
+      // No menu: "inicial" + "transferencia1" aparecem em "Tempos — Comum (1ª limpeza
+      // até Transferência)"; "finalComum" aparece junto com Puro.finalDivergente em
+      // "Panela Final Puro/Ca (2ª Desantimoniação até Lingotamento — caso for Puro)".
+      comum: {
         inicial: {
-          "1ª limpeza": { media: 0.937, desvio: 0.946 },
-          "Entre 1ª limpeza e desestanhação": { media: 1.507, desvio: 3.518 },
-          "Desestanhação": { media: 1.971, desvio: 1.317 },
-          "Entre desestanhação e lança": { media: 0.686, desvio: 0.997 },
-          "Lança": { media: 4.415, desvio: 1.873 },
-          "Entre lança e 1ª desantimoniação": { media: 8.238, desvio: 3.277 },
-          "1ª desantimoniação": { media: 1.796, desvio: 1.806 },
-          "Entre 1ª desantimoniação e decuprização": { media: 1.701, desvio: 2.524 },
-          "Decuprização": { media: 2.966, desvio: 1.435 },
-          "Entre decuprização e 1ª transferência": { media: 1.347, desvio: 2.031 },
+          "1ª limpeza": { media: 0.953, desvio: 0.987 },
+          "Entre 1ª limpeza e desestanhação": { media: 1.580, desvio: 3.902 },
+          "Desestanhação": { media: 2.062, desvio: 1.397 },
+          "Entre desestanhação e lança": { media: 0.796, desvio: 1.537 },
+          "Lança": { media: 4.616, desvio: 1.987 },
+          "Entre lança e 1ª desantimoniação": { media: 8.348, desvio: 3.201 },
+          "1ª desantimoniação": { media: 1.776, desvio: 1.678 },
+          "Entre 1ª desantimoniação e decuprização": { media: 1.832, desvio: 2.687 },
+          "Decuprização": { media: 2.939, desvio: 1.507 },
+          "Entre decuprização e 1ª transferência": { media: 1.262, desvio: 1.781 },
         },
-        transferencia1: { "1ª transferência": { media: 0.567, desvio: 0.303 } },
-        final: {
-          "Entre 1ª transferência e 2ª desantimoniação": { media: 1.868, desvio: 2.073 },
-          "2ª desantimoniação": { media: 5.018, desvio: 2.048 },
+        transferencia1: { "1ª transferência": { media: 0.546, desvio: 0.266 } },
+        finalComum: {
+          "Entre 1ª transferência e 2ª desantimoniação": { media: 1.820, desvio: 2.226 },
+          "2ª desantimoniação": { media: 4.971, desvio: 2.061 },
+        },
+      },
+      // A partir daqui é que a liga se define — tempos específicos de cada uma
+      Puro: {
+        finalDivergente: {
           "Entre 2ª desantimoniação e 1ª limpeza final": { media: 1.180, desvio: 2.897 },
           "1ª limpeza final": { media: 1.771, desvio: 1.353 },
         },
       },
       Calcio: {
-        inicial: {
-          "1ª limpeza": { media: 0.979, desvio: 1.051 },
-          "Entre 1ª limpeza e desestanhação": { media: 1.695, desvio: 4.503 },
-          "Desestanhação": { media: 2.203, desvio: 1.522 },
-          "Entre desestanhação e lança": { media: 0.967, desvio: 2.381 },
-          "Lança": { media: 4.930, desvio: 2.166 },
-          "Entre lança e 1ª desantimoniação": { media: 8.522, desvio: 3.083 },
-          "1ª desantimoniação": { media: 1.745, desvio: 1.477 },
-          "Entre 1ª desantimoniação e decuprização": { media: 2.037, desvio: 2.943 },
-          "Decuprização": { media: 2.896, desvio: 1.619 },
-          "Entre decuprização e 1ª transferência": { media: 1.129, desvio: 1.389 },
-        },
-        transferencia1: { "1ª transferência": { media: 0.514, desvio: 0.209 } },
-        final: {
-          "Entre 1ª transferência e 2ª desantimoniação": { media: 1.746, desvio: 2.465 },
-          "2ª desantimoniação": { media: 4.896, desvio: 2.081 },
-          "Entre 2ª desantimoniação e 1ª limpeza final": { media: 0.782, desvio: 1.254 },
-          "1ª limpeza final": { media: 1.831, desvio: 1.322 },
+        finalDivergente: {
+          "2ª Transferência": { media: 0.782, desvio: 1.254 },
+          "2ª Limpeza Final": { media: 1.831, desvio: 1.322 },
           "Agregar": { media: 3.381, desvio: 1.500 },
         },
       },
@@ -588,12 +638,10 @@ function defaultParams() {
   };
 }
 
-const SAIDA_130T = { Hogueira: hms("9:13:54"), L1: hms("8:40:11"), L2: hms("9:24:53") };
-const SAIDA_50T = { Hogueira: hms("6:19:48"), L1: hms("4:44:22"), L2: hms("4:21:25") };
 const PESO_REF_130T = 115000, PESO_REF_50T = 50000;
 
-function tempoSaidaInterpolado(saidaNome, kgTotal) {
-  const t130 = SAIDA_130T[saidaNome], t50 = SAIDA_50T[saidaNome];
+function tempoSaidaInterpolado(saidaNome, kgTotal, params) {
+  const t130 = params.saidaTempoRef.ref115[saidaNome], t50 = params.saidaTempoRef.ref50[saidaNome];
   const inclinacao = (t130 - t50) / (PESO_REF_130T - PESO_REF_50T);
   return Math.max(t50 + inclinacao * (kgTotal - PESO_REF_50T), 0);
 }
@@ -633,6 +681,7 @@ class Simulation {
     this.ultimaLigaFinal = { P5: null, P6: null, P7: null };
     this.demandaP10 = [];
     this.contadorP10 = 0;
+    this.creditoPanelasCheias = Math.max(0, Math.min(4, params.panelasIniciaisCheias || 0));
     this.eventos = [];
     this.bloqueios = [];
     this.resultados = [];
@@ -686,7 +735,7 @@ class Simulation {
     const t1 = this.env.now;
     this.bloqueio(t0, t1, motivoEspera, saidaNome, lote, equipOrigem, saidaNome, kgTotal);
     this.log(saidaNome, 'Lingotamento/Saída', lote);
-    const dur = tempoSaidaInterpolado(saidaNome, kgTotal);
+    const dur = tempoSaidaInterpolado(saidaNome, kgTotal, this.params);
     await this.env.timeout(dur);
     this.liberar(saidaNome);
     this.resources.saidas[saidaNome].release(this.env);
@@ -721,18 +770,37 @@ class Simulation {
     const esperaPanelaInicialH = t1 - t0;
     this.bloqueio(t0, t1, 'Aguardando panela inicial', panInicial, lote, null, panInicial, lote.kg);
 
-    t0 = this.env.now;
-    const tokPonte = this.resources.ponteInicial.request(this.env);
-    await tokPonte.promise;
-    t1 = this.env.now;
-    this.bloqueio(t0, t1, 'Aguardando ponte de carregamento (P1-P4)', 'Ponte inicial (P1-P4)', lote, null, panInicial, undefined);
-    const inicioCarregamento = this.env.now;
-    this.log(panInicial, 'Carregando', lote);
-    await this.env.timeout(p.carregamentoInicialH);
-    this.resources.ponteInicial.release(this.env);
+    // panelas iniciais já cheias/parcialmente cheias na virada do mês (00:00 do dia 1)
+    // consomem o crédito na ordem em que os lotes chegam nas panelas iniciais
+    let creditoUsado = 0;
+    if (this.creditoPanelasCheias >= 1) {
+      creditoUsado = 1;
+      this.creditoPanelasCheias -= 1;
+    } else if (this.creditoPanelasCheias > 0) {
+      creditoUsado = this.creditoPanelasCheias;
+      this.creditoPanelasCheias = 0;
+    }
+
+    let inicioCarregamento;
+    if (creditoUsado >= 1) {
+      // panela já estava 100% cheia: pula a fila da ponte e o carregamento inteiro
+      inicioCarregamento = this.env.now;
+      this.log(panInicial, 'Carregando (panela já cheia no início do mês)', lote);
+    } else {
+      t0 = this.env.now;
+      const tokPonte = this.resources.ponteInicial.request(this.env);
+      await tokPonte.promise;
+      t1 = this.env.now;
+      this.bloqueio(t0, t1, 'Aguardando ponte de carregamento (P1-P4)', 'Ponte inicial (P1-P4)', lote, null, panInicial, undefined);
+      inicioCarregamento = this.env.now;
+      const duracaoCarregamento = p.carregamentoInicialH * (1 - creditoUsado);
+      this.log(panInicial, creditoUsado > 0 ? 'Carregando (panela parcialmente cheia no início do mês)' : 'Carregando', lote);
+      await this.env.timeout(duracaoCarregamento);
+      this.resources.ponteInicial.release(this.env);
+    }
 
     const pular = this.sortearEtapasAPular();
-    const dictInicial = p.processos[tipoKey].inicial;
+    const dictInicial = p.processos.comum.inicial;
     const nomes = Object.keys(dictInicial);
     const idxDecup = nomes.indexOf("Decuprização");
     const antesDecup = {}; nomes.slice(0, idxDecup).forEach(n => antesDecup[n] = dictInicial[n]);
@@ -750,7 +818,7 @@ class Simulation {
     this.liberar(panInicial);
     this.resources.iniciais[panInicial].release(this.env);
 
-    await this.rodarEtapasEstocasticas(panFinal, p.processos[tipoKey].transferencia1, lote, new Set());
+    await this.rodarEtapasEstocasticas(panFinal, p.processos.comum.transferencia1, lote, new Set());
 
     if (this.ultimaLigaFinal[panFinal] === 'Calcio' && tipoKey === 'Puro') {
       this.log(panFinal, 'Desestanhação extra (troca de liga)', lote);
@@ -758,7 +826,10 @@ class Simulation {
     }
     this.ultimaLigaFinal[panFinal] = tipoKey;
 
-    await this.rodarEtapasEstocasticas(panFinal, p.processos[tipoKey].final, lote, new Set());
+    // até aqui (2ª desantimoniação) o processo é idêntico pra Puro e Cálcio —
+    // a partir daqui é que a liga se define de fato
+    await this.rodarEtapasEstocasticas(panFinal, p.processos.comum.finalComum, lote, new Set());
+    await this.rodarEtapasEstocasticas(panFinal, p.processos[tipoKey].finalDivergente, lote, new Set());
 
     let demanda = null, kgLotePrincipal = lote.kg;
     if (panFinal === 'P7' && lote.fracionamento) {
@@ -813,6 +884,9 @@ class Simulation {
     await tokPonte.promise;
     t1 = this.env.now;
     this.bloqueio(t0, t1, 'Aguardando ponte Sb/Sn (P8/P9)', 'Ponte Sb/Sn (P8/P9)', lote, null, pan, undefined);
+    // setup da panela antes de iniciar o carregamento do novo lote
+    this.log(pan, 'Setup para novo carregamento Sb/Sn', lote);
+    await this.env.timeout(p.setupCarregamentoSbsnH);
     const inicioCarregamento = this.env.now;
     this.log(pan, 'Carregando', lote);
     await this.env.timeout(p.carregamentoSbsnH);
@@ -821,7 +895,6 @@ class Simulation {
     await this.rodarEtapasEstocasticas(pan, p.sbsnEtapas, lote, new Set());
     this.marcarLingotando(pan, lote);
     const { saidaNome, espera: esperaSaidaH } = await this.processarSaida(pan, lote, lote.kg, lote.saidaCliente, 'Aguardando saída Sb/Sn');
-    await this.env.timeout(p.resfriamentoSbsnH);
     this.liberar(pan);
     this.resources.sbsn[pan].release(this.env);
     const fim = this.env.now;
@@ -966,6 +1039,7 @@ function corEstadoAnim(estadoRaw) {
   if (estado === 'livre') return '#3a3f43';
   if (estado.includes('aguardando')) return '#c1544a';
   if (estado.includes('carregando')) return '#e0a526';
+  if (estado.includes('setup')) return '#e0a526';
   if (estado.includes('transfer')) return '#9b6bce';
   if (estado.includes('lingotamento') || estado.includes('saída') || estado.includes('saida')) return '#d17fe0';
   if (estado.includes('hogueira')) return '#8a5a3c';
@@ -1051,7 +1125,7 @@ function construirPlayerAnimacaoHTML(nFrames) {
     <div class="anim-svg-wrap">${svgDiagramaAnim()}</div>
     <div class="anim-legend">
       <span><i style="background:#3a3f43"></i> Livre</span>
-      <span><i style="background:#e0a526"></i> Carregando</span>
+      <span><i style="background:#e0a526"></i> Carregando/Setup</span>
       <span><i style="background:#c1544a"></i> Aguardando</span>
       <span><i style="background:#9b6bce"></i> Transferência</span>
       <span><i style="background:#d17fe0"></i> Lingotamento/Saída</span>
@@ -1179,13 +1253,18 @@ function fieldRow(label, obj, key, step) {
 function buildStageInputs(dictEtapas, pathPrefix) {
   let html = '';
   for (const nome in dictEtapas) {
+    const media = dictEtapas[nome].media;
+    const desvio = dictEtapas[nome].desvio;
+    const desvioPct = media > 0 ? (desvio / media) * 100 : 0;
     html += `<div class="stage-group">
       <div class="stage-name">${nome}</div>
-      <div class="field-row"><label class="mini-label">média (h)</label>
-        <input type="number" step="0.01" value="${dictEtapas[nome].media}" data-path="${pathPrefix}.${nome}.media">
+      <div class="field-row"><label class="mini-label">média (hh:mm)</label>
+        <input type="text" inputmode="numeric" placeholder="hh:mm" value="${horasParaHHMM(media)}"
+          data-path="${pathPrefix}.${nome}.media" data-tipo="horas">
       </div>
-      <div class="field-row"><label class="mini-label">desvio (h)</label>
-        <input type="number" step="0.01" value="${dictEtapas[nome].desvio}" data-path="${pathPrefix}.${nome}.desvio">
+      <div class="field-row"><label class="mini-label">desvio (%)</label>
+        <input type="number" step="1" min="0" value="${desvioPct.toFixed(0)}"
+          data-path="${pathPrefix}.${nome}.desvio" data-tipo="percentual-desvio" data-media-path="${pathPrefix}.${nome}.media">
       </div>
     </div>`;
   }
@@ -1196,9 +1275,33 @@ function detailsBlock(title, innerHtml, open) {
   return `<details ${open ? 'open' : ''}><summary>${title}</summary><div class="details-body">${innerHtml}</div></details>`;
 }
 
-function scalarField(label, path, step) {
-  return `<div class="field-row"><label>${label}</label>
-    <input type="number" step="${step}" value="${getByPath(PARAMS, path)}" data-path="${path}">
+function scalarField(label, path, step, ajuda, min, max) {
+  const help = ajuda ? `<span class="help-icon" title="${ajuda.replace(/"/g, '&quot;')}">?</span>` : '';
+  const minAttr = (min !== undefined) ? ` min="${min}"` : '';
+  const maxAttr = (max !== undefined) ? ` max="${max}"` : '';
+  return `<div class="field-row"><label>${label}${help}</label>
+    <input type="number" step="${step}"${minAttr}${maxAttr} value="${getByPath(PARAMS, path)}" data-path="${path}">
+  </div>`;
+}
+
+function scalarFieldHoras(label, path, ajuda) {
+  const help = ajuda ? `<span class="help-icon" title="${ajuda.replace(/"/g, '&quot;')}">?</span>` : '';
+  const valorHoras = getByPath(PARAMS, path);
+  return `<div class="field-row"><label>${label}${help}</label>
+    <input type="text" inputmode="numeric" placeholder="hh:mm" value="${horasParaHHMM(valorHoras)}"
+      data-path="${path}" data-tipo="horas">
+  </div>`;
+}
+
+function scalarFieldPercentual(label, path, ajuda) {
+  const help = ajuda ? `<span class="help-icon" title="${ajuda.replace(/"/g, '&quot;')}">?</span>` : '';
+  const valorFracao = getByPath(PARAMS, path);
+  const valorPct = Math.round(valorFracao * 100 * 100) / 100; // até 2 casas, sem lixo de ponto flutuante
+  return `<div class="field-row"><label>${label}${help}</label>
+    <div class="pct-input-wrap">
+      <input type="number" step="0.1" min="0" max="100" value="${valorPct}" data-path="${path}" data-tipo="percentual">
+      <span class="pct-suffix">%</span>
+    </div>
   </div>`;
 }
 
@@ -1217,19 +1320,32 @@ function renderParamForm() {
   let html = '';
 
   html += detailsBlock('Estrutural (horas)', `
-    ${scalarField('Carregamento inicial (P1-P4)', 'carregamentoInicialH', 0.5)}
-    ${scalarField('Carregamento Sb/Sn (P8/P9)', 'carregamentoSbsnH', 0.5)}
-    ${scalarField('Resfriamento pós-lingotamento Sb/Sn', 'resfriamentoSbsnH', 0.5)}
-    ${scalarField('Troca de liga (Cálcio→Puro)', 'trocaLigaH', 0.5)}
+    ${scalarFieldHoras('Carregamento inicial (P1-P4)', 'carregamentoInicialH')}
+    ${scalarFieldHoras('Carregamento Sb/Sn (P8/P9)', 'carregamentoSbsnH')}
+    ${scalarFieldHoras('Tempo de setup para iniciar novo carregamento Sb/Sn', 'setupCarregamentoSbsnH')}
+    ${scalarFieldHoras('Troca de liga (Cálcio→Puro)', 'trocaLigaH')}
+    ${scalarField('Panelas iniciais cheias no início do mês', 'panelasIniciaisCheias', 0.25,
+      'Quantas panelas iniciais (P1-P4) já estavam cheias às 00:00 do dia 1. Valor inteiro (ex: 2) = essa quantidade de panelas pula direto pro processo químico, sem esperar ponte nem carregamento. Valor quebrado (ex: 0,5) = uma panela adicional parcialmente cheia, que precisa de menos tempo pra terminar o carregamento do 1º lote que usá-la. Máximo 4 (uma pra cada panela inicial).',
+      0, 4)}
   `, true);
 
+  const ajudaLingotamento = 'Pontos de referência usados pra interpolar o tempo de lingotamento pelo peso real do lote (quanto mais pesado, mais tempo). "Lote grande" e "lote pequeno" são as duas âncoras calibradas — qualquer peso intermediário (ou fora da faixa) é calculado por interpolação/extrapolação linear entre esses dois pontos.';
+  html += detailsBlock('Tempo de lingotamento (por saída)', `
+    ${scalarFieldHoras('Hogueira — lote grande (~115t)', 'saidaTempoRef.ref115.Hogueira', ajudaLingotamento)}
+    ${scalarFieldHoras('Hogueira — lote pequeno (~50t)', 'saidaTempoRef.ref50.Hogueira', ajudaLingotamento)}
+    ${scalarFieldHoras('L1 — lote grande (~115t)', 'saidaTempoRef.ref115.L1', ajudaLingotamento)}
+    ${scalarFieldHoras('L1 — lote pequeno (~50t)', 'saidaTempoRef.ref50.L1', ajudaLingotamento)}
+    ${scalarFieldHoras('L2 — lote grande (~115t)', 'saidaTempoRef.ref115.L2', ajudaLingotamento)}
+    ${scalarFieldHoras('L2 — lote pequeno (~50t)', 'saidaTempoRef.ref50.L2', ajudaLingotamento)}
+  `, false);
+
   html += detailsBlock('Probabilidades', `
-    ${scalarField('Proporção Cálcio (0-1)', 'probCalcio', 0.01)}
-    ${scalarField('Cálcio sai por L (0-1)', 'probCalcioSaidaL', 0.01)}
-    ${scalarField('Fracionamento Puro→P10 (0-1)', 'probFracionamentoPuro', 0.01)}
-    ${scalarField('Fracionamento Cálcio→P10 (0-1)', 'probFracionamentoCalcio', 0.01)}
-    ${scalarField('Precisa desestanhação (0-1)', 'probDesestanhacao', 0.01)}
-    ${scalarField('Pula etapa de lança (0-1)', 'probPulaLanca', 0.01)}
+    ${scalarFieldPercentual('Proporção Cálcio', 'probCalcio')}
+    ${scalarFieldPercentual('Cálcio sai por L', 'probCalcioSaidaL')}
+    ${scalarFieldPercentual('Fracionamento Puro→P10', 'probFracionamentoPuro')}
+    ${scalarFieldPercentual('Fracionamento Cálcio→P10', 'probFracionamentoCalcio')}
+    ${scalarFieldPercentual('Precisa desestanhação', 'probDesestanhacao')}
+    ${scalarFieldPercentual('Pula etapa de lança', 'probPulaLanca')}
   `, false);
 
   html += detailsBlock('Pesos (kg)', `
@@ -1241,15 +1357,16 @@ function renderParamForm() {
     ${scalarField('Sb/Sn — desvio', 'sbsnKgDesvio', 100)}
   `, false);
 
-  html += detailsBlock('Tempos — Puro (inicial)', buildStageInputs(PARAMS.processos.Puro.inicial, 'processos.Puro.inicial'), false);
-  html += detailsBlock('Tempos — Puro (transferência + final)',
-    buildStageInputs(PARAMS.processos.Puro.transferencia1, 'processos.Puro.transferencia1') +
-    buildStageInputs(PARAMS.processos.Puro.final, 'processos.Puro.final'), false);
+  html += detailsBlock('Tempos — Comum (1ª limpeza até Transferência)',
+    buildStageInputs(PARAMS.processos.comum.inicial, 'processos.comum.inicial') +
+    buildStageInputs(PARAMS.processos.comum.transferencia1, 'processos.comum.transferencia1'), false);
 
-  html += detailsBlock('Tempos — Cálcio (inicial)', buildStageInputs(PARAMS.processos.Calcio.inicial, 'processos.Calcio.inicial'), false);
-  html += detailsBlock('Tempos — Cálcio (transferência + final)',
-    buildStageInputs(PARAMS.processos.Calcio.transferencia1, 'processos.Calcio.transferencia1') +
-    buildStageInputs(PARAMS.processos.Calcio.final, 'processos.Calcio.final'), false);
+  html += detailsBlock('Panela Final Puro/Ca (2ª Desantimoniação até Lingotamento — caso for Puro)',
+    buildStageInputs(PARAMS.processos.comum.finalComum, 'processos.comum.finalComum') +
+    buildStageInputs(PARAMS.processos.Puro.finalDivergente, 'processos.Puro.finalDivergente'), false);
+
+  html += detailsBlock('Panela Final — Cálcio (2ª Transferência até Lingotamento — Cálcio)',
+    buildStageInputs(PARAMS.processos.Calcio.finalDivergente, 'processos.Calcio.finalDivergente'), false);
 
   html += detailsBlock('Tempos — Sb/Sn', buildStageInputs(PARAMS.sbsnEtapas, 'sbsnEtapas'), false);
 
@@ -1257,17 +1374,45 @@ function renderParamForm() {
 
   el.querySelectorAll('input[data-path]').forEach(input => {
     input.addEventListener('change', () => {
-      setByPath(PARAMS, input.dataset.path, parseFloat(input.value));
+      const tipo = input.dataset.tipo || 'numero';
+      if (tipo === 'horas') {
+        const horas = hhmmParaHoras(input.value);
+        setByPath(PARAMS, input.dataset.path, horas);
+        input.value = horasParaHHMM(horas); // normaliza a exibição (ex: "1:5" -> "01:05")
+        // se essa média tiver um campo de desvio (%) irmão no mesmo grupo, atualiza
+        // a exibição do % (o desvio absoluto guardado não muda, só a razão exibida)
+        const grupo = input.closest('.stage-group');
+        if (grupo) {
+          const desvioInput = grupo.querySelector(`input[data-media-path="${input.dataset.path}"]`);
+          if (desvioInput) {
+            const desvioAbsAtual = getByPath(PARAMS, desvioInput.dataset.path);
+            desvioInput.value = (horas > 0 ? (desvioAbsAtual / horas) * 100 : 0).toFixed(0);
+          }
+        }
+      } else if (tipo === 'percentual-desvio') {
+        const pct = parseFloat(String(input.value).replace(',', '.')) || 0;
+        const mediaAtual = getByPath(PARAMS, input.dataset.mediaPath);
+        setByPath(PARAMS, input.dataset.path, mediaAtual * (pct / 100));
+      } else if (tipo === 'percentual') {
+        const pct = parseFloat(String(input.value).replace(',', '.')) || 0;
+        const fracao = pct / 100;
+        setByPath(PARAMS, input.dataset.path, fracao);
+        input.value = Math.round(pct * 100) / 100; // normaliza a exibição (2 casas no máximo)
+      } else {
+        setByPath(PARAMS, input.dataset.path, parseFloat(input.value));
+      }
     });
   });
 }
 
-document.getElementById('btn-reset').addEventListener('click', () => {
+function resetarParametros() {
   PARAMS = defaultParams();
   renderParamForm();
   document.getElementById('status-line').textContent = 'Parâmetros restaurados ao padrão validado.';
   document.getElementById('status-line').className = 'status-line';
-});
+}
+document.getElementById('btn-reset').addEventListener('click', resetarParametros);
+document.getElementById('btn-reset-topo').addEventListener('click', resetarParametros);
 
 // ============================================================================
 // EXECUÇÃO
@@ -1375,7 +1520,7 @@ function gerarSugestoes(mediaUtil, mediaBloq, params) {
   if (sbsnUtil > 90) {
     sugestoes.push({ tipo: 'alerta', texto:
       `Sb/Sn (P8/P9) está saturado — utilização média de ${sbsnUtil.toFixed(0)}%. É o gargalo estrutural principal hoje. ` +
-      `Reduzir o carregamento (hoje ${params.carregamentoSbsnH}h) ou o resfriamento pós-lingotamento (hoje ${params.resfriamentoSbsnH}h) ` +
+      `Reduzir o carregamento (hoje ${params.carregamentoSbsnH}h) ou o tempo de setup pra novo carregamento (hoje ${params.setupCarregamentoSbsnH}h) ` +
       `tende a gerar o maior ganho de capacidade; uma 3ª panela Sb/Sn também resolveria, mas é investimento físico.` });
   } else if (sbsnUtil > 75) {
     sugestoes.push({ tipo: 'info', texto: `Sb/Sn (P8/P9) está com utilização alta (${sbsnUtil.toFixed(0)}%) — vale monitorar, ainda não é crítico.` });
