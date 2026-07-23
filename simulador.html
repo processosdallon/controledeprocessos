@@ -193,6 +193,14 @@ main{
 }
 .run-bar .field-row{ margin:0; width:auto; }
 .run-bar label{ font-size:12px; }
+.help-icon{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:14px; height:14px; border-radius:50%;
+  border:1px solid var(--text-muted); color:var(--text-muted);
+  font-size:10px; font-family:var(--mono); cursor:help;
+  margin-left:5px; flex:none;
+}
+.help-icon:hover{ border-color:var(--molten-bright); color:var(--molten-bright); }
 .status-line{
   font-size: 12px;
   color: var(--text-muted);
@@ -269,6 +277,34 @@ tr:hover td{ background: rgba(217,96,28,0.05); }
   border-radius: 8px;
 }
 .empty-state .big{ font-family:var(--display); font-size:18px; color:var(--text); margin-bottom:6px; }
+
+/* ---------- Animação do processo ---------- */
+.anim-controls{
+  display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+  margin-bottom:14px;
+}
+.anim-controls .btn{ padding: 8px 14px; font-size:12px; white-space:nowrap; }
+.anim-slider-input{ flex:1; min-width:160px; accent-color: var(--molten); }
+.anim-speed-select{
+  background:var(--bg); color:var(--text); border:1px solid var(--border);
+  border-radius:4px; font-family:var(--mono); font-size:12px; padding:5px 6px;
+}
+.anim-time{ font-size:12px; color:var(--text-muted); white-space:nowrap; margin-left:auto; }
+.anim-svg-wrap{
+  background:var(--panel-2); border:1px solid var(--border); border-radius:8px;
+  padding:10px;
+}
+.anim-svg{ width:100%; height:auto; display:block; }
+.anim-eqname{ font-family:var(--display); font-weight:700; font-size:13px; fill:var(--text); }
+.anim-estado{ font-family:var(--mono); font-size:8px; fill:#fff; stroke:rgba(0,0,0,0.6); stroke-width:0.5px; paint-order:stroke; }
+.anim-lote{ font-family:var(--mono); font-weight:600; font-size:9.5px; fill:#fff; stroke:rgba(0,0,0,0.6); stroke-width:0.5px; paint-order:stroke; }
+.anim-shape{ stroke: var(--border); stroke-width:1.2; transition: fill 0.15s ease; }
+.anim-legend{
+  display:flex; flex-wrap:wrap; gap:8px 16px; margin-top:12px;
+  font-size:11.5px; color:var(--text-muted);
+}
+.anim-legend span{ display:flex; align-items:center; gap:5px; }
+.anim-legend i{ display:inline-block; width:10px; height:10px; border-radius:2px; flex:none; }
 </style>
 
 </head>
@@ -292,11 +328,15 @@ tr:hover td{ background: rgba(217,96,28,0.05); }
   <main>
     <div class="run-bar">
       <div class="field-row">
-        <label class="mini-label">Réplicas</label>
+        <label class="mini-label">Réplicas
+          <span class="help-icon" title="Quantas vezes a simulação inteira roda do zero, cada vez com números aleatórios diferentes (tempos de processo, tipo de lote, saída L/H etc.). O resultado final é a média entre as réplicas — mais réplicas dão um número de capacidade mais confiável, mas demoram mais pra rodar.">?</span>
+        </label>
         <input type="number" id="n-replicas" value="3" min="1" max="10" step="1">
       </div>
       <div class="field-row">
-        <label class="mini-label">Lotes sintéticos</label>
+        <label class="mini-label">Lotes sintéticos
+          <span class="help-icon" title="Quantos lotes de Puro/Cálcio o simulador gera artificialmente pra alimentar a fábrica durante o mês simulado. É um teste de TETO de capacidade: o número precisa ser alto o bastante pra nunca faltar demanda (senão a simulação subestima a capacidade). Passar do necessário não muda o resultado, só sobra lote sem processar.">?</span>
+        </label>
         <input type="number" id="n-lotes" value="400" min="50" max="800" step="10">
       </div>
       <button class="btn btn-primary" id="btn-run">▶ Rodar simulação</button>
@@ -308,6 +348,12 @@ tr:hover td{ background: rgba(217,96,28,0.05); }
         <div class="big">Nenhuma simulação rodada ainda</div>
         <div>Clique em "Rodar simulação" pra ver produção, utilização e gargalos.</div>
       </div>
+    </div>
+
+    <div class="section-title">Animação do processo (passo de 4h · 1ª réplica)</div>
+    <div id="animacao-container" class="empty-state">
+      <div class="big">Sem animação ainda</div>
+      <div>Rode uma simulação pra ver as panelas e lingoteiras se movendo ao longo do tempo.</div>
     </div>
   </main>
 </div>
@@ -885,6 +931,214 @@ const EQUIP_INFO = {
 };
 const EQUIP_ORDEM = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P10', 'P8', 'P9', 'L1', 'L2', 'Hogueira'];
 
+// ============================================================================
+// ANIMAÇÃO DO PROCESSO (porte do diagrama matplotlib original pra SVG/JS)
+// ============================================================================
+
+// posições no diagrama (mesma disposição relativa da versão em Python/matplotlib,
+// com eixo Y invertido pra coordenadas de tela)
+const ANIM_POS = {
+  P4: [140, 130], P3: [140, 240], P2: [140, 350], P1: [140, 460],
+  P7: [340, 150], P6: [340, 270], P5: [340, 400],
+  P10: [540, 60],
+  L2: [600, 150], Hogueira: [520, 270], L1: [600, 400],
+  P8: [540, 540], P9: [670, 540],
+};
+const ANIM_FORMA = { L1: 'barra', L2: 'barra' }; // demais equipamentos = círculo (panelas/hogueira)
+
+// [origem, destino, estilo] — mesmas ligações da animação em Python
+const ANIM_LINHAS = [
+  ['P1', 'P5', 'solid'], ['P2', 'P5', 'solid'], ['P2', 'P6', 'solid'],
+  ['P3', 'P6', 'solid'], ['P3', 'P7', 'solid'], ['P4', 'P7', 'solid'],
+  ['P5', 'L1', 'dashed'], ['P5', 'Hogueira', 'dashed'],
+  ['P6', 'L1', 'dashed'], ['P6', 'L2', 'dashed'], ['P6', 'Hogueira', 'dashed'],
+  ['P7', 'L2', 'dashed'],
+  ['P7', 'P10', 'dotted'], ['P10', 'L2', 'dotted'],
+  ['P8', 'L1', 'dotted'], ['P8', 'Hogueira', 'dotted'],
+  ['P9', 'L1', 'dotted'], ['P9', 'Hogueira', 'dotted'],
+];
+
+// mesma lógica de cores por estado da versão em Python (cor_estado), na mesma ordem de checagem
+function corEstadoAnim(estadoRaw) {
+  const estado = String(estadoRaw || '').toLowerCase();
+  if (estado === 'livre') return '#3a3f43';
+  if (estado.includes('aguardando')) return '#c1544a';
+  if (estado.includes('carregando')) return '#e0a526';
+  if (estado.includes('transfer')) return '#9b6bce';
+  if (estado.includes('lingotamento') || estado.includes('saída') || estado.includes('saida')) return '#d17fe0';
+  if (estado.includes('hogueira')) return '#8a5a3c';
+  if (estado.includes('lança') || estado.includes('lanca')) return '#e0813f';
+  if (estado.includes('desantimoniação') || estado.includes('desantimoniacao')) return '#e0813f';
+  if (estado.includes('decuprização') || estado.includes('decupriz')) return '#e0813f';
+  if (estado.includes('desestanhação') || estado.includes('desestanhacao')) return '#5b8aa6';
+  if (estado.includes('limpeza')) return '#5b8aa6';
+  if (estado.includes('agregar')) return '#5b8aa6';
+  return '#ece8e1';
+}
+
+function encurtarTextoAnim(texto, limite) {
+  texto = String(texto == null ? '' : texto);
+  if (texto.length <= limite) return texto;
+  return texto.slice(0, limite - 1) + '…';
+}
+
+// pra cada equipamento, acha o último evento com tempo <= frame (equivalente ao
+// merge_asof(direction="backward") usado na versão em Python)
+function precomputarEstadosAnim(eventos, frames, equipamentos) {
+  const porEquip = {};
+  equipamentos.forEach(eq => { porEquip[eq] = []; });
+  eventos.forEach(e => { if (porEquip[e.equipamento]) porEquip[e.equipamento].push(e); });
+  const resultado = {};
+  equipamentos.forEach(eq => {
+    const evs = porEquip[eq].slice().sort((a, b) => a.tempo - b.tempo);
+    const arr = [];
+    let ptr = 0;
+    let atual = { estado: 'Livre', lote: null };
+    for (const frame of frames) {
+      while (ptr < evs.length && evs[ptr].tempo <= frame) {
+        atual = evs[ptr];
+        ptr++;
+      }
+      arr.push({ estado: atual.estado, lote: atual.lote });
+    }
+    resultado[eq] = arr;
+  });
+  return resultado;
+}
+
+function svgDiagramaAnim() {
+  let linhas = '';
+  ANIM_LINHAS.forEach(([o, d, estilo]) => {
+    const [x1, y1] = ANIM_POS[o], [x2, y2] = ANIM_POS[d];
+    const dash = estilo === 'dashed' ? '6,5' : (estilo === 'dotted' ? '2,4' : '0');
+    linhas += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#4a4f53" stroke-width="1.4" stroke-dasharray="${dash}" opacity="0.6"/>`;
+  });
+  let nodes = '';
+  Object.keys(ANIM_POS).forEach(eq => {
+    const [x, y] = ANIM_POS[eq];
+    const isBarra = ANIM_FORMA[eq] === 'barra';
+    const shape = isBarra
+      ? `<rect class="anim-shape" x="${x - 50}" y="${y - 25}" width="100" height="50" rx="8" fill="#3a3f43"/>`
+      : `<circle class="anim-shape" cx="${x}" cy="${y}" r="36" fill="#3a3f43"/>`;
+    nodes += `
+      <g id="anim-node-${eq}" class="anim-node">
+        <title id="anim-title-${eq}">${eq}: Livre</title>
+        ${shape}
+        <text x="${x}" y="${y - (isBarra ? 34 : 46)}" class="anim-eqname" text-anchor="middle">${eq}</text>
+        <text x="${x}" y="${y - 4}" class="anim-estado" text-anchor="middle" id="anim-estado-${eq}">—</text>
+        <text x="${x}" y="${y + 12}" class="anim-lote" text-anchor="middle" id="anim-lote-${eq}">—</text>
+      </g>`;
+  });
+  return `<svg viewBox="0 0 760 610" class="anim-svg" xmlns="http://www.w3.org/2000/svg">${linhas}${nodes}</svg>`;
+}
+
+function construirPlayerAnimacaoHTML(nFrames) {
+  return `
+    <div class="anim-controls">
+      <button class="btn btn-primary" id="anim-play-btn">▶ Reproduzir</button>
+      <input type="range" id="anim-slider" min="0" max="${Math.max(nFrames - 1, 0)}" value="0" step="1" class="anim-slider-input">
+      <select id="anim-speed" class="anim-speed-select">
+        <option value="600">Lento</option>
+        <option value="300" selected>Normal</option>
+        <option value="120">Rápido</option>
+      </select>
+      <span class="anim-time" id="anim-time-label">Tempo simulado: 0h · Dia 0.0</span>
+    </div>
+    <div class="anim-svg-wrap">${svgDiagramaAnim()}</div>
+    <div class="anim-legend">
+      <span><i style="background:#3a3f43"></i> Livre</span>
+      <span><i style="background:#e0a526"></i> Carregando</span>
+      <span><i style="background:#c1544a"></i> Aguardando</span>
+      <span><i style="background:#9b6bce"></i> Transferência</span>
+      <span><i style="background:#d17fe0"></i> Lingotamento/Saída</span>
+      <span><i style="background:#8a5a3c"></i> Hogueira</span>
+      <span><i style="background:#e0813f"></i> Lança/Desantimoniação/Decuprização</span>
+      <span><i style="background:#5b8aa6"></i> Desestanhação/Limpeza/Agregar</span>
+    </div>`;
+}
+
+function renderFrameAnim(idx) {
+  const st = window.ANIM_STATE;
+  if (!st || !st.frames.length) return;
+  idx = Math.max(0, Math.min(idx, st.frames.length - 1));
+  st.frameIdx = idx;
+  const frame = st.frames[idx];
+  Object.keys(ANIM_POS).forEach(eq => {
+    const dado = st.precomp[eq][idx];
+    const shapeEl = document.querySelector(`#anim-node-${eq} .anim-shape`);
+    const estadoEl = document.getElementById(`anim-estado-${eq}`);
+    const loteEl = document.getElementById(`anim-lote-${eq}`);
+    const titleEl = document.getElementById(`anim-title-${eq}`);
+    if (!shapeEl) return;
+    shapeEl.setAttribute('fill', corEstadoAnim(dado.estado));
+    estadoEl.textContent = encurtarTextoAnim(dado.estado, 15);
+    loteEl.textContent = dado.lote ? encurtarTextoAnim(dado.lote, 13) : '';
+    titleEl.textContent = `${eq}: ${dado.estado}${dado.lote ? ' — ' + dado.lote : ''}`;
+  });
+  const timeEl = document.getElementById('anim-time-label');
+  if (timeEl) timeEl.textContent = `Tempo simulado: ${frame.toFixed(0)}h · Dia ${(frame / 24).toFixed(1)}`;
+  const sliderEl = document.getElementById('anim-slider');
+  if (sliderEl && parseInt(sliderEl.value, 10) !== idx) sliderEl.value = idx;
+}
+
+function pararAnimPlay() {
+  const st = window.ANIM_STATE;
+  if (st && st.intervalId) { clearInterval(st.intervalId); st.intervalId = null; }
+  if (st) st.playing = false;
+  const btn = document.getElementById('anim-play-btn');
+  if (btn) btn.textContent = '▶ Reproduzir';
+}
+
+function iniciarAnimPlay() {
+  const st = window.ANIM_STATE;
+  if (!st) return;
+  st.playing = true;
+  const btn = document.getElementById('anim-play-btn');
+  if (btn) btn.textContent = '⏸ Pausar';
+  st.intervalId = setInterval(() => {
+    let next = st.frameIdx + 1;
+    if (next >= st.frames.length) next = 0; // volta ao início quando termina
+    renderFrameAnim(next);
+  }, st.speedMs);
+}
+
+function toggleAnimPlay() {
+  const st = window.ANIM_STATE;
+  if (!st) return;
+  if (st.playing) pararAnimPlay(); else iniciarAnimPlay();
+}
+
+function renderAnimacao(dados) {
+  const cont = document.getElementById('animacao-container');
+  if (!dados || !dados.eventos || !dados.eventos.length) return;
+  const PASSO_FRAME_H = 4;
+  const tempoFinal = dados.tempoFinal;
+  const frames = [];
+  for (let t = 0; t <= tempoFinal; t += PASSO_FRAME_H) frames.push(t);
+  if (frames.length === 0) frames.push(0);
+
+  const equipamentos = Object.keys(ANIM_POS);
+  const precomp = precomputarEstadosAnim(dados.eventos, frames, equipamentos);
+
+  if (window.ANIM_STATE && window.ANIM_STATE.intervalId) clearInterval(window.ANIM_STATE.intervalId);
+  window.ANIM_STATE = { frames, precomp, frameIdx: 0, playing: false, intervalId: null, speedMs: 300 };
+
+  cont.className = '';
+  cont.innerHTML = construirPlayerAnimacaoHTML(frames.length);
+
+  document.getElementById('anim-play-btn').addEventListener('click', toggleAnimPlay);
+  document.getElementById('anim-slider').addEventListener('input', (e) => {
+    pararAnimPlay();
+    renderFrameAnim(parseInt(e.target.value, 10));
+  });
+  document.getElementById('anim-speed').addEventListener('change', (e) => {
+    window.ANIM_STATE.speedMs = parseInt(e.target.value, 10);
+    if (window.ANIM_STATE.playing) { pararAnimPlay(); iniciarAnimPlay(); }
+  });
+
+  renderFrameAnim(0);
+}
+
 const NOMES_MOTIVO = {
   'Aguardando panela final': 'Panela final ocupada',
   'Aguardando saída': 'Lingotando outro lote',
@@ -1061,6 +1315,7 @@ document.getElementById('btn-run').addEventListener('click', async () => {
   const producaoPorTipo = { Puro: [], Calcio: [], 'Sb/Sn': [] };
   const utilizacoes = [];
   const bloqueiosAgg = [];
+  let animacaoDados = null;
 
   for (let r = 0; r < nReplicas; r++) {
     const { sim, dfMes, tempoTotal } = await runReplication(PARAMS);
@@ -1070,6 +1325,10 @@ document.getElementById('btn-run').addEventListener('click', async () => {
     for (const k in porTipo) producaoPorTipo[k].push(porTipo[k]);
     utilizacoes.push(calcularUtilizacao(sim.eventos, tempoTotal));
     bloqueiosAgg.push(agregarBloqueios(sim.bloqueios));
+    if (r === 0) {
+      const tempoFinalAnim = sim.eventos.length ? Math.max(...sim.eventos.map(e => e.tempo)) : tempoTotal;
+      animacaoDados = { eventos: sim.eventos.slice(), tempoFinal: tempoFinalAnim };
+    }
   }
 
   const tempoExec = ((performance.now() - t0) / 1000).toFixed(1);
@@ -1079,6 +1338,7 @@ document.getElementById('btn-run').addEventListener('click', async () => {
   renderResultados({
     producaoTotal, producaoPorTipo, mediaUtil, mediaBloq, nReplicas,
   });
+  renderAnimacao(animacaoDados);
 
   statusEl.className = 'status-line done';
   statusEl.textContent = `Concluído em ${tempoExec}s — ${nReplicas} réplica(s), ${PARAMS.nLotesSinteticos} lotes sintéticos por réplica.`;
