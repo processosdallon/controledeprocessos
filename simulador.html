@@ -293,6 +293,8 @@ tr:hover td{ background: rgba(217,96,28,0.05); }
 .anim-svg-wrap{
   background:var(--panel-2); border:1px solid var(--border); border-radius:8px;
   padding:10px;
+  max-width: 620px;
+  margin: 0 auto;
 }
 .anim-svg{ width:100%; height:auto; display:block; }
 .anim-eqname{ font-family:var(--display); font-weight:700; font-size:13px; fill:var(--text); }
@@ -1035,7 +1037,9 @@ function svgDiagramaAnim() {
 function construirPlayerAnimacaoHTML(nFrames) {
   return `
     <div class="anim-controls">
+      <button class="btn btn-secondary" id="anim-prev-btn" title="Voltar 4h">◀ 4h</button>
       <button class="btn btn-primary" id="anim-play-btn">▶ Reproduzir</button>
+      <button class="btn btn-secondary" id="anim-next-btn" title="Avançar 4h">4h ▶</button>
       <input type="range" id="anim-slider" min="0" max="${Math.max(nFrames - 1, 0)}" value="0" step="1" class="anim-slider-input">
       <select id="anim-speed" class="anim-speed-select">
         <option value="600">Lento</option>
@@ -1127,6 +1131,14 @@ function renderAnimacao(dados) {
   cont.innerHTML = construirPlayerAnimacaoHTML(frames.length);
 
   document.getElementById('anim-play-btn').addEventListener('click', toggleAnimPlay);
+  document.getElementById('anim-prev-btn').addEventListener('click', () => {
+    pararAnimPlay();
+    renderFrameAnim(window.ANIM_STATE.frameIdx - 1);
+  });
+  document.getElementById('anim-next-btn').addEventListener('click', () => {
+    pararAnimPlay();
+    renderFrameAnim(window.ANIM_STATE.frameIdx + 1);
+  });
   document.getElementById('anim-slider').addEventListener('input', (e) => {
     pararAnimPlay();
     renderFrameAnim(parseInt(e.target.value, 10));
