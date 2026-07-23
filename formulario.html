@@ -2778,7 +2778,10 @@
         delete cacheFirebase[`${p}_${key}_ini`];
         delete cacheFirebase[`${p}_${key}_fim`];
         if (fimEl) fimEl.value = '';
-        set(dbRef, dados).finally(() => setTimeout(() => { ignorarUpdate = false; }, 500));
+        const atDel = {};
+        atDel[`${p}_${key}_ini`] = null;
+        atDel[`${p}_${key}_fim`] = null;
+        update(dbRef, atDel).catch(err => console.error('Erro apagar campo livre:', err));
         setTimeout(verificarAtrasos, 300);
         return;
       }
@@ -3116,9 +3119,12 @@
       delete cacheFirebase[`${p}_setuptemp_fim`];
       if (fimEl) fimEl.value = '';
     }
-    dados[`${p}_setuptemp_ini_autor`] = `${sessao.usuario.toUpperCase()} ${agora}`;
-    cacheFirebase[`${p}_setuptemp_ini_autor`] = dados[`${p}_setuptemp_ini_autor`];
-    set(dbRef, dados).finally(() => setTimeout(() => { ignorarUpdate = false; }, 500));
+    // update: salva apenas campos do setuptemp
+    const atSt = {};
+    if (iniVal) { atSt[`${p}_setuptemp_ini`] = iniVal; } else { atSt[`${p}_setuptemp_ini`] = null; atSt[`${p}_setuptemp_fim`] = null; }
+    atSt[`${p}_setuptemp_ini_autor`] = `${sessao.usuario.toUpperCase()} ${agora}`;
+    cacheFirebase[`${p}_setuptemp_ini_autor`] = atSt[`${p}_setuptemp_ini_autor`];
+    update(dbRef, atSt).catch(err => console.error('Erro setuptemp:', err));
     setTimeout(verificarAtrasos, 300);
   };
 
@@ -3402,11 +3408,10 @@
     const obj=parseFloat(document.getElementById(p+'_obj')?.value)||3;
     const bica=parseFloat(document.getElementById(p+'_bica')?.value)||0.5;
     const lotesFilt=calcState[p].filter(l=>l&&(l.lote||l.kg||l.sb!==''));
-    ignorarUpdate=true;
-    const dados=Object.assign({},cacheFirebase);
-    dados[p+'_calc']=JSON.stringify({cap,obj,bica,lotes:lotesFilt});
-    cacheFirebase[p+'_calc']=dados[p+'_calc'];
-    set(dbRef,dados).finally(()=>setTimeout(()=>{ignorarUpdate=false;},500));
+    const atCalc = {};
+    atCalc[p+'_calc'] = JSON.stringify({cap,obj,bica,lotes:lotesFilt});
+    cacheFirebase[p+'_calc'] = atCalc[p+'_calc'];
+    update(dbRef, atCalc).catch(err => console.error('Erro calc:', err));
   };
   function carregarCalculadora(dados) {
     ['b1','b2'].forEach(p=>{
