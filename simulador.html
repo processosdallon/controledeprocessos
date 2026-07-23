@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulador de Refino — Dallon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg: #17191b;
+  --panel: #1f2224;
+  --panel-2: #262a2d;
+  --border: #34383c;
+  --text: #ece8e1;
+  --text-muted: #8d9297;
+  --molten: #d9601c;
+  --molten-bright: #f0813f;
+  --steel: #5b8aa6;
+  --amber: #e0a526;
+  --green: #4c9a6a;
+  --red: #c1544a;
+  --mono: 'IBM Plex Mono', monospace;
+  --display: 'Space Grotesk', sans-serif;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 14px;
+  line-height: 1.5;
+}
+::selection{ background: var(--molten); color: #17191b; }
+
+/* ---------- Header ---------- */
+header{
+  padding: 28px 32px 20px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, #1c1e20 0%, #17191b 100%);
+}
+header .eyebrow{
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--molten-bright);
+  margin-bottom: 6px;
+}
+header h1{
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 28px;
+  margin: 0 0 4px;
+  letter-spacing: -0.01em;
+}
+header p{
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+  max-width: 720px;
+}
+
+/* ---------- Layout ---------- */
+.layout{
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  min-height: calc(100vh - 110px);
+}
+@media (max-width: 900px){
+  .layout{ grid-template-columns: 1fr; }
+}
+
+/* ---------- Sidebar (parameters) ---------- */
+aside{
+  border-right: 1px solid var(--border);
+  padding: 20px;
+  overflow-y: auto;
+  max-height: calc(100vh - 110px);
+  background: var(--panel);
+}
+aside h2{
+  font-family: var(--display);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  margin: 0 0 14px;
+}
+details{
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 10px;
+  background: var(--panel-2);
+  overflow: hidden;
+}
+details summary{
+  padding: 10px 12px;
+  cursor: pointer;
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--text);
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+details summary::-webkit-details-marker{ display:none; }
+details summary::after{
+  content: '+';
+  color: var(--molten-bright);
+  font-size: 16px;
+  font-weight: 600;
+}
+details[open] summary::after{ content: '−'; }
+details summary:hover{ background: rgba(217,96,28,0.08); }
+.details-body{ padding: 4px 12px 12px; }
+
+.field-row{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:8px; margin: 7px 0;
+}
+.field-row label{
+  font-size: 12px;
+  color: var(--text-muted);
+  flex: 1;
+}
+.field-row input[type=number]{
+  width: 84px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  text-align: right;
+}
+.field-row input[type=number]:focus{
+  outline: none;
+  border-color: var(--molten);
+}
+.stage-group{
+  border-top: 1px dashed var(--border);
+  padding-top: 6px;
+  margin-top: 6px;
+}
+.stage-group .stage-name{
+  font-size: 11px;
+  color: var(--steel);
+  margin-bottom: 2px;
+}
+.mini-label{ font-size: 10px; color: var(--text-muted); width:auto; flex: 0 0 auto; margin-right:4px;}
+
+.btn{
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 13px;
+  border: none;
+  border-radius: 6px;
+  padding: 11px 18px;
+  cursor: pointer;
+  transition: transform 0.08s ease, background 0.15s ease;
+}
+.btn:active{ transform: scale(0.97); }
+.btn-primary{ background: var(--molten); color: #17191b; }
+.btn-primary:hover{ background: var(--molten-bright); }
+.btn-secondary{ background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
+.btn-secondary:hover{ color: var(--text); border-color: var(--text-muted); }
+
+.sidebar-actions{
+  display:flex; flex-direction:column; gap:8px; margin-top: 16px;
+  position: sticky; bottom: -20px; padding-top:10px;
+}
+</style>
+<style>
+/* ---------- Main content ---------- */
+main{
+  padding: 24px 32px 60px;
+  overflow-y: auto;
+  max-height: calc(100vh - 110px);
+}
+.run-bar{
+  display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  padding: 16px 18px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+.run-bar .field-row{ margin:0; width:auto; }
+.run-bar label{ font-size:12px; }
+.status-line{
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+.status-line.running{ color: var(--amber); }
+.status-line.done{ color: var(--green); }
+
+/* schematic status board */
+.board-title, .section-title{
+  font-family: var(--display);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  margin: 30px 0 14px;
+  display:flex; align-items:center; gap:10px;
+}
+.section-title::after{
+  content:'';
+  flex:1; height:1px; background: var(--border);
+}
+.board{
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px,1fr));
+  gap: 10px;
+}
+.pot{
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 8px;
+  text-align:center;
+  background: var(--panel-2);
+  position:relative;
+}
+.pot .name{ font-family:var(--display); font-weight:600; font-size:13px; }
+.pot .grp{ font-size:9px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em;}
+.pot .pct{ font-family:var(--mono); font-weight:600; font-size:16px; margin-top:4px; }
+.pot .heatbar{ height:4px; border-radius:2px; margin-top:6px; background: var(--border); overflow:hidden; }
+.pot .heatbar > div{ height:100%; }
+
+.cards{ display:grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap:12px; }
+.card{
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+}
+.card .label{ font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.06em;}
+.card .value{ font-family:var(--display); font-weight:700; font-size:26px; margin-top:6px; }
+.card .sub{ font-size:11px; color:var(--text-muted); margin-top:2px;}
+
+table{ width:100%; border-collapse: collapse; font-size:12.5px; }
+th{ text-align:left; color:var(--text-muted); font-weight:500; padding:8px 10px; border-bottom:1px solid var(--border); font-size:11px; text-transform:uppercase; letter-spacing:0.04em;}
+td{ padding:8px 10px; border-bottom:1px solid rgba(255,255,255,0.03); }
+tr:hover td{ background: rgba(217,96,28,0.05); }
+
+.suggestion{
+  border-left: 3px solid var(--molten);
+  background: var(--panel);
+  padding: 12px 14px;
+  border-radius: 0 6px 6px 0;
+  margin-bottom:10px;
+  font-size:13px;
+}
+.suggestion.folga{ border-left-color: var(--green); }
+.suggestion.info{ border-left-color: var(--steel); }
+
+.empty-state{
+  color: var(--text-muted);
+  text-align:center;
+  padding: 60px 20px;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+}
+.empty-state .big{ font-family:var(--display); font-size:18px; color:var(--text); margin-bottom:6px; }
+</style>
+
+</head>
+
+<body>
+<header>
+  <div class="eyebrow">Dallon · Refino de Ligas de Chumbo</div>
+  <h1>Simulador de Capacidade — Refino</h1>
+  <p>Modelo de eventos discretos calibrado contra dados reais de produção (Cronoanálise e Controle de Paradas, maio-julho/2026). Ajuste qualquer tempo de processo ou probabilidade na coluna ao lado e rode uma nova simulação — o relatório de gargalos é gerado automaticamente.</p>
+</header>
+
+<div class="layout">
+  <aside>
+    <h2>Parâmetros</h2>
+    <div id="param-form"></div>
+    <div class="sidebar-actions">
+      <button class="btn btn-secondary" id="btn-reset">Restaurar padrão</button>
+    </div>
+  </aside>
+
+  <main>
+    <div class="run-bar">
+      <div class="field-row">
+        <label class="mini-label">Réplicas</label>
+        <input type="number" id="n-replicas" value="3" min="1" max="10" step="1">
+      </div>
+      <div class="field-row">
+        <label class="mini-label">Lotes sintéticos</label>
+        <input type="number" id="n-lotes" value="400" min="50" max="800" step="10">
+      </div>
+      <button class="btn btn-primary" id="btn-run">▶ Rodar simulação</button>
+      <span class="status-line" id="status-line">Pronto — parâmetros no padrão validado.</span>
+    </div>
+
+    <div id="results">
+      <div class="empty-state">
+        <div class="big">Nenhuma simulação rodada ainda</div>
+        <div>Clique em "Rodar simulação" pra ver produção, utilização e gargalos.</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+// ============================================================================
+// MOTOR DE SIMULAÇÃO DE EVENTOS DISCRETOS (porte do SimPy original pra JS)
+// ============================================================================
+
+class MinHeap {
+  constructor() { this.a = []; }
+  push(item) { this.a.push(item); this._up(this.a.length - 1); }
+  pop() {
+    const top = this.a[0];
+    const last = this.a.pop();
+    if (this.a.length) { this.a[0] = last; this._down(0); }
+    return top;
+  }
+  get size() { return this.a.length; }
+  peek() { return this.a[0]; }
+  _less(i, j) {
+    const a = this.a[i], b = this.a[j];
+    return a[0] !== b[0] ? a[0] < b[0] : a[1] < b[1];
+  }
+  _up(i) {
+    while (i > 0) {
+      const p = (i - 1) >> 1;
+      if (this._less(i, p)) { [this.a[i], this.a[p]] = [this.a[p], this.a[i]]; i = p; } else break;
+    }
+  }
+  _down(i) {
+    const n = this.a.length;
+    while (true) {
+      let l = 2 * i + 1, r = 2 * i + 2, s = i;
+      if (l < n && this._less(l, s)) s = l;
+      if (r < n && this._less(r, s)) s = r;
+      if (s === i) break;
+      [this.a[i], this.a[s]] = [this.a[s], this.a[i]]; i = s;
+    }
+  }
+}
+
+class SimEnv {
+  constructor() { this.now = 0; this.heap = new MinHeap(); this._seq = 0; }
+  schedule(t, fn) { this.heap.push([t, this._seq++, fn]); }
+  timeout(dur) { return new Promise(resolve => this.schedule(this.now + dur, resolve)); }
+  async runUntil(limit) {
+    while (this.heap.size) {
+      const top = this.heap.peek();
+      if (top[0] > limit) break;
+      const [t, , fn] = this.heap.pop();
+      this.now = t;
+      fn();
+      // flush microtasks so any .then()/await continuations (which may
+      // schedule new heap events) run before we pop the next event
+      await Promise.resolve();
+      await Promise.resolve();
+    }
+    this.now = limit;
+  }
+}
+
+class Resource {
+  constructor(name) { this.name = name; this.busy = false; this.queue = []; }
+  request(env) {
+    const token = { name: this.name };
+    token.promise = new Promise(resolve => {
+      token._resolve = resolve;
+      if (!this.busy) {
+        this.busy = true;
+        env.schedule(env.now, () => resolve(token));
+      } else {
+        this.queue.push({ resolve, token });
+      }
+    });
+    token.cancel = () => {
+      const idx = this.queue.findIndex(q => q.token === token);
+      if (idx >= 0) this.queue.splice(idx, 1);
+    };
+    return token;
+  }
+  release(env) {
+    if (this.queue.length) {
+      const { resolve } = this.queue.shift();
+      env.schedule(env.now, resolve);
+    } else {
+      this.busy = false;
+    }
+  }
+}
+
+function disputeAny(env, resourcesMap, names) {
+  return new Promise(resolve => {
+    let decided = false;
+    const tokens = {};
+    names.forEach(name => {
+      const res = resourcesMap[name];
+      const token = res.request(env);
+      tokens[name] = token;
+      token.promise.then(() => {
+        if (!decided) {
+          decided = true;
+          names.forEach(n => { if (n !== name) tokens[n].cancel(); });
+          resolve({ name, token });
+        } else {
+          res.release(env);
+        }
+      });
+    });
+  });
+}
+
+// ============================================================================
+// UTILITÁRIOS ESTATÍSTICOS
+// ============================================================================
+
+function randNormal() {
+  let u = 0, v = 0;
+  while (u === 0) u = Math.random();
+  while (v === 0) v = Math.random();
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}
+
+function sampleLognormal(media, desvio) {
+  media = Math.max(media, 0.01);
+  desvio = Math.max(desvio, 0.01);
+  const cv2 = (desvio / media) ** 2;
+  const sigma2 = Math.log(1 + cv2);
+  const sigma = Math.sqrt(sigma2);
+  const mu = Math.log(media) - sigma2 / 2;
+  return Math.exp(mu + sigma * randNormal());
+}
+
+function hms(texto) {
+  const partes = texto.split(':').map(Number);
+  return partes[0] + (partes[1] || 0) / 60 + (partes[2] || 0) / 3600;
+}
+
+// ============================================================================
+// PARÂMETROS PADRÃO (calibração validada contra Cronoanálise, maio-jul/2026)
+// ============================================================================
+
+function defaultParams() {
+  return {
+    carregamentoInicialH: 12,
+    carregamentoSbsnH: 12,
+    resfriamentoSbsnH: 3,
+    trocaLigaH: 5,
+
+    probDesestanhacao: 180 / 381,
+    probPulaLanca: 10 / 381,
+    probCalcio: 64 / 164,
+    probCalcioSaidaL: 0.119,
+    probFracionamentoPuro: 0.198,
+    probFracionamentoCalcio: 0.30,
+
+    kgLotePuroCalcio: 115000,
+    kgRetiradoP10: 48000,
+    kgRetiradoP7FracionadoPuro: 63000,
+    kgRetiradoP7FracionadoCalcio: 57000,
+    sbsnKgMedia: 50856,
+    sbsnKgDesvio: 3264,
+
+    nLotesSinteticos: 400,
+    nLotesSbsn: 100,
+
+    processos: {
+      Puro: {
+        inicial: {
+          "1ª limpeza": { media: 0.937, desvio: 0.946 },
+          "Entre 1ª limpeza e desestanhação": { media: 1.507, desvio: 3.518 },
+          "Desestanhação": { media: 1.971, desvio: 1.317 },
+          "Entre desestanhação e lança": { media: 0.686, desvio: 0.997 },
+          "Lança": { media: 4.415, desvio: 1.873 },
+          "Entre lança e 1ª desantimoniação": { media: 8.238, desvio: 3.277 },
+          "1ª desantimoniação": { media: 1.796, desvio: 1.806 },
+          "Entre 1ª desantimoniação e decuprização": { media: 1.701, desvio: 2.524 },
+          "Decuprização": { media: 2.966, desvio: 1.435 },
+          "Entre decuprização e 1ª transferência": { media: 1.347, desvio: 2.031 },
+        },
+        transferencia1: { "1ª transferência": { media: 0.567, desvio: 0.303 } },
+        final: {
+          "Entre 1ª transferência e 2ª desantimoniação": { media: 1.868, desvio: 2.073 },
+          "2ª desantimoniação": { media: 5.018, desvio: 2.048 },
+          "Entre 2ª desantimoniação e 1ª limpeza final": { media: 1.180, desvio: 2.897 },
+          "1ª limpeza final": { media: 1.771, desvio: 1.353 },
+        },
+      },
+      Calcio: {
+        inicial: {
+          "1ª limpeza": { media: 0.979, desvio: 1.051 },
+          "Entre 1ª limpeza e desestanhação": { media: 1.695, desvio: 4.503 },
+          "Desestanhação": { media: 2.203, desvio: 1.522 },
+          "Entre desestanhação e lança": { media: 0.967, desvio: 2.381 },
+          "Lança": { media: 4.930, desvio: 2.166 },
+          "Entre lança e 1ª desantimoniação": { media: 8.522, desvio: 3.083 },
+          "1ª desantimoniação": { media: 1.745, desvio: 1.477 },
+          "Entre 1ª desantimoniação e decuprização": { media: 2.037, desvio: 2.943 },
+          "Decuprização": { media: 2.896, desvio: 1.619 },
+          "Entre decuprização e 1ª transferência": { media: 1.129, desvio: 1.389 },
+        },
+        transferencia1: { "1ª transferência": { media: 0.514, desvio: 0.209 } },
+        final: {
+          "Entre 1ª transferência e 2ª desantimoniação": { media: 1.746, desvio: 2.465 },
+          "2ª desantimoniação": { media: 4.896, desvio: 2.081 },
+          "Entre 2ª desantimoniação e 1ª limpeza final": { media: 0.782, desvio: 1.254 },
+          "1ª limpeza final": { media: 1.831, desvio: 1.322 },
+          "Agregar": { media: 3.381, desvio: 1.500 },
+        },
+      },
+    },
+    calcio50: {
+      transferenciaP10: { "Transferência fracionada para Panela 10": 0.5478 },
+      depoisTransferenciaP10: {
+        "Entre transferência e limpeza final P10": 4.7189,
+        "Limpeza final P10": 1.9708,
+        "Agregar P10": 4.5375,
+      },
+    },
+    calcioP7PosFracionamento: { "2ª limpeza (liga mãe Cálcio em P7)": 1.28 },
+    sbsnEtapas: {
+      "1ª limpeza Sb/Sn": { media: 1.0044, desvio: 0.05 },
+      "Entre 1ª limpeza e 1ª decuprização Sb/Sn": { media: 3.0172, desvio: 0.05 },
+      "1ª decuprização Sb/Sn": { media: 2.8756, desvio: 0.05 },
+      "Entre decuprização e desestanhação Sb/Sn": { media: 7.1861, desvio: 0.05 },
+      "Desestanhação Sb/Sn": { media: 4.1278, desvio: 0.05 },
+      "Limpeza final Sb/Sn": { media: 4.0878, desvio: 0.05 },
+      "Agregar Sb/Sn": { media: 3.5089, desvio: 0.05 },
+    },
+  };
+}
+
+const SAIDA_130T = { Hogueira: hms("9:13:54"), L1: hms("8:40:11"), L2: hms("9:24:53") };
+const SAIDA_50T = { Hogueira: hms("6:19:48"), L1: hms("4:44:22"), L2: hms("4:21:25") };
+const PESO_REF_130T = 115000, PESO_REF_50T = 50000;
+
+function tempoSaidaInterpolado(saidaNome, kgTotal) {
+  const t130 = SAIDA_130T[saidaNome], t50 = SAIDA_50T[saidaNome];
+  const inclinacao = (t130 - t50) / (PESO_REF_130T - PESO_REF_50T);
+  return Math.max(t50 + inclinacao * (kgTotal - PESO_REF_50T), 0);
+}
+
+const ROTAS_FINAIS_NORMAL = { P1: ["P5"], P2: ["P5", "P6"], P3: ["P6", "P7"], P4: ["P7"] };
+const SAIDAS_POR_CLIENTE = { H: ["Hogueira"], L: ["L1", "L2"] };
+const SAIDAS_POR_EQUIPAMENTO = {
+  P5: ["L1", "Hogueira"], P6: ["L1", "L2", "Hogueira"], P7: ["L2"],
+  P10: ["L2"], P8: ["L1", "Hogueira"], P9: ["L1", "Hogueira"],
+};
+
+function finaisCompativeis(candidatas, saidaCliente) {
+  const permitidos = SAIDAS_POR_CLIENTE[saidaCliente];
+  return candidatas.filter(c => SAIDAS_POR_EQUIPAMENTO[c].some(s => permitidos.includes(s)));
+}
+function iniciaisCompativeis(saidaCliente) {
+  return ["P1", "P2", "P3", "P4"].filter(p => finaisCompativeis(ROTAS_FINAIS_NORMAL[p], saidaCliente).length > 0);
+}
+
+// ============================================================================
+// SIMULAÇÃO
+// ============================================================================
+
+class Simulation {
+  constructor(params) {
+    this.params = params;
+    this.env = new SimEnv();
+    this.resources = {
+      iniciais: { P1: new Resource('P1'), P2: new Resource('P2'), P3: new Resource('P3'), P4: new Resource('P4') },
+      ponteInicial: new Resource('ponteInicial'),
+      finais: { P5: new Resource('P5'), P6: new Resource('P6'), P7: new Resource('P7') },
+      p10: new Resource('P10'),
+      sbsn: { P8: new Resource('P8'), P9: new Resource('P9') },
+      ponteSbsn: new Resource('ponteSbsn'),
+      saidas: { L1: new Resource('L1'), L2: new Resource('L2'), Hogueira: new Resource('Hogueira') },
+    };
+    this.ultimaLigaFinal = { P5: null, P6: null, P7: null };
+    this.demandaP10 = [];
+    this.contadorP10 = 0;
+    this.eventos = [];
+    this.bloqueios = [];
+    this.resultados = [];
+  }
+
+  log(equip, estado, lote) {
+    this.eventos.push({ tempo: this.env.now, equipamento: equip, estado, lote: lote ? lote.lote : null });
+  }
+  bloqueio(t0, t1, motivo, equip, lote, origem, destino, kg) {
+    if (t1 - t0 <= 0) return;
+    this.bloqueios.push({ inicio: t0, fim: t1, duracao: t1 - t0, motivo, equipamento: equip, lote: lote ? lote.lote : null, origem, destino, kg });
+  }
+  liberar(equip) { this.log(equip, 'Livre', null); }
+  marcarLingotando(equip, lote) { this.log(equip, 'Lingotamento', lote); }
+
+  async disputarQualquer(resourcesMap, names) {
+    return await disputeAny(this.env, resourcesMap, names);
+  }
+
+  sortearEtapasAPular() {
+    const pular = new Set();
+    if (Math.random() > this.params.probDesestanhacao) { pular.add("Desestanhação"); pular.add("Entre desestanhação e lança"); }
+    if (Math.random() < this.params.probPulaLanca) { pular.add("Lança"); pular.add("Entre lança e 1ª desantimoniação"); }
+    return pular;
+  }
+
+  async rodarEtapasEstocasticas(equip, dictEtapas, lote, pular) {
+    pular = pular || new Set();
+    for (const nome in dictEtapas) {
+      if (pular.has(nome)) continue;
+      const { media, desvio } = dictEtapas[nome];
+      const dur = sampleLognormal(media, desvio);
+      this.log(equip, nome, lote);
+      await this.env.timeout(dur);
+    }
+  }
+
+  async rodarEtapasFixas(equip, dictEtapas, lote) {
+    for (const nome in dictEtapas) {
+      this.log(equip, nome, lote);
+      await this.env.timeout(dictEtapas[nome]);
+    }
+  }
+
+  async processarSaida(equipOrigem, lote, kgTotal, saidaCliente, motivoEspera) {
+    const fisicos = SAIDAS_POR_EQUIPAMENTO[equipOrigem];
+    const permitidos = SAIDAS_POR_CLIENTE[saidaCliente];
+    const elegiveis = fisicos.filter(s => permitidos.includes(s));
+    const t0 = this.env.now;
+    const { name: saidaNome } = await this.disputarQualquer(this.resources.saidas, elegiveis);
+    const t1 = this.env.now;
+    this.bloqueio(t0, t1, motivoEspera, saidaNome, lote, equipOrigem, saidaNome, kgTotal);
+    this.log(saidaNome, 'Lingotamento/Saída', lote);
+    const dur = tempoSaidaInterpolado(saidaNome, kgTotal);
+    await this.env.timeout(dur);
+    this.liberar(saidaNome);
+    this.resources.saidas[saidaNome].release(this.env);
+    return { saidaNome, espera: t1 - t0 };
+  }
+
+  async continuarP10(demanda, identP10, chegadaLoteMae, esperaP10, inicioTransfP10) {
+    await this.rodarEtapasFixas('P10', this.params.calcio50.depoisTransferenciaP10, identP10);
+    this.marcarLingotando('P10', identP10);
+    const { saidaNome } = await this.processarSaida('P10', identP10, this.params.kgRetiradoP10, demanda.saidaCliente, 'Aguardando saída (P10)');
+    this.liberar('P10');
+    this.resources.p10.release(this.env);
+    this.resultados.push({
+      lote: identP10.lote, tipo: demanda.tipo, saidaCliente: demanda.saidaCliente,
+      kg: this.params.kgRetiradoP10, toneladas: this.params.kgRetiradoP10 / 1000,
+      panelaFinal: 'P7', panelaP10: 'P10', saidaReal: saidaNome,
+      chegada: chegadaLoteMae, inicioCarregamentoH: inicioTransfP10, fim: this.env.now,
+    });
+  }
+
+  async processarLotePuroCalcio(lote) {
+    const p = this.params;
+    const tipoKey = lote.tipo;
+    const chegada = this.env.now;
+
+    let candidatosIniciais = lote.fracionamento
+      ? ["P1", "P2", "P3", "P4"].filter(pp => ROTAS_FINAIS_NORMAL[pp].includes("P7"))
+      : iniciaisCompativeis(lote.saidaCliente);
+    let t0 = this.env.now;
+    let { name: panInicial } = await this.disputarQualquer(this.resources.iniciais, candidatosIniciais);
+    let t1 = this.env.now;
+    const esperaPanelaInicialH = t1 - t0;
+    this.bloqueio(t0, t1, 'Aguardando panela inicial', panInicial, lote, null, panInicial, lote.kg);
+
+    t0 = this.env.now;
+    const tokPonte = this.resources.ponteInicial.request(this.env);
+    await tokPonte.promise;
+    t1 = this.env.now;
+    this.bloqueio(t0, t1, 'Aguardando ponte de carregamento (P1-P4)', 'Ponte inicial (P1-P4)', lote, null, panInicial, undefined);
+    const inicioCarregamento = this.env.now;
+    this.log(panInicial, 'Carregando', lote);
+    await this.env.timeout(p.carregamentoInicialH);
+    this.resources.ponteInicial.release(this.env);
+
+    const pular = this.sortearEtapasAPular();
+    const dictInicial = p.processos[tipoKey].inicial;
+    const nomes = Object.keys(dictInicial);
+    const idxDecup = nomes.indexOf("Decuprização");
+    const antesDecup = {}; nomes.slice(0, idxDecup).forEach(n => antesDecup[n] = dictInicial[n]);
+    const desdeDecup = {}; nomes.slice(idxDecup).forEach(n => desdeDecup[n] = dictInicial[n]);
+    await this.rodarEtapasEstocasticas(panInicial, antesDecup, lote, pular);
+
+    let candidatosFinais = lote.fracionamento ? ["P7"] : finaisCompativeis(ROTAS_FINAIS_NORMAL[panInicial], lote.saidaCliente);
+    t0 = this.env.now;
+    const { name: panFinal } = await this.disputarQualquer(this.resources.finais, candidatosFinais);
+    t1 = this.env.now;
+    const esperaPanelaFinalH = t1 - t0;
+    this.bloqueio(t0, t1, 'Aguardando panela final', panFinal, lote, panInicial, panFinal, lote.kg);
+
+    await this.rodarEtapasEstocasticas(panInicial, desdeDecup, lote, pular);
+    this.liberar(panInicial);
+    this.resources.iniciais[panInicial].release(this.env);
+
+    await this.rodarEtapasEstocasticas(panFinal, p.processos[tipoKey].transferencia1, lote, new Set());
+
+    if (this.ultimaLigaFinal[panFinal] === 'Calcio' && tipoKey === 'Puro') {
+      this.log(panFinal, 'Desestanhação extra (troca de liga)', lote);
+      await this.env.timeout(p.trocaLigaH);
+    }
+    this.ultimaLigaFinal[panFinal] = tipoKey;
+
+    await this.rodarEtapasEstocasticas(panFinal, p.processos[tipoKey].final, lote, new Set());
+
+    let demanda = null, kgLotePrincipal = lote.kg;
+    if (panFinal === 'P7' && lote.fracionamento) {
+      demanda = lote.fracionamento; kgLotePrincipal = lote.kg;
+    } else if (panFinal === 'P7' && this.demandaP10.length > 0) {
+      demanda = this.demandaP10.shift();
+      kgLotePrincipal = tipoKey === 'Puro' ? p.kgRetiradoP7FracionadoPuro : p.kgRetiradoP7FracionadoCalcio;
+    }
+
+    if (demanda) {
+      t0 = this.env.now;
+      const tokP10 = this.resources.p10.request(this.env);
+      await tokP10.promise;
+      t1 = this.env.now;
+      this.bloqueio(t0, t1, 'Aguardando Panela 10', 'P10', lote, 'P7', 'P10', p.kgRetiradoP10);
+      this.contadorP10++;
+      const identP10 = { lote: `${lote.lote}-P10-${this.contadorP10}`, tipo: demanda.tipo, saidaCliente: demanda.saidaCliente };
+      const inicioTransfP10 = this.env.now;
+      this.log('P7', 'Transferência fracionada para Panela 10', lote);
+      await this.rodarEtapasFixas('P10', p.calcio50.transferenciaP10, identP10);
+      this.continuarP10(demanda, identP10, chegada, t1 - t0, inicioTransfP10);
+      if (tipoKey === 'Calcio') {
+        await this.rodarEtapasFixas('P7', p.calcioP7PosFracionamento, lote);
+      }
+    }
+
+    this.marcarLingotando(panFinal, lote);
+    const { saidaNome, espera: esperaSaidaH } = await this.processarSaida(panFinal, lote, kgLotePrincipal, lote.saidaCliente, 'Aguardando saída');
+    this.liberar(panFinal);
+    this.resources.finais[panFinal].release(this.env);
+
+    const fim = this.env.now;
+    this.resultados.push({
+      lote: lote.lote, tipo: tipoKey, saidaCliente: lote.saidaCliente,
+      kg: kgLotePrincipal, toneladas: kgLotePrincipal / 1000,
+      panelaInicial: panInicial, panelaFinal: panFinal, saidaReal: saidaNome,
+      chegada, inicioCarregamentoH: inicioCarregamento, fim,
+      tempoTotalH: fim - inicioCarregamento, esperaPanelaInicialH, esperaPanelaFinalH, esperaSaidaH,
+    });
+  }
+
+  async processarLoteSbsn(lote) {
+    const p = this.params;
+    const chegada = this.env.now;
+    let t0 = this.env.now;
+    const { name: pan } = await this.disputarQualquer(this.resources.sbsn, ["P8", "P9"]);
+    let t1 = this.env.now;
+    this.bloqueio(t0, t1, 'Aguardando panela Sb/Sn', pan, lote, null, pan, lote.kg);
+
+    t0 = this.env.now;
+    const tokPonte = this.resources.ponteSbsn.request(this.env);
+    await tokPonte.promise;
+    t1 = this.env.now;
+    this.bloqueio(t0, t1, 'Aguardando ponte Sb/Sn (P8/P9)', 'Ponte Sb/Sn (P8/P9)', lote, null, pan, undefined);
+    const inicioCarregamento = this.env.now;
+    this.log(pan, 'Carregando', lote);
+    await this.env.timeout(p.carregamentoSbsnH);
+    this.resources.ponteSbsn.release(this.env);
+
+    await this.rodarEtapasEstocasticas(pan, p.sbsnEtapas, lote, new Set());
+    this.marcarLingotando(pan, lote);
+    const { saidaNome, espera: esperaSaidaH } = await this.processarSaida(pan, lote, lote.kg, lote.saidaCliente, 'Aguardando saída Sb/Sn');
+    await this.env.timeout(p.resfriamentoSbsnH);
+    this.liberar(pan);
+    this.resources.sbsn[pan].release(this.env);
+    const fim = this.env.now;
+    this.resultados.push({
+      lote: lote.lote, tipo: 'Sb/Sn', saidaCliente: lote.saidaCliente,
+      kg: lote.kg, toneladas: lote.kg / 1000,
+      panelaSbsn: pan, saidaReal: saidaNome,
+      chegada, inicioCarregamentoH: inicioCarregamento, fim,
+      tempoTotalH: fim - inicioCarregamento, esperaSaidaH,
+    });
+  }
+
+  processarLote(lote) {
+    if (lote.rota === 'SBSN_48') return this.processarLoteSbsn(lote);
+    return this.processarLotePuroCalcio(lote);
+  }
+
+  despacharTodos(lotes) {
+    lotes.forEach(l => { this.processarLote(l); });
+  }
+}
+
+// ============================================================================
+// GERAÇÃO DE DEMANDA
+// ============================================================================
+
+function gerarLotePuroCalcio(p, numero) {
+  const tipo = Math.random() < p.probCalcio ? 'Calcio' : 'Puro';
+  let saida, probFrac;
+  if (tipo === 'Puro') { saida = 'L'; probFrac = p.probFracionamentoPuro; }
+  else { saida = Math.random() < p.probCalcioSaidaL ? 'L' : 'H'; probFrac = p.probFracionamentoCalcio; }
+  const item = {
+    lote: `${tipo.slice(0, 3).toUpperCase()}-${numero}`, tipo, saidaCliente: saida,
+    rota: tipo === 'Calcio' ? 'CALCIO_130' : 'PURO_130', kg: p.kgLotePuroCalcio,
+  };
+  if (saida === 'L' && Math.random() < probFrac) {
+    item.fracionamento = { tipo: 'Calcio', saidaCliente: 'L' };
+  }
+  return item;
+}
+
+function gerarLoteSbsn(p, numero) {
+  const kg = Math.min(58000, Math.max(40000, Math.round(p.sbsnKgMedia + p.sbsnKgDesvio * randNormal())));
+  return { lote: `SBSN-${numero}`, tipo: 'Sb/Sn', saidaCliente: 'L', rota: 'SBSN_48', kg };
+}
+
+// ============================================================================
+// ORQUESTRAÇÃO
+// ============================================================================
+
+async function runReplication(params) {
+  const sim = new Simulation(params);
+  const lotes = [];
+  for (let i = 1; i <= params.nLotesSinteticos; i++) lotes.push(gerarLotePuroCalcio(params, i));
+  const lotesSbsn = [];
+  for (let i = 1; i <= params.nLotesSbsn; i++) lotesSbsn.push(gerarLoteSbsn(params, i));
+  sim.despacharTodos(lotes);
+  sim.despacharTodos(lotesSbsn);
+  const TEMPO_MES = 30 * 24, MARGEM = 200;
+  await sim.env.runUntil(TEMPO_MES + MARGEM);
+  const dfMes = sim.resultados.filter(r => r.inicioCarregamentoH <= TEMPO_MES);
+  const tempoTotal = dfMes.length ? Math.max(...dfMes.map(r => r.fim)) : 1;
+  return { sim, dfMes, tempoTotal };
+}
+
+function calcularUtilizacao(eventos, tempoLimite) {
+  const porEquip = {};
+  eventos.forEach(e => { (porEquip[e.equipamento] ||= []).push(e); });
+  const uso = {};
+  for (const eq in porEquip) {
+    const evs = porEquip[eq].slice().sort((a, b) => a.tempo - b.tempo);
+    let total = 0;
+    for (let i = 0; i < evs.length; i++) {
+      const t0 = Math.min(Math.max(evs[i].tempo, 0), tempoLimite);
+      const t1raw = i + 1 < evs.length ? evs[i + 1].tempo : tempoLimite;
+      const t1 = Math.min(Math.max(t1raw, 0), tempoLimite);
+      if (t1 > t0 && evs[i].estado !== 'Livre') total += (t1 - t0);
+    }
+    uso[eq] = 100 * total / tempoLimite;
+  }
+  return uso;
+}
+
+function agregarBloqueios(bloqueios) {
+  const porChave = {};
+  bloqueios.forEach(b => {
+    const key = b.motivo + '|' + b.equipamento;
+    (porChave[key] ||= { motivo: b.motivo, equipamento: b.equipamento, horas: 0, ocorrencias: 0 });
+    porChave[key].horas += b.duracao;
+    porChave[key].ocorrencias += 1;
+  });
+  return Object.values(porChave).sort((a, b) => b.horas - a.horas);
+}
+
+
+</script>
+<script>
+// ============================================================================
+// ESTADO GLOBAL
+// ============================================================================
+let PARAMS = defaultParams();
+
+const EQUIP_INFO = {
+  P1: { grupo: 'Inicial' }, P2: { grupo: 'Inicial' }, P3: { grupo: 'Inicial' }, P4: { grupo: 'Inicial' },
+  P5: { grupo: 'Final' }, P6: { grupo: 'Final' }, P7: { grupo: 'Final' },
+  P10: { grupo: 'Fracionamento' },
+  P8: { grupo: 'Sb/Sn' }, P9: { grupo: 'Sb/Sn' },
+  L1: { grupo: 'Saída' }, L2: { grupo: 'Saída' }, Hogueira: { grupo: 'Saída' },
+};
+const EQUIP_ORDEM = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P10', 'P8', 'P9', 'L1', 'L2', 'Hogueira'];
+
+const NOMES_MOTIVO = {
+  'Aguardando panela final': 'Panela final ocupada',
+  'Aguardando saída': 'Lingotando outro lote',
+  'Aguardando saída Sb/Sn': 'Lingotando outro lote (Sb/Sn)',
+};
+// categorias tratadas como "informativo" (distorcidas pelo despacho simultâneo
+// de todos os lotes no tempo 0) — não entram na tabela principal de gargalos
+const MOTIVOS_INFORMATIVOS = new Set([
+  'Aguardando panela inicial',
+  'Aguardando ponte de carregamento (P1-P4)',
+  'Aguardando panela Sb/Sn',
+  'Aguardando ponte Sb/Sn (P8/P9)',
+]);
+
+// ============================================================================
+// FORMULÁRIO DE PARÂMETROS
+// ============================================================================
+
+function fieldRow(label, obj, key, step) {
+  const id = `f_${label}_${Math.random().toString(36).slice(2, 8)}`;
+  return `<div class="field-row"><label>${label}</label>
+    <input type="number" step="${step || '0.01'}" value="${obj[key]}" data-bind="${id}">
+  </div>`;
+}
+
+function buildStageInputs(dictEtapas, pathPrefix) {
+  let html = '';
+  for (const nome in dictEtapas) {
+    html += `<div class="stage-group">
+      <div class="stage-name">${nome}</div>
+      <div class="field-row"><label class="mini-label">média (h)</label>
+        <input type="number" step="0.01" value="${dictEtapas[nome].media}" data-path="${pathPrefix}.${nome}.media">
+      </div>
+      <div class="field-row"><label class="mini-label">desvio (h)</label>
+        <input type="number" step="0.01" value="${dictEtapas[nome].desvio}" data-path="${pathPrefix}.${nome}.desvio">
+      </div>
+    </div>`;
+  }
+  return html;
+}
+
+function detailsBlock(title, innerHtml, open) {
+  return `<details ${open ? 'open' : ''}><summary>${title}</summary><div class="details-body">${innerHtml}</div></details>`;
+}
+
+function scalarField(label, path, step) {
+  return `<div class="field-row"><label>${label}</label>
+    <input type="number" step="${step}" value="${getByPath(PARAMS, path)}" data-path="${path}">
+  </div>`;
+}
+
+function getByPath(obj, path) {
+  return path.split('.').reduce((o, k) => o[k], obj);
+}
+function setByPath(obj, path, value) {
+  const parts = path.split('.');
+  const last = parts.pop();
+  const target = parts.reduce((o, k) => o[k], obj);
+  target[last] = value;
+}
+
+function renderParamForm() {
+  const el = document.getElementById('param-form');
+  let html = '';
+
+  html += detailsBlock('Estrutural (horas)', `
+    ${scalarField('Carregamento inicial (P1-P4)', 'carregamentoInicialH', 0.5)}
+    ${scalarField('Carregamento Sb/Sn (P8/P9)', 'carregamentoSbsnH', 0.5)}
+    ${scalarField('Resfriamento pós-lingotamento Sb/Sn', 'resfriamentoSbsnH', 0.5)}
+    ${scalarField('Troca de liga (Cálcio→Puro)', 'trocaLigaH', 0.5)}
+  `, true);
+
+  html += detailsBlock('Probabilidades', `
+    ${scalarField('Proporção Cálcio (0-1)', 'probCalcio', 0.01)}
+    ${scalarField('Cálcio sai por L (0-1)', 'probCalcioSaidaL', 0.01)}
+    ${scalarField('Fracionamento Puro→P10 (0-1)', 'probFracionamentoPuro', 0.01)}
+    ${scalarField('Fracionamento Cálcio→P10 (0-1)', 'probFracionamentoCalcio', 0.01)}
+    ${scalarField('Precisa desestanhação (0-1)', 'probDesestanhacao', 0.01)}
+    ${scalarField('Pula etapa de lança (0-1)', 'probPulaLanca', 0.01)}
+  `, false);
+
+  html += detailsBlock('Pesos (kg)', `
+    ${scalarField('Peso por lote Puro/Cálcio', 'kgLotePuroCalcio', 500)}
+    ${scalarField('Retirado Panela 10 (fração)', 'kgRetiradoP10', 500)}
+    ${scalarField('Retirado P7 fracionado — Puro', 'kgRetiradoP7FracionadoPuro', 500)}
+    ${scalarField('Retirado P7 fracionado — Cálcio', 'kgRetiradoP7FracionadoCalcio', 500)}
+    ${scalarField('Sb/Sn — peso médio', 'sbsnKgMedia', 500)}
+    ${scalarField('Sb/Sn — desvio', 'sbsnKgDesvio', 100)}
+  `, false);
+
+  html += detailsBlock('Tempos — Puro (inicial)', buildStageInputs(PARAMS.processos.Puro.inicial, 'processos.Puro.inicial'), false);
+  html += detailsBlock('Tempos — Puro (transferência + final)',
+    buildStageInputs(PARAMS.processos.Puro.transferencia1, 'processos.Puro.transferencia1') +
+    buildStageInputs(PARAMS.processos.Puro.final, 'processos.Puro.final'), false);
+
+  html += detailsBlock('Tempos — Cálcio (inicial)', buildStageInputs(PARAMS.processos.Calcio.inicial, 'processos.Calcio.inicial'), false);
+  html += detailsBlock('Tempos — Cálcio (transferência + final)',
+    buildStageInputs(PARAMS.processos.Calcio.transferencia1, 'processos.Calcio.transferencia1') +
+    buildStageInputs(PARAMS.processos.Calcio.final, 'processos.Calcio.final'), false);
+
+  html += detailsBlock('Tempos — Sb/Sn', buildStageInputs(PARAMS.sbsnEtapas, 'sbsnEtapas'), false);
+
+  el.innerHTML = html;
+
+  el.querySelectorAll('input[data-path]').forEach(input => {
+    input.addEventListener('change', () => {
+      setByPath(PARAMS, input.dataset.path, parseFloat(input.value));
+    });
+  });
+}
+
+document.getElementById('btn-reset').addEventListener('click', () => {
+  PARAMS = defaultParams();
+  renderParamForm();
+  document.getElementById('status-line').textContent = 'Parâmetros restaurados ao padrão validado.';
+  document.getElementById('status-line').className = 'status-line';
+});
+
+// ============================================================================
+// EXECUÇÃO
+// ============================================================================
+
+function mediaUtilizacoes(utilizacoes) {
+  const media = {};
+  EQUIP_ORDEM.forEach(eq => {
+    const vals = utilizacoes.map(u => u[eq] || 0);
+    media[eq] = vals.reduce((a, b) => a + b, 0) / vals.length;
+  });
+  return media;
+}
+
+function mediaBloqueios(bloqueiosAgg) {
+  const chaves = new Set();
+  bloqueiosAgg.forEach(arr => arr.forEach(b => chaves.add(b.motivo + '|' + b.equipamento)));
+  const resultado = [];
+  chaves.forEach(chave => {
+    const [motivo, equipamento] = chave.split('|');
+    const vals = bloqueiosAgg.map(arr => {
+      const item = arr.find(b => b.motivo === motivo && b.equipamento === equipamento);
+      return item ? item.horas : 0;
+    });
+    const ocorrencias = bloqueiosAgg.map(arr => {
+      const item = arr.find(b => b.motivo === motivo && b.equipamento === equipamento);
+      return item ? item.ocorrencias : 0;
+    });
+    resultado.push({
+      motivo, equipamento,
+      horasMedia: vals.reduce((a, b) => a + b, 0) / vals.length,
+      ocorrenciasMedia: ocorrencias.reduce((a, b) => a + b, 0) / ocorrencias.length,
+    });
+  });
+  return resultado.sort((a, b) => b.horasMedia - a.horasMedia);
+}
+
+function mean(arr) { return arr.reduce((a, b) => a + b, 0) / arr.length; }
+function stdev(arr) {
+  const m = mean(arr);
+  return Math.sqrt(arr.reduce((a, b) => a + (b - m) ** 2, 0) / Math.max(arr.length - 1, 1));
+}
+
+document.getElementById('btn-run').addEventListener('click', async () => {
+  const statusEl = document.getElementById('status-line');
+  const btn = document.getElementById('btn-run');
+  const nReplicas = Math.max(1, parseInt(document.getElementById('n-replicas').value) || 3);
+  PARAMS.nLotesSinteticos = Math.max(50, parseInt(document.getElementById('n-lotes').value) || 400);
+
+  btn.disabled = true;
+  statusEl.className = 'status-line running';
+  statusEl.textContent = `Rodando ${nReplicas} réplica(s)...`;
+  await new Promise(r => setTimeout(r, 30)); // deixa o navegador pintar o status antes de travar na simulação
+
+  const t0 = performance.now();
+  const producaoTotal = [];
+  const producaoPorTipo = { Puro: [], Calcio: [], 'Sb/Sn': [] };
+  const utilizacoes = [];
+  const bloqueiosAgg = [];
+
+  for (let r = 0; r < nReplicas; r++) {
+    const { sim, dfMes, tempoTotal } = await runReplication(PARAMS);
+    const porTipo = { Puro: 0, Calcio: 0, 'Sb/Sn': 0 };
+    dfMes.forEach(l => { porTipo[l.tipo] += l.toneladas; });
+    producaoTotal.push(porTipo.Puro + porTipo.Calcio + porTipo['Sb/Sn']);
+    for (const k in porTipo) producaoPorTipo[k].push(porTipo[k]);
+    utilizacoes.push(calcularUtilizacao(sim.eventos, tempoTotal));
+    bloqueiosAgg.push(agregarBloqueios(sim.bloqueios));
+  }
+
+  const tempoExec = ((performance.now() - t0) / 1000).toFixed(1);
+  const mediaUtil = mediaUtilizacoes(utilizacoes);
+  const mediaBloq = mediaBloqueios(bloqueiosAgg);
+
+  renderResultados({
+    producaoTotal, producaoPorTipo, mediaUtil, mediaBloq, nReplicas,
+  });
+
+  statusEl.className = 'status-line done';
+  statusEl.textContent = `Concluído em ${tempoExec}s — ${nReplicas} réplica(s), ${PARAMS.nLotesSinteticos} lotes sintéticos por réplica.`;
+  btn.disabled = false;
+});
+
+// ============================================================================
+// RENDERIZAÇÃO DOS RESULTADOS
+// ============================================================================
+
+function corUtilizacao(pct) {
+  if (pct >= 90) return 'var(--red)';
+  if (pct >= 70) return 'var(--amber)';
+  if (pct >= 40) return 'var(--steel)';
+  return 'var(--green)';
+}
+
+function gerarSugestoes(mediaUtil, mediaBloq, params) {
+  const sugestoes = [];
+
+  const sbsnUtil = (mediaUtil.P8 + mediaUtil.P9) / 2;
+  if (sbsnUtil > 90) {
+    sugestoes.push({ tipo: 'alerta', texto:
+      `Sb/Sn (P8/P9) está saturado — utilização média de ${sbsnUtil.toFixed(0)}%. É o gargalo estrutural principal hoje. ` +
+      `Reduzir o carregamento (hoje ${params.carregamentoSbsnH}h) ou o resfriamento pós-lingotamento (hoje ${params.resfriamentoSbsnH}h) ` +
+      `tende a gerar o maior ganho de capacidade; uma 3ª panela Sb/Sn também resolveria, mas é investimento físico.` });
+  } else if (sbsnUtil > 75) {
+    sugestoes.push({ tipo: 'info', texto: `Sb/Sn (P8/P9) está com utilização alta (${sbsnUtil.toFixed(0)}%) — vale monitorar, ainda não é crítico.` });
+  }
+
+  const iniciais = ['P1', 'P2', 'P3', 'P4'].map(e => ({ e, v: mediaUtil[e] }));
+  const iniciaisAltas = iniciais.filter(x => x.v > 80);
+  if (iniciaisAltas.length > 0) {
+    sugestoes.push({ tipo: 'alerta', texto:
+      `Panela(s) inicial(is) com utilização alta: ${iniciaisAltas.map(x => `${x.e} (${x.v.toFixed(0)}%)`).join(', ')}. ` +
+      `Reduzir o tempo de carregamento inicial (hoje ${params.carregamentoInicialH}h) costuma dar o segundo maior ganho de capacidade do sistema.` });
+  }
+
+  const finais = ['P5', 'P6', 'P7'].map(e => ({ e, v: mediaUtil[e] }));
+  const finalMaisOcupada = finais.reduce((a, b) => (a.v > b.v ? a : b));
+  const bloqPanelaFinal = mediaBloq.filter(b => b.motivo === 'Aguardando panela final');
+  const totalBloqFinal = bloqPanelaFinal.reduce((a, b) => a + b.horasMedia, 0);
+  if (totalBloqFinal > 80) {
+    const detalhe = bloqPanelaFinal.slice(0, 3).map(b => `${b.equipamento} (${b.horasMedia.toFixed(0)}h)`).join(', ');
+    sugestoes.push({ tipo: 'alerta', texto:
+      `"Panela final ocupada" acumulou ${totalBloqFinal.toFixed(0)}h de espera média no mês — principalmente em ${detalhe}. ` +
+      `A mais ocupada é ${finalMaisOcupada.e} (${finalMaisOcupada.v.toFixed(0)}% de utilização). Vale investigar se dá pra redistribuir a rota entre P5/P6/P7.` });
+  }
+
+  const bloqSaida = mediaBloq.filter(b => b.motivo === 'Aguardando saída' || b.motivo === 'Aguardando saída Sb/Sn');
+  const totalBloqSaida = bloqSaida.reduce((a, b) => a + b.horasMedia, 0);
+  if (totalBloqSaida > 60) {
+    sugestoes.push({ tipo: 'info', texto:
+      `"Lingotando outro lote" (linha de saída ocupada por outro equipamento) somou ${totalBloqSaida.toFixed(0)}h — ` +
+      `normalmente indica disputa entre panelas pela mesma linha (L1/L2/Hogueira), não falta de panela em si.` });
+  }
+
+  if (mediaUtil.P10 < 30) {
+    sugestoes.push({ tipo: 'folga', texto: `Panela 10 (fracionamento) tem folga grande (${mediaUtil.P10.toFixed(0)}% de utilização) — não é prioridade agora.` });
+  }
+  const finalComFolga = finais.filter(f => f.v < 40);
+  if (finalComFolga.length > 0) {
+    sugestoes.push({ tipo: 'folga', texto: `${finalComFolga.map(f => f.e).join(', ')} com bastante folga (< 40% de utilização) — capacidade disponível pra absorver mais volume dessas ligas.` });
+  }
+
+  if (sugestoes.length === 0) {
+    sugestoes.push({ tipo: 'folga', texto: 'Nenhum gargalo crítico identificado nessa rodada — a produção está bem distribuída entre os equipamentos.' });
+  }
+  return sugestoes;
+}
+
+function renderResultados({ producaoTotal, producaoPorTipo, mediaUtil, mediaBloq, nReplicas }) {
+  const el = document.getElementById('results');
+  const mediaTotal = mean(producaoTotal);
+  const desvioTotal = stdev(producaoTotal);
+  const minTotal = Math.min(...producaoTotal);
+  const maxTotal = Math.max(...producaoTotal);
+
+  let html = '';
+
+  // ---- cards de produção ----
+  html += `<div class="cards">
+    <div class="card">
+      <div class="label">Produção total / mês</div>
+      <div class="value">${mediaTotal.toFixed(0)} t</div>
+      <div class="sub">±${desvioTotal.toFixed(0)}t · faixa ${minTotal.toFixed(0)}-${maxTotal.toFixed(0)}t (${nReplicas} réplicas)</div>
+    </div>
+    <div class="card"><div class="label">Puro</div><div class="value">${mean(producaoPorTipo.Puro).toFixed(0)} t</div></div>
+    <div class="card"><div class="label">Cálcio</div><div class="value">${mean(producaoPorTipo.Calcio).toFixed(0)} t</div></div>
+    <div class="card"><div class="label">Sb/Sn</div><div class="value">${mean(producaoPorTipo['Sb/Sn']).toFixed(0)} t</div></div>
+  </div>`;
+
+  // ---- painel de status (schematic) ----
+  html += `<div class="section-title">Utilização dos equipamentos</div><div class="board">`;
+  EQUIP_ORDEM.forEach(eq => {
+    const pct = mediaUtil[eq] || 0;
+    const cor = corUtilizacao(pct);
+    html += `<div class="pot">
+      <div class="grp">${EQUIP_INFO[eq].grupo}</div>
+      <div class="name">${eq}</div>
+      <div class="pct" style="color:${cor}">${pct.toFixed(0)}%</div>
+      <div class="heatbar"><div style="width:${Math.min(pct,100)}%; background:${cor}"></div></div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // ---- gargalos ----
+  const bloqAcionaveis = mediaBloq.filter(b => !MOTIVOS_INFORMATIVOS.has(b.motivo) && b.horasMedia > 0.5);
+  html += `<div class="section-title">Gargalos acionáveis (média por réplica)</div>`;
+  if (bloqAcionaveis.length === 0) {
+    html += `<div class="empty-state">Sem esperas relevantes registradas nessa rodada.</div>`;
+  } else {
+    html += `<table><thead><tr><th>Motivo</th><th>Equipamento</th><th>Ocorrências</th><th>Horas acumuladas</th></tr></thead><tbody>`;
+    bloqAcionaveis.slice(0, 12).forEach(b => {
+      html += `<tr><td>${NOMES_MOTIVO[b.motivo] || b.motivo}</td><td>${b.equipamento}</td><td>${b.ocorrenciasMedia.toFixed(1)}</td><td>${b.horasMedia.toFixed(1)}h</td></tr>`;
+    });
+    html += `</tbody></table>`;
+  }
+  html += `<p style="color:var(--text-muted); font-size:12px; margin-top:10px;">
+    "Aguardando panela inicial/Sb/Sn" e esperas de ponte de carregamento não entram aqui — são distorcidas pelo
+    despacho simultâneo de todos os lotes no início da simulação (artefato de teste de teto, não fila real).</p>`;
+
+  // ---- sugestões ----
+  const sugestoes = gerarSugestoes(mediaUtil, mediaBloq, PARAMS);
+  html += `<div class="section-title">Sugestões</div>`;
+  sugestoes.forEach(s => {
+    const cls = s.tipo === 'folga' ? 'folga' : (s.tipo === 'info' ? 'info' : '');
+    html += `<div class="suggestion ${cls}">${s.texto}</div>`;
+  });
+
+  el.innerHTML = html;
+}
+
+// ============================================================================
+// INICIALIZAÇÃO
+// ============================================================================
+renderParamForm();
+
+</script>
+</body>
+</html>
