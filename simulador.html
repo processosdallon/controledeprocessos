@@ -703,6 +703,19 @@ function defaultParams() {
       L1: 0, L2: 0, Hogueira: 0,
     },
 
+    // manutenção dos FORNOS que alimentam de chumbo as panelas iniciais (P1-P4)
+    // — diferente da manutenção de equipamento do refino: aqui não bloqueia
+    // panela nenhuma, só reduz o volume de chumbo disponível pra carregar,
+    // aumentando o tempo de carregamento enquanto durar. Não afeta P8/P9
+    // (Sb/Sn), que usam só chumbo de terceiro. Editável no menu "Manutenção
+    // dos Fornos".
+    manutencaoFornos: {
+      diasForno1: 0,
+      diasForno2: 0,
+      proporcaoForno: 0.425, // cada forno contribui com 42,5% do volume normal carregado
+      proporcaoTerceiroManutencao: 0.30, // Pb terceiro sobe pra 30% quando 1 forno para
+    },
+
     processos: {
       // Tempos comuns a Puro e Cálcio: até aqui o lote ainda não "virou" uma liga
       // específica — a decisão física acontece só depois da 2ª desantimoniação.
@@ -846,6 +859,32 @@ class Simulation {
     resource.release(this.env);
   }
 
+  // fator multiplicador do tempo de carregamento das panelas iniciais (P1-P4),
+  // de acordo com quantos fornos estão em manutenção no instante `tempoAtual`
+  // (contando os dias a partir de 00:00 do dia 1, igual às outras manutenções).
+  // 1 forno = mantém o volume absoluto normal daquele forno, só que o Pb
+  // terceiro sobe pra compensar parcialmente (não totalmente) — por isso o
+  // volume total cai e o carregamento demora mais. 2 fornos = só sobra o
+  // volume normal do terceiro (extrapolação, não descrita explicitamente).
+  // fator multiplicador do tempo de carregamento das panelas iniciais (P1-P4),
+  // de acordo com quantos fornos estão em manutenção no instante `tempoAtual`
+  // (contando os dias a partir de 00:00 do dia 1, igual às outras manutenções).
+  // O forno que continua funcionando mantém sua produção normal (% da
+  // capacidade ORIGINAL, com os 2 fornos); o Pb terceiro sobe até um teto
+  // (também em % da capacidade ORIGINAL, não do novo total menor) — por isso
+  // o volume total cai e o carregamento demora proporcionalmente mais.
+  fatorCargaFornos(tempoAtual) {
+    const mf = this.params.manutencaoFornos || {};
+    const forno1Parado = (mf.diasForno1 || 0) > 0 && tempoAtual < mf.diasForno1 * 24;
+    const forno2Parado = (mf.diasForno2 || 0) > 0 && tempoAtual < mf.diasForno2 * 24;
+    const nParados = (forno1Parado ? 1 : 0) + (forno2Parado ? 1 : 0);
+    if (nParados === 0) return 1;
+    const propForno = mf.proporcaoForno || 0.425;
+    const propTerceiroManutencao = mf.proporcaoTerceiroManutencao || 0.45;
+    const nFuncionando = 2 - nParados;
+    return nFuncionando * propForno + propTerceiroManutencao;
+  }
+
   log(equip, estado, lote) {
     this.eventos.push({ tempo: this.env.now, equipamento: equip, estado, lote: lote ? lote.lote : null });
   }
@@ -953,7 +992,8 @@ class Simulation {
       t1 = this.env.now;
       this.bloqueio(t0, t1, 'Aguardando ponte de carregamento (P1-P4)', 'Ponte inicial (P1-P4)', lote, null, panInicial, undefined);
       inicioCarregamento = this.env.now;
-      const duracaoCarregamento = p.carregamentoInicialH * (1 - creditoUsado);
+      const fatorFornos = this.fatorCargaFornos(inicioCarregamento);
+      const duracaoCarregamento = p.carregamentoInicialH * (1 - creditoUsado) / fatorFornos;
       this.log(panInicial, creditoUsado > 0 ? 'Carregando (panela parcialmente cheia no início do mês)' : 'Carregando', lote);
       await this.env.timeout(duracaoCarregamento);
       this.resources.ponteInicial.release(this.env);
@@ -1154,6 +1194,15 @@ function agregarBloqueios(bloqueios) {
 
 </script>
 <script>
+// ============================================================================
+// !! CHAVE DE API DA ANTHROPIC — FIXA PRA TODOS QUE ABRIREM ESTA PÁGINA !!
+// Cole sua chave (começa com "sk-ant-") entre as aspas abaixo.
+// ATENÇÃO: qualquer pessoa que abrir "Ver código-fonte" desta página vê essa
+// chave. Configure um limite de gasto mensal em console.anthropic.com antes
+// de publicar este arquivo em qualquer lugar (mesmo um link "interno").
+// ============================================================================
+const CHAVE_API_FIXA = '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';
+
 // ============================================================================
 // ESTADO GLOBAL
 // ============================================================================
@@ -1559,6 +1608,25 @@ function setByPath(obj, path, value) {
   target[last] = value;
 }
 
+function textoAjudaFornos() {
+  const f = (n, casas) => n.toFixed(casas === undefined ? 1 : casas).replace('.', ',');
+  const mf = PARAMS.manutencaoFornos;
+  const propForno = (mf.proporcaoForno * 100);
+  const propTerceiro = (mf.proporcaoTerceiroManutencao * 100);
+  const total1Parado = propForno + propTerceiro;
+  const queda1Parado = 100 - total1Parado;
+  const total2Parados = propTerceiro;
+  const queda2Parados = 100 - total2Parados;
+  const propForno1 = f(100 - 2 * propForno);
+  return `Carregamento normal (12h) usa Forno 1 + Forno 2 + Pb terceiro, na proporção ${f(propForno)}%/${f(propForno)}%/${propForno1}% da capacidade total.
+    Quando 1 forno para, o forno restante mantém sua produção normal (${f(propForno)}% da capacidade ORIGINAL, sem crescer), e o Pb terceiro
+    sobe até um teto de ${f(propTerceiro)}% — mas esse ${f(propTerceiro)}% também é em cima da capacidade ORIGINAL (2 fornos + terceiro), não do novo total menor.
+    Somando ${f(propForno)}% + ${f(propTerceiro)}% = ${f(total1Parado)}% da capacidade original — ou seja, uma queda real de ${f(queda1Parado)}% no volume carregado
+    (carregamento sobe de 12h pra ${f(12 / (total1Parado / 100), 2)}h). Se os 2 fornos pararem ao mesmo tempo, sobra só o Pb terceiro
+    (${f(propTerceiro)}% da capacidade original — queda de ${f(queda2Parados)}%, carregamento sobe pra ${f(12 / (total2Parados / 100), 2)}h).
+    É esse cálculo que o simulador reproduz automaticamente com base nos dias de manutenção que você preencher.`;
+}
+
 function renderParamForm() {
   const el = document.getElementById('param-form');
   let html = '';
@@ -1627,6 +1695,17 @@ function renderParamForm() {
     `<div class="ajuda-manut">Deixa o equipamento ocupado desde 00:00 do dia 1 pelo número de dias informado — qualquer lote que precisar dele espera na fila normal até acabar. 0 = disponível o mês inteiro.</div>` +
     buildManutencaoFields(PARAMS.manutencoes), false);
 
+  html += detailsBlock('Manutenção dos Fornos',
+    `${scalarField('Forno 1 — dias em manutenção', 'manutencaoFornos.diasForno1', 1,
+      'Quantos dias o Forno 1 ficou parado, contados a partir de 00:00 do dia 1 do mês (mesmo padrão da manutenção de equipamentos). Enquanto parado, o carregamento das panelas iniciais (P1-P4) fica mais lento — ver campo "Proporção Pb terceiro quando 1 forno para" pra entender o porquê. Não afeta P8/P9 (Sb/Sn), que usam só chumbo de terceiro.',
+      0, 31)}
+    ${scalarField('Forno 2 — dias em manutenção', 'manutencaoFornos.diasForno2', 1,
+      'Mesma lógica do Forno 1, mas pro Forno 2. Se os dois estiverem em manutenção ao mesmo tempo, o carregamento fica ainda mais lento (só sobra o Pb terceiro, no teto configurado).',
+      0, 31)}
+    ${scalarFieldPercentual('Proporção normal de cada forno', 'manutencaoFornos.proporcaoForno')}
+    ${scalarFieldPercentual('Proporção Pb terceiro quando 1 forno para', 'manutencaoFornos.proporcaoTerceiroManutencao')}
+    <div class="ajuda-manut" id="ajuda-fornos-texto">${textoAjudaFornos()}</div>`, false);
+
   el.innerHTML = html;
 
   el.querySelectorAll('input[data-path]').forEach(input => {
@@ -1664,6 +1743,10 @@ function renderParamForm() {
         const fracao = pct / 100;
         setByPath(PARAMS, input.dataset.path, fracao);
         input.value = Math.round(pct * 100) / 100; // normaliza a exibição (2 casas no máximo)
+        if (input.dataset.path.startsWith('manutencaoFornos.')) {
+          const ajudaEl = document.getElementById('ajuda-fornos-texto');
+          if (ajudaEl) ajudaEl.textContent = textoAjudaFornos();
+        }
       } else if (tipo === 'rota-bool') {
         const arr = getByPath(PARAMS, input.dataset.path) || [];
         const valor = input.dataset.valor;
@@ -1930,7 +2013,7 @@ function renderChatInterface() {
         <button class="btn btn-primary" id="chat-enviar-btn">Enviar</button>
       </div>
     </div>
-    <div class="chat-contexto-nota">Assistente local, fixo — não é uma IA de verdade nem chama nenhuma API externa. Sabe explicar os parâmetros e conceitos do simulador e consultar os números da última rodada. Não entende perguntas fora desse escopo.</div>
+    <div class="chat-contexto-nota">Conversa com o Claude de verdade, com contexto automático da última simulação.</div>
   `;
   document.getElementById('chat-enviar-btn').addEventListener('click', enviarMensagemChat);
   document.getElementById('chat-input').addEventListener('keydown', (e) => {
@@ -2127,6 +2210,45 @@ function responderLocalmente(pergunta) {
     `Sb/Sn (P8/P9), Cálcio/Puro, fracionamento/P10, réplicas/lotes sintéticos, ou produção/utilização/gargalos da última rodada.`;
 }
 
+function construirContextoSistema() {
+  const d = dadosUltimaSimulacao;
+  let contextoDados = 'Nenhuma simulação foi rodada ainda nesta sessão.';
+  if (d) {
+    const utilTexto = EQUIP_ORDEM.map(eq => `${eq} ${(d.mediaUtil[eq] || 0).toFixed(0)}%`).join(', ');
+    const bloqTexto = d.mediaBloq.slice(0, 8).filter(b => b.horasMedia > 0.1)
+      .map(b => `${NOMES_MOTIVO[b.motivo] || b.motivo} (${b.equipamento}): ${b.horasMedia.toFixed(1)}h/réplica, ${b.ocorrenciasMedia.toFixed(1)}x`)
+      .join('; ');
+    contextoDados = `Produção média da última rodada (${d.nReplicas} réplica(s)): ${mean(d.producaoTotal).toFixed(0)}t/mês ` +
+      `(Puro ${mean(d.producaoPorTipo.Puro).toFixed(0)}t, Cálcio ${mean(d.producaoPorTipo.Calcio).toFixed(0)}t, Sb/Sn ${mean(d.producaoPorTipo['Sb/Sn']).toFixed(0)}t). ` +
+      `Utilização média: ${utilTexto}. Principais bloqueios: ${bloqTexto || 'nenhum relevante'}.`;
+  }
+  return `Você é um assistente conversando com um engenheiro de processo da Dallon (refinaria de chumbo) sobre uma simulação de ` +
+    `eventos discretos do refino (Sucata→Fundição→Refinaria). Responda em português, direto e técnico, com base nos dados abaixo — ` +
+    `não invente números que não estão aqui.\n\n${contextoDados}`;
+}
+
+async function tentarClaudeReal(texto) {
+  if (!CHAVE_API_FIXA) return null; // chave ainda não preenchida no código — usa o local
+  const resposta = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': CHAVE_API_FIXA,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 1000,
+      system: construirContextoSistema(),
+      messages: chatHistory.map(m => ({ role: m.role, content: m.content })),
+    }),
+  });
+  if (!resposta.ok) throw new Error(`HTTP ${resposta.status}`);
+  const dados = await resposta.json();
+  return (dados.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n') || null;
+}
+
 async function enviarMensagemChat() {
   const input = document.getElementById('chat-input');
   const texto = input.value.trim();
@@ -2136,10 +2258,18 @@ async function enviarMensagemChat() {
   input.value = '';
   renderMensagensChat();
 
-  // pequena pausa só pra não parecer instantâneo/robótico demais
-  await new Promise(r => setTimeout(r, 150));
+  let resposta = null;
+  try {
+    resposta = await tentarClaudeReal(texto);
+  } catch (erro) {
+    console.warn('Não consegui falar com a Anthropic (chave inválida, sem internet, etc.), usando assistente local:', erro.message);
+  }
 
-  const resposta = responderLocalmente(texto);
+  if (!resposta) {
+    await new Promise(r => setTimeout(r, 150)); // pequena pausa só pra não parecer instantâneo demais
+    resposta = responderLocalmente(texto);
+  }
+
   chatHistory.push({ role: 'assistant', content: resposta });
   renderMensagensChat();
   input.focus();
