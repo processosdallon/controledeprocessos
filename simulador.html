@@ -1250,11 +1250,17 @@ function precomputarEstadosAnim(eventos, frames, equipamentos) {
 // pra cada equipamento e quadro, conta quantos lotes estão de fato "Aguardando"
 // aquele equipamento naquele instante (usa os bloqueios já calculados pro
 // relatório de gargalos — nenhum dado novo, só reaproveitado na animação)
+// motivos que de fato indicam gargalo relevante pra mostrar na animação — panela
+// inicial (P1-P4) sempre tem fila por causa do despacho de todos os lotes de uma
+// vez no início do mês (não é informativo); só interessa mostrar disputa por
+// panela final (pra transferência) e por linha de saída (lingotamento)
+const MOTIVOS_FILA_ANIM = new Set(['Aguardando panela final', 'Aguardando saída', 'Aguardando saída Sb/Sn']);
+
 function precomputarFilaAnim(bloqueios, frames, equipamentos) {
   const porEquip = {};
   equipamentos.forEach(eq => { porEquip[eq] = []; });
   bloqueios.forEach(b => {
-    if (porEquip[b.equipamento] && b.motivo && b.motivo.toLowerCase().startsWith('aguardando')) {
+    if (porEquip[b.equipamento] && MOTIVOS_FILA_ANIM.has(b.motivo)) {
       porEquip[b.equipamento].push(b);
     }
   });
@@ -1315,7 +1321,7 @@ function construirPlayerAnimacaoHTML(nFrames) {
       <span><i style="background:#3a3f43"></i> Livre</span>
       <span><i style="background:#9c7a1f"></i> Em manutenção</span>
       <span><i style="background:#e0a526"></i> Carregando/Setup</span>
-      <span><i style="background:#c1544a; border-radius:50%;"></i> Nº de lotes aguardando (selo vermelho no canto)</span>
+      <span><i style="background:#c1544a; border-radius:50%;"></i> Nº de lotes aguardando (só panela final p/ transferência e linhas de saída p/ lingotar — panela inicial sempre tem fila, não é mostrado)</span>
       <span><i style="background:#9b6bce"></i> Transferência</span>
       <span><i style="background:#d17fe0"></i> Lingotamento/Saída</span>
       <span><i style="background:#8a5a3c"></i> Hogueira</span>
