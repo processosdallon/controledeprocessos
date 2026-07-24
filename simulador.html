@@ -163,7 +163,34 @@ details summary:hover{ background: rgba(217,96,28,0.08); }
   color: var(--steel);
   margin-bottom: 2px;
 }
+.stage-hint{
+  font-size: 10.5px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+.stage-hint b{ color: var(--text); font-weight: 600; }
 .mini-label{ font-size: 10px; color: var(--text-muted); width:auto; flex: 0 0 auto; margin-right:4px;}
+
+/* ---------- Editor de rotas ---------- */
+.rota-editor{ display:flex; flex-direction:column; gap:8px; }
+.rota-linha{
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
+  border-top: 1px dashed var(--border); padding-top:6px;
+}
+.rota-linha:first-child{ border-top:none; padding-top:0; }
+.rota-origem{ font-family:var(--mono); font-size:12px; color:var(--text); flex:none; width:44px; }
+.rota-opcoes{ display:flex; gap:10px; flex-wrap:wrap; }
+.rota-check{
+  display:flex; align-items:center; gap:4px;
+  font-size:11px; color:var(--text-muted); cursor:pointer;
+}
+.rota-check input[type=checkbox]{ accent-color: var(--molten); cursor:pointer; }
+
+/* ---------- Manutenção ---------- */
+.ajuda-manut{ font-size:11px; color:var(--text-muted); margin-bottom:10px; line-height:1.4; }
+.manut-grid{ display:grid; grid-template-columns: repeat(2, 1fr); gap:8px 12px; }
+.manut-item{ display:flex; align-items:center; justify-content:space-between; gap:6px; }
+.manut-item input{ width:56px; }
 
 .btn{
   font-family: var(--display);
@@ -504,6 +531,51 @@ function sampleLognormal(media, desvio) {
   return Math.exp(mu + sigma * randNormal());
 }
 
+// ============================================================================
+// AUXILIARES DA DISTRIBUIÇÃO LOG-NORMAL — usados pra calcular o teto automático
+// de cada etapa (percentil 98) a partir da média/desvio já configurados, sem
+// precisar de mais um campo editável por etapa.
+// ============================================================================
+const Z90 = 1.2815515655446004; // z da normal padrão pro percentil 90
+const Z98 = 2.053748910631823;  // z da normal padrão pro percentil 98
+
+function medianaLognormal(media, desvio) {
+  media = Math.max(media, 0.001);
+  desvio = Math.max(desvio, 0);
+  const sigma2 = Math.log(1 + (desvio / media) ** 2);
+  const mu = Math.log(media) - sigma2 / 2;
+  return Math.exp(mu);
+}
+
+function p90Lognormal(media, desvio) {
+  media = Math.max(media, 0.001);
+  desvio = Math.max(desvio, 0);
+  const sigma2 = Math.log(1 + (desvio / media) ** 2);
+  const sigma = Math.sqrt(sigma2);
+  const mu = Math.log(media) - sigma2 / 2;
+  return Math.exp(mu + Z90 * sigma);
+}
+
+function p98Lognormal(media, desvio) {
+  media = Math.max(media, 0.001);
+  desvio = Math.max(desvio, 0);
+  const sigma2 = Math.log(1 + (desvio / media) ** 2);
+  const sigma = Math.sqrt(sigma2);
+  const mu = Math.log(media) - sigma2 / 2;
+  return Math.exp(mu + Z98 * sigma);
+}
+
+// inverte: dado média + mediana desejada (ambas em horas), devolve o desvio-padrão
+// (em horas) que precisa ser guardado internamente — fórmula direta, sem ambiguidade
+// (diferente de tentar inverter a partir do p90, que pode ter duas soluções válidas)
+function desvioDeMediaEMediana(media, mediana) {
+  media = Math.max(media, 0.001);
+  const medianaClamp = Math.max(Math.min(mediana, media * 0.999), 0.001);
+  const sigma2 = 2 * Math.log(media / medianaClamp);
+  const cv = Math.sqrt(Math.max(Math.exp(sigma2) - 1, 0));
+  return media * cv;
+}
+
 function hms(texto) {
   const partes = texto.split(':').map(Number);
   return partes[0] + (partes[1] || 0) / 60 + (partes[2] || 0) / 3600;
@@ -575,6 +647,24 @@ function defaultParams() {
       ref50: { Hogueira: hms("6:19:48"), L1: hms("4:44:22"), L2: hms("4:21:25") },
     },
 
+    // topologia física da planta — quais equipamentos podem receber lotes de quais
+    // origens. Editável no menu "Rotas".
+    rotas: {
+      iniciaisParaFinais: { P1: ["P5"], P2: ["P5", "P6"], P3: ["P6", "P7"], P4: ["P7"] },
+      finaisParaSaidas: {
+        P5: ["L1", "Hogueira"], P6: ["L1", "L2", "Hogueira"], P7: ["L2"],
+        P10: ["L2"], P8: ["L1", "Hogueira"], P9: ["L1", "Hogueira"],
+      },
+      clientesParaSaidas: { H: ["Hogueira"], L: ["L1", "L2"] },
+    },
+
+    // dias de indisponibilidade por manutenção no início do mês simulado, por
+    // equipamento (0 = disponível o mês inteiro). Editável no menu "Manutenção".
+    manutencoes: {
+      P1: 0, P2: 0, P3: 0, P4: 0, P5: 0, P6: 0, P7: 0, P10: 0, P8: 0, P9: 0,
+      L1: 0, L2: 0, Hogueira: 0,
+    },
+
     processos: {
       // Tempos comuns a Puro e Cálcio: até aqui o lote ainda não "virou" uma liga
       // específica — a decisão física acontece só depois da 2ª desantimoniação.
@@ -584,36 +674,41 @@ function defaultParams() {
       // até Transferência)"; "finalComum" aparece junto com Puro.finalDivergente em
       // "Panela Final Puro/Ca (2ª Desantimoniação até Lingotamento — caso for Puro)".
       comum: {
+        // mínimos = menor duração observada de fato na Cronoanálise real. A maioria usa
+        // maio-jun/2026 (janela pedida); "1ª limpeza" e "Entre 1ª limpeza e desestanhação"
+        // tiveram amostra insuficiente nesse recorte (2 e 1 lote reais, respectivamente,
+        // um deles maior que a própria média) — usei o mínimo da base completa (todos os
+        // meses) só nessas duas, por não terem dado confiável em maio-jun.
         inicial: {
-          "1ª limpeza": { media: 0.953, desvio: 0.987 },
-          "Entre 1ª limpeza e desestanhação": { media: 1.580, desvio: 3.902 },
-          "Desestanhação": { media: 2.062, desvio: 1.397 },
-          "Entre desestanhação e lança": { media: 0.796, desvio: 1.537 },
-          "Lança": { media: 4.616, desvio: 1.987 },
-          "Entre lança e 1ª desantimoniação": { media: 8.348, desvio: 3.201 },
-          "1ª desantimoniação": { media: 1.776, desvio: 1.678 },
-          "Entre 1ª desantimoniação e decuprização": { media: 1.832, desvio: 2.687 },
-          "Decuprização": { media: 2.939, desvio: 1.507 },
-          "Entre decuprização e 1ª transferência": { media: 1.262, desvio: 1.781 },
+          "1ª limpeza": { media: 0.953, desvio: 0.987, minimo: 0.183 },
+          "Entre 1ª limpeza e desestanhação": { media: 1.580, desvio: 3.902, minimo: 0.017 },
+          "Desestanhação": { media: 2.062, desvio: 1.397, minimo: 0.533 },
+          "Entre desestanhação e lança": { media: 0.796, desvio: 1.537, minimo: 0 },
+          "Lança": { media: 4.616, desvio: 1.987, minimo: 0.417 },
+          "Entre lança e 1ª desantimoniação": { media: 8.348, desvio: 3.201, minimo: 2.917 },
+          "1ª desantimoniação": { media: 1.776, desvio: 1.678, minimo: 0.233 },
+          "Entre 1ª desantimoniação e decuprização": { media: 1.832, desvio: 2.687, minimo: 0.017 },
+          "Decuprização": { media: 2.939, desvio: 1.507, minimo: 0.700 },
+          "Entre decuprização e 1ª transferência": { media: 1.262, desvio: 1.781, minimo: 0.150 },
         },
-        transferencia1: { "1ª transferência": { media: 0.546, desvio: 0.266 } },
+        transferencia1: { "1ª transferência": { media: 0.546, desvio: 0.266, minimo: 0.183 } },
         finalComum: {
-          "Entre 1ª transferência e 2ª desantimoniação": { media: 1.820, desvio: 2.226 },
-          "2ª desantimoniação": { media: 4.971, desvio: 2.061 },
+          "Entre 1ª transferência e 2ª desantimoniação": { media: 1.820, desvio: 2.226, minimo: 0.050 },
+          "2ª desantimoniação": { media: 4.971, desvio: 2.061, minimo: 1.250 },
         },
       },
       // A partir daqui é que a liga se define — tempos específicos de cada uma
       Puro: {
         finalDivergente: {
-          "Entre 2ª desantimoniação e 1ª limpeza final": { media: 1.180, desvio: 2.897 },
-          "1ª limpeza final": { media: 1.771, desvio: 1.353 },
+          "Entre 2ª desantimoniação e 1ª limpeza final": { media: 1.180, desvio: 2.897, minimo: 0 },
+          "1ª limpeza final": { media: 1.771, desvio: 1.353, minimo: 0.383 },
         },
       },
       Calcio: {
         finalDivergente: {
-          "2ª Transferência": { media: 0.782, desvio: 1.254 },
-          "2ª Limpeza Final": { media: 1.831, desvio: 1.322 },
-          "Agregar": { media: 3.381, desvio: 1.500 },
+          "2ª Transferência": { media: 0.782, desvio: 1.254, minimo: 0.150 },
+          "2ª Limpeza Final": { media: 1.831, desvio: 1.322, minimo: 0.150 },
+          "Agregar": { media: 3.381, desvio: 1.500, minimo: 0 },
         },
       },
     },
@@ -626,14 +721,15 @@ function defaultParams() {
       },
     },
     calcioP7PosFracionamento: { "2ª limpeza (liga mãe Cálcio em P7)": 1.28 },
+    // mínimos = menor duração real observada na Cronoanálise (Sb/Sn), maio-jun/2026
     sbsnEtapas: {
-      "1ª limpeza Sb/Sn": { media: 1.0044, desvio: 0.05 },
-      "Entre 1ª limpeza e 1ª decuprização Sb/Sn": { media: 3.0172, desvio: 0.05 },
-      "1ª decuprização Sb/Sn": { media: 2.8756, desvio: 0.05 },
-      "Entre decuprização e desestanhação Sb/Sn": { media: 7.1861, desvio: 0.05 },
-      "Desestanhação Sb/Sn": { media: 4.1278, desvio: 0.05 },
-      "Limpeza final Sb/Sn": { media: 4.0878, desvio: 0.05 },
-      "Agregar Sb/Sn": { media: 3.5089, desvio: 0.05 },
+      "1ª limpeza Sb/Sn": { media: 1.0044, desvio: 0.05, minimo: 0.383 },
+      "Entre 1ª limpeza e 1ª decuprização Sb/Sn": { media: 3.0172, desvio: 0.05, minimo: 0.067 },
+      "1ª decuprização Sb/Sn": { media: 2.8756, desvio: 0.05, minimo: 0.767 },
+      "Entre decuprização e desestanhação Sb/Sn": { media: 7.1861, desvio: 0.05, minimo: 4.633 },
+      "Desestanhação Sb/Sn": { media: 4.1278, desvio: 0.05, minimo: 1.883 },
+      "Limpeza final Sb/Sn": { media: 4.0878, desvio: 0.05, minimo: 0.467 },
+      "Agregar Sb/Sn": { media: 3.5089, desvio: 0.05, minimo: 0.317 },
     },
   };
 }
@@ -646,19 +742,12 @@ function tempoSaidaInterpolado(saidaNome, kgTotal, params) {
   return Math.max(t50 + inclinacao * (kgTotal - PESO_REF_50T), 0);
 }
 
-const ROTAS_FINAIS_NORMAL = { P1: ["P5"], P2: ["P5", "P6"], P3: ["P6", "P7"], P4: ["P7"] };
-const SAIDAS_POR_CLIENTE = { H: ["Hogueira"], L: ["L1", "L2"] };
-const SAIDAS_POR_EQUIPAMENTO = {
-  P5: ["L1", "Hogueira"], P6: ["L1", "L2", "Hogueira"], P7: ["L2"],
-  P10: ["L2"], P8: ["L1", "Hogueira"], P9: ["L1", "Hogueira"],
-};
-
-function finaisCompativeis(candidatas, saidaCliente) {
-  const permitidos = SAIDAS_POR_CLIENTE[saidaCliente];
-  return candidatas.filter(c => SAIDAS_POR_EQUIPAMENTO[c].some(s => permitidos.includes(s)));
+function finaisCompativeis(candidatas, saidaCliente, rotas) {
+  const permitidos = rotas.clientesParaSaidas[saidaCliente];
+  return candidatas.filter(c => (rotas.finaisParaSaidas[c] || []).some(s => permitidos.includes(s)));
 }
-function iniciaisCompativeis(saidaCliente) {
-  return ["P1", "P2", "P3", "P4"].filter(p => finaisCompativeis(ROTAS_FINAIS_NORMAL[p], saidaCliente).length > 0);
+function iniciaisCompativeis(saidaCliente, rotas) {
+  return ["P1", "P2", "P3", "P4"].filter(p => finaisCompativeis(rotas.iniciaisParaFinais[p] || [], saidaCliente, rotas).length > 0);
 }
 
 // ============================================================================
@@ -685,6 +774,38 @@ class Simulation {
     this.eventos = [];
     this.bloqueios = [];
     this.resultados = [];
+    this.iniciarManutencoes();
+  }
+
+  // acha o objeto Resource correspondente a um nome de equipamento ("P1".."P10",
+  // "L1","L2","Hogueira"), independente de em qual sub-mapa ele vive
+  getResourceByName(nome) {
+    return this.resources.iniciais[nome] || this.resources.finais[nome]
+      || (nome === 'P10' ? this.resources.p10 : null)
+      || this.resources.sbsn[nome] || this.resources.saidas[nome] || null;
+  }
+
+  // ocupa cada equipamento marcado como "em manutenção" desde o início do mês
+  // (t=0) por N dias — qualquer lote que precisar dele fica na fila normal de
+  // espera até a manutenção terminar
+  iniciarManutencoes() {
+    const config = this.params.manutencoes || {};
+    for (const nomeEquip in config) {
+      const dias = config[nomeEquip];
+      if (!dias || dias <= 0) continue;
+      const resource = this.getResourceByName(nomeEquip);
+      if (!resource) continue;
+      this.rodarManutencaoEquip(resource, nomeEquip, dias);
+    }
+  }
+
+  async rodarManutencaoEquip(resource, nomeEquip, dias) {
+    const tok = resource.request(this.env);
+    await tok.promise;
+    this.log(nomeEquip, 'Em manutenção', null);
+    await this.env.timeout(dias * 24);
+    this.liberar(nomeEquip);
+    resource.release(this.env);
   }
 
   log(equip, estado, lote) {
@@ -712,8 +833,9 @@ class Simulation {
     pular = pular || new Set();
     for (const nome in dictEtapas) {
       if (pular.has(nome)) continue;
-      const { media, desvio } = dictEtapas[nome];
-      const dur = sampleLognormal(media, desvio);
+      const { media, desvio, minimo } = dictEtapas[nome];
+      let dur = Math.max(sampleLognormal(media, desvio), minimo || 0);
+      dur = Math.min(dur, p98Lognormal(media, desvio)); // teto automático (percentil 98)
       this.log(equip, nome, lote);
       await this.env.timeout(dur);
     }
@@ -727,8 +849,8 @@ class Simulation {
   }
 
   async processarSaida(equipOrigem, lote, kgTotal, saidaCliente, motivoEspera) {
-    const fisicos = SAIDAS_POR_EQUIPAMENTO[equipOrigem];
-    const permitidos = SAIDAS_POR_CLIENTE[saidaCliente];
+    const fisicos = this.params.rotas.finaisParaSaidas[equipOrigem] || [];
+    const permitidos = this.params.rotas.clientesParaSaidas[saidaCliente] || [];
     const elegiveis = fisicos.filter(s => permitidos.includes(s));
     const t0 = this.env.now;
     const { name: saidaNome } = await this.disputarQualquer(this.resources.saidas, elegiveis);
@@ -762,8 +884,8 @@ class Simulation {
     const chegada = this.env.now;
 
     let candidatosIniciais = lote.fracionamento
-      ? ["P1", "P2", "P3", "P4"].filter(pp => ROTAS_FINAIS_NORMAL[pp].includes("P7"))
-      : iniciaisCompativeis(lote.saidaCliente);
+      ? ["P1", "P2", "P3", "P4"].filter(pp => (p.rotas.iniciaisParaFinais[pp] || []).includes("P7"))
+      : iniciaisCompativeis(lote.saidaCliente, p.rotas);
     let t0 = this.env.now;
     let { name: panInicial } = await this.disputarQualquer(this.resources.iniciais, candidatosIniciais);
     let t1 = this.env.now;
@@ -807,7 +929,7 @@ class Simulation {
     const desdeDecup = {}; nomes.slice(idxDecup).forEach(n => desdeDecup[n] = dictInicial[n]);
     await this.rodarEtapasEstocasticas(panInicial, antesDecup, lote, pular);
 
-    let candidatosFinais = lote.fracionamento ? ["P7"] : finaisCompativeis(ROTAS_FINAIS_NORMAL[panInicial], lote.saidaCliente);
+    let candidatosFinais = lote.fracionamento ? ["P7"] : finaisCompativeis(p.rotas.iniciaisParaFinais[panInicial] || [], lote.saidaCliente, p.rotas);
     t0 = this.env.now;
     const { name: panFinal } = await this.disputarQualquer(this.resources.finais, candidatosFinais);
     t1 = this.env.now;
@@ -971,7 +1093,9 @@ function calcularUtilizacao(eventos, tempoLimite) {
       const t0 = Math.min(Math.max(evs[i].tempo, 0), tempoLimite);
       const t1raw = i + 1 < evs.length ? evs[i + 1].tempo : tempoLimite;
       const t1 = Math.min(Math.max(t1raw, 0), tempoLimite);
-      if (t1 > t0 && evs[i].estado !== 'Livre') total += (t1 - t0);
+      // "Setup" (preparação antes do carregamento Sb/Sn) não conta como panela em uso
+      const emUso = evs[i].estado !== 'Livre' && !String(evs[i].estado).toLowerCase().includes('setup');
+      if (t1 > t0 && emUso) total += (t1 - t0);
     }
     uso[eq] = 100 * total / tempoLimite;
   }
@@ -1037,6 +1161,7 @@ const ANIM_LINHAS = [
 function corEstadoAnim(estadoRaw) {
   const estado = String(estadoRaw || '').toLowerCase();
   if (estado === 'livre') return '#3a3f43';
+  if (estado.includes('manutenção') || estado.includes('manutencao')) return '#9c7a1f';
   if (estado.includes('aguardando')) return '#c1544a';
   if (estado.includes('carregando')) return '#e0a526';
   if (estado.includes('setup')) return '#e0a526';
@@ -1125,6 +1250,7 @@ function construirPlayerAnimacaoHTML(nFrames) {
     <div class="anim-svg-wrap">${svgDiagramaAnim()}</div>
     <div class="anim-legend">
       <span><i style="background:#3a3f43"></i> Livre</span>
+      <span><i style="background:#9c7a1f"></i> Em manutenção</span>
       <span><i style="background:#e0a526"></i> Carregando/Setup</span>
       <span><i style="background:#c1544a"></i> Aguardando</span>
       <span><i style="background:#9b6bce"></i> Transferência</span>
@@ -1255,6 +1381,7 @@ function buildStageInputs(dictEtapas, pathPrefix) {
   for (const nome in dictEtapas) {
     const media = dictEtapas[nome].media;
     const desvio = dictEtapas[nome].desvio;
+    const minimo = dictEtapas[nome].minimo || 0;
     const desvioPct = media > 0 ? (desvio / media) * 100 : 0;
     html += `<div class="stage-group">
       <div class="stage-name">${nome}</div>
@@ -1266,6 +1393,11 @@ function buildStageInputs(dictEtapas, pathPrefix) {
         <input type="number" step="1" min="0" value="${desvioPct.toFixed(0)}"
           data-path="${pathPrefix}.${nome}.desvio" data-tipo="percentual-desvio" data-media-path="${pathPrefix}.${nome}.media">
       </div>
+      <div class="field-row"><label class="mini-label">mínimo (hh:mm)</label>
+        <input type="text" inputmode="numeric" placeholder="hh:mm" value="${horasParaHHMM(minimo)}"
+          data-path="${pathPrefix}.${nome}.minimo" data-tipo="horas">
+      </div>
+      <div class="stage-hint">teto automático (p98): <b class="stage-hint-p98">${horasParaHHMM(p98Lognormal(media, desvio))}</b></div>
     </div>`;
   }
   return html;
@@ -1273,6 +1405,38 @@ function buildStageInputs(dictEtapas, pathPrefix) {
 
 function detailsBlock(title, innerHtml, open) {
   return `<details ${open ? 'open' : ''}><summary>${title}</summary><div class="details-body">${innerHtml}</div></details>`;
+}
+
+// editor de rotas: pra cada "origem" (chave de dictRotas), mostra um checkbox por
+// destino possível (opcoes) — marcado se aquele destino está na lista atual
+function buildRotaCheckboxes(dictRotas, opcoes, pathPrefix) {
+  let html = '<div class="rota-editor">';
+  for (const origem in dictRotas) {
+    const atuais = dictRotas[origem] || [];
+    html += `<div class="rota-linha"><span class="rota-origem">${origem}</span><div class="rota-opcoes">`;
+    opcoes.forEach(destino => {
+      const marcado = atuais.includes(destino);
+      html += `<label class="rota-check">
+        <input type="checkbox" ${marcado ? 'checked' : ''} data-tipo="rota-bool" data-path="rotas.${pathPrefix}.${origem}" data-valor="${destino}">
+        ${destino}
+      </label>`;
+    });
+    html += `</div></div>`;
+  }
+  html += '</div>';
+  return html;
+}
+
+// dias de manutenção por equipamento (0 = disponível o mês inteiro)
+function buildManutencaoFields(dictManutencoes) {
+  let html = '<div class="manut-grid">';
+  for (const equip in dictManutencoes) {
+    html += `<div class="manut-item"><label class="mini-label">${equip}</label>
+      <input type="number" step="1" min="0" max="40" value="${dictManutencoes[equip]}" data-path="manutencoes.${equip}">
+    </div>`;
+  }
+  html += '</div>';
+  return html;
 }
 
 function scalarField(label, path, step, ajuda, min, max) {
@@ -1370,6 +1534,19 @@ function renderParamForm() {
 
   html += detailsBlock('Tempos — Sb/Sn', buildStageInputs(PARAMS.sbsnEtapas, 'sbsnEtapas'), false);
 
+  html += detailsBlock('Rotas — Panela inicial → Panela final',
+    buildRotaCheckboxes(PARAMS.rotas.iniciaisParaFinais, ['P5', 'P6', 'P7'], 'iniciaisParaFinais'), false);
+
+  html += detailsBlock('Rotas — Panela final / P10 / Sb-Sn → Saída física',
+    buildRotaCheckboxes(PARAMS.rotas.finaisParaSaidas, ['L1', 'L2', 'Hogueira'], 'finaisParaSaidas'), false);
+
+  html += detailsBlock('Rotas — Cliente → Saída permitida',
+    buildRotaCheckboxes(PARAMS.rotas.clientesParaSaidas, ['Hogueira', 'L1', 'L2'], 'clientesParaSaidas'), false);
+
+  html += detailsBlock('Manutenção — Panelas indisponíveis no mês (dias)',
+    `<div class="ajuda-manut">Deixa o equipamento ocupado desde 00:00 do dia 1 pelo número de dias informado — qualquer lote que precisar dele espera na fila normal até acabar. 0 = disponível o mês inteiro.</div>` +
+    buildManutencaoFields(PARAMS.manutencoes), false);
+
   el.innerHTML = html;
 
   el.querySelectorAll('input[data-path]').forEach(input => {
@@ -1381,23 +1558,39 @@ function renderParamForm() {
         input.value = horasParaHHMM(horas); // normaliza a exibição (ex: "1:5" -> "01:05")
         // se essa média tiver um campo de desvio (%) irmão no mesmo grupo, atualiza
         // a exibição do % (o desvio absoluto guardado não muda, só a razão exibida)
+        // e a dica de teto automático (p98)
         const grupo = input.closest('.stage-group');
         if (grupo) {
           const desvioInput = grupo.querySelector(`input[data-media-path="${input.dataset.path}"]`);
           if (desvioInput) {
             const desvioAbsAtual = getByPath(PARAMS, desvioInput.dataset.path);
             desvioInput.value = (horas > 0 ? (desvioAbsAtual / horas) * 100 : 0).toFixed(0);
+            const hint = grupo.querySelector('.stage-hint-p98');
+            if (hint) hint.textContent = horasParaHHMM(p98Lognormal(horas, desvioAbsAtual));
           }
         }
       } else if (tipo === 'percentual-desvio') {
         const pct = parseFloat(String(input.value).replace(',', '.')) || 0;
         const mediaAtual = getByPath(PARAMS, input.dataset.mediaPath);
-        setByPath(PARAMS, input.dataset.path, mediaAtual * (pct / 100));
+        const novoDesvio = mediaAtual * (pct / 100);
+        setByPath(PARAMS, input.dataset.path, novoDesvio);
+        const grupo = input.closest('.stage-group');
+        if (grupo) {
+          const hint = grupo.querySelector('.stage-hint-p98');
+          if (hint) hint.textContent = horasParaHHMM(p98Lognormal(mediaAtual, novoDesvio));
+        }
       } else if (tipo === 'percentual') {
         const pct = parseFloat(String(input.value).replace(',', '.')) || 0;
         const fracao = pct / 100;
         setByPath(PARAMS, input.dataset.path, fracao);
         input.value = Math.round(pct * 100) / 100; // normaliza a exibição (2 casas no máximo)
+      } else if (tipo === 'rota-bool') {
+        const arr = getByPath(PARAMS, input.dataset.path) || [];
+        const valor = input.dataset.valor;
+        const idx = arr.indexOf(valor);
+        if (input.checked && idx === -1) arr.push(valor);
+        if (!input.checked && idx !== -1) arr.splice(idx, 1);
+        setByPath(PARAMS, input.dataset.path, arr);
       } else {
         setByPath(PARAMS, input.dataset.path, parseFloat(input.value));
       }
