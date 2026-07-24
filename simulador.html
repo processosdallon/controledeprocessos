@@ -337,6 +337,8 @@ tr:hover td{ background: rgba(217,96,28,0.05); }
 .anim-eqname{ font-family:var(--display); font-weight:700; font-size:13px; fill:var(--text); }
 .anim-estado{ font-family:var(--mono); font-size:8px; fill:#fff; stroke:rgba(0,0,0,0.6); stroke-width:0.5px; paint-order:stroke; }
 .anim-lote{ font-family:var(--mono); font-weight:600; font-size:9.5px; fill:#fff; stroke:rgba(0,0,0,0.6); stroke-width:0.5px; paint-order:stroke; }
+.anim-fila circle{ fill:var(--red); stroke:var(--bg); stroke-width:1.5px; }
+.anim-fila text{ font-family:var(--mono); font-weight:700; font-size:10px; fill:#fff; }
 .anim-shape{ stroke: var(--border); stroke-width:1.2; transition: fill 0.15s ease; }
 .anim-legend{
   display:flex; flex-wrap:wrap; gap:8px 16px; margin-top:12px;
@@ -1194,16 +1196,18 @@ const ANIM_LINHAS = [
 ];
 
 // mesma lógica de cores por estado da versão em Python (cor_estado), na mesma ordem de checagem
-function corEstadoAnim(estadoRaw) {
+function corEstadoAnim(estadoRaw, equipRaw) {
   const estado = String(estadoRaw || '').toLowerCase();
+  const equip = String(equipRaw || '').toLowerCase();
   if (estado === 'livre') return '#3a3f43';
   if (estado.includes('manutenção') || estado.includes('manutencao')) return '#9c7a1f';
   if (estado.includes('aguardando')) return '#c1544a';
   if (estado.includes('carregando')) return '#e0a526';
   if (estado.includes('setup')) return '#e0a526';
   if (estado.includes('transfer')) return '#9b6bce';
+  // lingotamento na linha Hogueira ganha cor própria (marrom), diferente de L1/L2 (violeta)
+  if ((estado.includes('lingotamento') || estado.includes('saída') || estado.includes('saida')) && equip === 'hogueira') return '#8a5a3c';
   if (estado.includes('lingotamento') || estado.includes('saída') || estado.includes('saida')) return '#d17fe0';
-  if (estado.includes('hogueira')) return '#8a5a3c';
   if (estado.includes('lança') || estado.includes('lanca')) return '#e0813f';
   if (estado.includes('desantimoniação') || estado.includes('desantimoniacao')) return '#e0813f';
   if (estado.includes('decuprização') || estado.includes('decupriz')) return '#e0813f';
@@ -1243,6 +1247,25 @@ function precomputarEstadosAnim(eventos, frames, equipamentos) {
   return resultado;
 }
 
+// pra cada equipamento e quadro, conta quantos lotes estão de fato "Aguardando"
+// aquele equipamento naquele instante (usa os bloqueios já calculados pro
+// relatório de gargalos — nenhum dado novo, só reaproveitado na animação)
+function precomputarFilaAnim(bloqueios, frames, equipamentos) {
+  const porEquip = {};
+  equipamentos.forEach(eq => { porEquip[eq] = []; });
+  bloqueios.forEach(b => {
+    if (porEquip[b.equipamento] && b.motivo && b.motivo.toLowerCase().startsWith('aguardando')) {
+      porEquip[b.equipamento].push(b);
+    }
+  });
+  const resultado = {};
+  equipamentos.forEach(eq => {
+    const lista = porEquip[eq];
+    resultado[eq] = frames.map(frame => lista.reduce((n, b) => n + (b.inicio <= frame && frame < b.fim ? 1 : 0), 0));
+  });
+  return resultado;
+}
+
 function svgDiagramaAnim() {
   let linhas = '';
   ANIM_LINHAS.forEach(([o, d, estilo]) => {
@@ -1264,6 +1287,10 @@ function svgDiagramaAnim() {
         <text x="${x}" y="${y - (isBarra ? 34 : 46)}" class="anim-eqname" text-anchor="middle">${eq}</text>
         <text x="${x}" y="${y - 4}" class="anim-estado" text-anchor="middle" id="anim-estado-${eq}">—</text>
         <text x="${x}" y="${y + 12}" class="anim-lote" text-anchor="middle" id="anim-lote-${eq}">—</text>
+        <g id="anim-fila-${eq}" class="anim-fila" style="display:none">
+          <circle cx="${x + (isBarra ? 46 : 28)}" cy="${y - (isBarra ? 21 : 30)}" r="10"/>
+          <text x="${x + (isBarra ? 46 : 28)}" y="${y - (isBarra ? 21 : 30)}" id="anim-fila-texto-${eq}" text-anchor="middle" dominant-baseline="central">0</text>
+        </g>
       </g>`;
   });
   return `<svg viewBox="0 0 760 610" class="anim-svg" xmlns="http://www.w3.org/2000/svg">${linhas}${nodes}</svg>`;
@@ -1288,7 +1315,7 @@ function construirPlayerAnimacaoHTML(nFrames) {
       <span><i style="background:#3a3f43"></i> Livre</span>
       <span><i style="background:#9c7a1f"></i> Em manutenção</span>
       <span><i style="background:#e0a526"></i> Carregando/Setup</span>
-      <span><i style="background:#c1544a"></i> Aguardando</span>
+      <span><i style="background:#c1544a; border-radius:50%;"></i> Nº de lotes aguardando (selo vermelho no canto)</span>
       <span><i style="background:#9b6bce"></i> Transferência</span>
       <span><i style="background:#d17fe0"></i> Lingotamento/Saída</span>
       <span><i style="background:#8a5a3c"></i> Hogueira</span>
@@ -1310,10 +1337,20 @@ function renderFrameAnim(idx) {
     const loteEl = document.getElementById(`anim-lote-${eq}`);
     const titleEl = document.getElementById(`anim-title-${eq}`);
     if (!shapeEl) return;
-    shapeEl.setAttribute('fill', corEstadoAnim(dado.estado));
+    shapeEl.setAttribute('fill', corEstadoAnim(dado.estado, eq));
     estadoEl.textContent = encurtarTextoAnim(dado.estado, 15);
     loteEl.textContent = dado.lote ? encurtarTextoAnim(dado.lote, 13) : '';
-    titleEl.textContent = `${eq}: ${dado.estado}${dado.lote ? ' — ' + dado.lote : ''}`;
+    let tituloTexto = `${eq}: ${dado.estado}${dado.lote ? ' — ' + dado.lote : ''}`;
+
+    const filaEl = document.getElementById(`anim-fila-${eq}`);
+    const filaTextoEl = document.getElementById(`anim-fila-texto-${eq}`);
+    const nFila = (st.fila && st.fila[eq]) ? st.fila[eq][idx] : 0;
+    if (filaEl && filaTextoEl) {
+      filaEl.style.display = nFila > 0 ? '' : 'none';
+      filaTextoEl.textContent = nFila > 9 ? '9+' : String(nFila);
+      if (nFila > 0) tituloTexto += ` (${nFila} lote${nFila > 1 ? 's' : ''} aguardando)`;
+    }
+    titleEl.textContent = tituloTexto;
   });
   const timeEl = document.getElementById('anim-time-label');
   if (timeEl) timeEl.textContent = `Tempo simulado: ${frame.toFixed(0)}h · Dia ${(frame / 24).toFixed(1)}`;
@@ -1359,9 +1396,10 @@ function renderAnimacao(dados) {
 
   const equipamentos = Object.keys(ANIM_POS);
   const precomp = precomputarEstadosAnim(dados.eventos, frames, equipamentos);
+  const fila = precomputarFilaAnim(dados.bloqueios || [], frames, equipamentos);
 
   if (window.ANIM_STATE && window.ANIM_STATE.intervalId) clearInterval(window.ANIM_STATE.intervalId);
-  window.ANIM_STATE = { frames, precomp, frameIdx: 0, playing: false, intervalId: null, speedMs: 300 };
+  window.ANIM_STATE = { frames, precomp, fila, frameIdx: 0, playing: false, intervalId: null, speedMs: 300 };
 
   cont.className = '';
   cont.innerHTML = construirPlayerAnimacaoHTML(frames.length);
@@ -1713,7 +1751,7 @@ document.getElementById('btn-run').addEventListener('click', async () => {
     bloqueiosAgg.push(agregarBloqueios(sim.bloqueios));
     if (r === 0) {
       const tempoFinalAnim = sim.eventos.length ? Math.max(...sim.eventos.map(e => e.tempo)) : tempoTotal;
-      animacaoDados = { eventos: sim.eventos.slice(), tempoFinal: tempoFinalAnim };
+      animacaoDados = { eventos: sim.eventos.slice(), bloqueios: sim.bloqueios.slice(), tempoFinal: tempoFinalAnim };
     }
   }
 
