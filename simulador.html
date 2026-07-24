@@ -344,6 +344,31 @@ tr:hover td{ background: rgba(217,96,28,0.05); }
 }
 .anim-legend span{ display:flex; align-items:center; gap:5px; }
 .anim-legend i{ display:inline-block; width:10px; height:10px; border-radius:2px; flex:none; }
+
+/* ---------- Chat com a IA ---------- */
+.chat-wrap{
+  display:flex; flex-direction:column;
+  background:var(--panel-2); border:1px solid var(--border); border-radius:8px;
+  height: 480px;
+}
+.chat-mensagens{
+  flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px;
+}
+.chat-msg{ max-width: 80%; padding:10px 13px; border-radius:10px; font-size:13px; line-height:1.5; white-space:pre-wrap; }
+.chat-msg.user{ align-self:flex-end; background:var(--molten); color:#12160f; border-bottom-right-radius:2px; }
+.chat-msg.assistant{ align-self:flex-start; background:var(--panel); border:1px solid var(--border); color:var(--text); border-bottom-left-radius:2px; }
+.chat-msg.erro{ align-self:flex-start; background:rgba(193,84,74,0.15); border:1px solid var(--red); color:var(--text); }
+.chat-msg.pensando{ align-self:flex-start; color:var(--text-muted); font-style:italic; background:none; border:none; padding:0 13px; }
+.chat-input-row{
+  display:flex; gap:8px; padding:12px; border-top:1px solid var(--border);
+}
+.chat-input-row textarea{
+  flex:1; resize:none; background:var(--bg); border:1px solid var(--border); border-radius:6px;
+  color:var(--text); font-family:var(--mono); font-size:13px; padding:8px 10px; height:44px;
+}
+.chat-input-row textarea:focus{ outline:none; border-color:var(--molten); }
+.chat-input-row .btn{ padding:0 18px; font-size:12px; align-self:stretch; }
+.chat-contexto-nota{ font-size:10.5px; color:var(--text-muted); padding:0 16px 10px; }
 </style>
 
 </head>
@@ -399,6 +424,12 @@ tr:hover td{ background: rgba(217,96,28,0.05); }
       <div class="big">Sem animação ainda</div>
       <div>Rode uma simulação pra ver as panelas e lingoteiras se movendo ao longo do tempo.</div>
     </div>
+
+    <div class="section-title">Debater com a IA sobre a simulação</div>
+    <div id="chat-container" class="empty-state">
+      <div class="big">Sem simulação ainda</div>
+      <div>Rode uma simulação pra poder conversar com a IA sobre os resultados.</div>
+    </div>
   </main>
 </div>
 
@@ -452,9 +483,14 @@ class SimEnv {
       this.now = t;
       fn();
       // flush microtasks so any .then()/await continuations (which may
-      // schedule new heap events) run before we pop the next event
-      await Promise.resolve();
-      await Promise.resolve();
+      // schedule new heap events) run before we pop the next event.
+      // A cadeia de promises de disputarQualquer (token.promise -> .then() do
+      // disputeAny -> await do disputarQualquer -> continuação do chamador)
+      // tem mais de 2 saltos de microtask; 2 flushes não bastavam e faziam
+      // `this.now` já ter avançado pro próximo evento antes da continuação
+      // rodar, inflando artificialmente esperas registradas (bug real,
+      // confirmado comparando o mesmo cenário com mais flushes).
+      for (let i = 0; i < 10; i++) await Promise.resolve();
     }
     this.now = limit;
   }
@@ -1689,6 +1725,7 @@ document.getElementById('btn-run').addEventListener('click', async () => {
     producaoTotal, producaoPorTipo, mediaUtil, mediaBloq, nReplicas,
   });
   renderAnimacao(animacaoDados);
+  atualizarContextoChat({ producaoTotal, producaoPorTipo, mediaUtil, mediaBloq, nReplicas });
 
   statusEl.className = 'status-line done';
   statusEl.textContent = `Concluído em ${tempoExec}s — ${nReplicas} réplica(s), ${PARAMS.nLotesSinteticos} lotes sintéticos por réplica.`;
@@ -1820,6 +1857,134 @@ function renderResultados({ producaoTotal, producaoPorTipo, mediaUtil, mediaBloq
   });
 
   el.innerHTML = html;
+}
+
+// ============================================================================
+// CHAT COM A IA SOBRE A SIMULAÇÃO
+// ============================================================================
+
+let chatHistory = [];
+let chatContextoTexto = '';
+let chatIniciado = false;
+
+function construirContextoTexto({ producaoTotal, producaoPorTipo, mediaUtil, mediaBloq, nReplicas }) {
+  const prodMedia = mean(producaoTotal);
+  const puroMedia = mean(producaoPorTipo.Puro);
+  const calcioMedia = mean(producaoPorTipo.Calcio);
+  const sbsnMedia = mean(producaoPorTipo['Sb/Sn']);
+  const utilTexto = EQUIP_ORDEM.map(eq => `${eq} ${(mediaUtil[eq] || 0).toFixed(0)}%`).join(', ');
+  const topBloqueios = mediaBloq.slice(0, 8)
+    .filter(b => b.horasMedia > 0.1)
+    .map(b => `${NOMES_MOTIVO[b.motivo] || b.motivo} (${b.equipamento}): ${b.horasMedia.toFixed(1)}h/réplica em média, ${b.ocorrenciasMedia.toFixed(1)} vezes`)
+    .join('; ');
+  const manutencoesAtivas = Object.entries(PARAMS.manutencoes)
+    .filter(([, v]) => v > 0).map(([k, v]) => `${k}: ${v}d`).join(', ') || 'nenhuma';
+
+  return `Você é um assistente conversando com um engenheiro de processo da Dallon (refinaria de chumbo) sobre uma simulação de eventos discretos do refino (Sucata→Fundição→Refinaria). Responda em português, de forma direta e técnica, sempre com base nos números abaixo — não invente números que não estão aqui. Se a pergunta pedir algo que não dá pra saber com os dados fornecidos, diga isso claramente.
+
+RESULTADOS DA ÚLTIMA SIMULAÇÃO (${nReplicas} réplica(s), ${PARAMS.nLotesSinteticos} lotes sintéticos por réplica):
+- Produção total média: ${prodMedia.toFixed(0)}t/mês (Puro: ${puroMedia.toFixed(0)}t, Cálcio: ${calcioMedia.toFixed(0)}t, Sb/Sn: ${sbsnMedia.toFixed(0)}t)
+- Utilização média por equipamento: ${utilTexto}
+- Principais bloqueios/esperas (motivo — equipamento: horas médias por réplica, nº de vezes): ${topBloqueios || 'nenhum relevante'}
+
+PARÂMETROS-CHAVE ATIVOS AGORA:
+- Proporção Cálcio: ${(PARAMS.probCalcio * 100).toFixed(1)}% | Cálcio sai por L: ${(PARAMS.probCalcioSaidaL * 100).toFixed(1)}%
+- Carregamento inicial (P1-P4): ${PARAMS.carregamentoInicialH}h | Carregamento Sb/Sn: ${PARAMS.carregamentoSbsnH}h | Setup Sb/Sn: ${PARAMS.setupCarregamentoSbsnH}h | Troca de liga: ${PARAMS.trocaLigaH}h
+- Panelas iniciais cheias no início do mês: ${PARAMS.panelasIniciaisCheias}
+- Manutenções ativas: ${manutencoesAtivas}`;
+}
+
+function atualizarContextoChat(dados) {
+  chatContextoTexto = construirContextoTexto(dados);
+  if (!chatIniciado) {
+    renderChatInterface();
+    chatIniciado = true;
+  }
+}
+
+function renderChatInterface() {
+  const cont = document.getElementById('chat-container');
+  cont.className = '';
+  cont.innerHTML = `
+    <div class="chat-wrap">
+      <div class="chat-mensagens" id="chat-mensagens"></div>
+      <div class="chat-input-row">
+        <textarea id="chat-input" placeholder="Pergunte algo sobre a simulação (ex: por que o P8 está tão saturado?)"></textarea>
+        <button class="btn btn-primary" id="chat-enviar-btn">Enviar</button>
+      </div>
+    </div>
+    <div class="chat-contexto-nota">A IA recebe automaticamente os resultados da última rodada (produção, utilização, gargalos) e os parâmetros ativos — atualiza sozinha a cada nova simulação.</div>
+  `;
+  document.getElementById('chat-enviar-btn').addEventListener('click', enviarMensagemChat);
+  document.getElementById('chat-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      enviarMensagemChat();
+    }
+  });
+  renderMensagensChat();
+}
+
+function escapeHtmlChat(texto) {
+  const div = document.createElement('div');
+  div.textContent = texto;
+  return div.innerHTML;
+}
+
+function renderMensagensChat() {
+  const cont = document.getElementById('chat-mensagens');
+  if (!cont) return;
+  cont.innerHTML = chatHistory.map(m =>
+    `<div class="chat-msg ${m.role === 'user' ? 'user' : 'assistant'}">${escapeHtmlChat(m.content)}</div>`
+  ).join('');
+  cont.scrollTop = cont.scrollHeight;
+}
+
+async function enviarMensagemChat() {
+  const input = document.getElementById('chat-input');
+  const texto = input.value.trim();
+  if (!texto) return;
+  const btn = document.getElementById('chat-enviar-btn');
+
+  chatHistory.push({ role: 'user', content: texto });
+  input.value = '';
+  renderMensagensChat();
+
+  const contEl = document.getElementById('chat-mensagens');
+  const pensando = document.createElement('div');
+  pensando.className = 'chat-msg pensando';
+  pensando.textContent = 'Pensando...';
+  contEl.appendChild(pensando);
+  contEl.scrollTop = contEl.scrollHeight;
+
+  input.disabled = true;
+  btn.disabled = true;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        system: chatContextoTexto,
+        messages: chatHistory.map(m => ({ role: m.role, content: m.content })),
+      }),
+    });
+    const data = await response.json();
+    const respostaTexto = (data.content || [])
+      .filter(b => b.type === 'text')
+      .map(b => b.text)
+      .join('\n') || 'Não consegui gerar uma resposta.';
+    chatHistory.push({ role: 'assistant', content: respostaTexto });
+  } catch (err) {
+    chatHistory.push({ role: 'assistant', content: 'Erro ao consultar a IA: ' + err.message });
+  } finally {
+    input.disabled = false;
+    btn.disabled = false;
+    renderMensagensChat();
+    input.focus();
+  }
 }
 
 // ============================================================================
