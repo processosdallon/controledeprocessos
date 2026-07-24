@@ -425,7 +425,7 @@ tr:hover td{ background: rgba(217,96,28,0.05); }
       <div>Rode uma simulação pra ver as panelas e lingoteiras se movendo ao longo do tempo.</div>
     </div>
 
-    <div class="section-title">Debater com a IA sobre a simulação</div>
+    <div class="section-title">Assistente do simulador (respostas fixas, sem IA/API)</div>
     <div id="chat-container" class="empty-state">
       <div class="big">Sem simulação ainda</div>
       <div>Rode uma simulação pra poder conversar com a IA sobre os resultados.</div>
@@ -1864,38 +1864,11 @@ function renderResultados({ producaoTotal, producaoPorTipo, mediaUtil, mediaBloq
 // ============================================================================
 
 let chatHistory = [];
-let chatContextoTexto = '';
 let chatIniciado = false;
-
-function construirContextoTexto({ producaoTotal, producaoPorTipo, mediaUtil, mediaBloq, nReplicas }) {
-  const prodMedia = mean(producaoTotal);
-  const puroMedia = mean(producaoPorTipo.Puro);
-  const calcioMedia = mean(producaoPorTipo.Calcio);
-  const sbsnMedia = mean(producaoPorTipo['Sb/Sn']);
-  const utilTexto = EQUIP_ORDEM.map(eq => `${eq} ${(mediaUtil[eq] || 0).toFixed(0)}%`).join(', ');
-  const topBloqueios = mediaBloq.slice(0, 8)
-    .filter(b => b.horasMedia > 0.1)
-    .map(b => `${NOMES_MOTIVO[b.motivo] || b.motivo} (${b.equipamento}): ${b.horasMedia.toFixed(1)}h/réplica em média, ${b.ocorrenciasMedia.toFixed(1)} vezes`)
-    .join('; ');
-  const manutencoesAtivas = Object.entries(PARAMS.manutencoes)
-    .filter(([, v]) => v > 0).map(([k, v]) => `${k}: ${v}d`).join(', ') || 'nenhuma';
-
-  return `Você é um assistente conversando com um engenheiro de processo da Dallon (refinaria de chumbo) sobre uma simulação de eventos discretos do refino (Sucata→Fundição→Refinaria). Responda em português, de forma direta e técnica, sempre com base nos números abaixo — não invente números que não estão aqui. Se a pergunta pedir algo que não dá pra saber com os dados fornecidos, diga isso claramente.
-
-RESULTADOS DA ÚLTIMA SIMULAÇÃO (${nReplicas} réplica(s), ${PARAMS.nLotesSinteticos} lotes sintéticos por réplica):
-- Produção total média: ${prodMedia.toFixed(0)}t/mês (Puro: ${puroMedia.toFixed(0)}t, Cálcio: ${calcioMedia.toFixed(0)}t, Sb/Sn: ${sbsnMedia.toFixed(0)}t)
-- Utilização média por equipamento: ${utilTexto}
-- Principais bloqueios/esperas (motivo — equipamento: horas médias por réplica, nº de vezes): ${topBloqueios || 'nenhum relevante'}
-
-PARÂMETROS-CHAVE ATIVOS AGORA:
-- Proporção Cálcio: ${(PARAMS.probCalcio * 100).toFixed(1)}% | Cálcio sai por L: ${(PARAMS.probCalcioSaidaL * 100).toFixed(1)}%
-- Carregamento inicial (P1-P4): ${PARAMS.carregamentoInicialH}h | Carregamento Sb/Sn: ${PARAMS.carregamentoSbsnH}h | Setup Sb/Sn: ${PARAMS.setupCarregamentoSbsnH}h | Troca de liga: ${PARAMS.trocaLigaH}h
-- Panelas iniciais cheias no início do mês: ${PARAMS.panelasIniciaisCheias}
-- Manutenções ativas: ${manutencoesAtivas}`;
-}
+let dadosUltimaSimulacao = null; // { producaoTotal, producaoPorTipo, mediaUtil, mediaBloq, nReplicas }
 
 function atualizarContextoChat(dados) {
-  chatContextoTexto = construirContextoTexto(dados);
+  dadosUltimaSimulacao = dados;
   if (!chatIniciado) {
     renderChatInterface();
     chatIniciado = true;
@@ -1909,11 +1882,11 @@ function renderChatInterface() {
     <div class="chat-wrap">
       <div class="chat-mensagens" id="chat-mensagens"></div>
       <div class="chat-input-row">
-        <textarea id="chat-input" placeholder="Pergunte algo sobre a simulação (ex: por que o P8 está tão saturado?)"></textarea>
+        <textarea id="chat-input" placeholder="Pergunte algo sobre a simulação (ex: por que o P8 está tão saturado? o que é desvio %?)"></textarea>
         <button class="btn btn-primary" id="chat-enviar-btn">Enviar</button>
       </div>
     </div>
-    <div class="chat-contexto-nota">A IA recebe automaticamente os resultados da última rodada (produção, utilização, gargalos) e os parâmetros ativos — atualiza sozinha a cada nova simulação.</div>
+    <div class="chat-contexto-nota">Assistente local, fixo — não é uma IA de verdade nem chama nenhuma API externa. Sabe explicar os parâmetros e conceitos do simulador e consultar os números da última rodada. Não entende perguntas fora desse escopo.</div>
   `;
   document.getElementById('chat-enviar-btn').addEventListener('click', enviarMensagemChat);
   document.getElementById('chat-input').addEventListener('keydown', (e) => {
@@ -1940,51 +1913,192 @@ function renderMensagensChat() {
   cont.scrollTop = cont.scrollHeight;
 }
 
+// ---------------------------------------------------------------------------
+// MOTOR DE RESPOSTAS LOCAL — sem IA de verdade, sem API, sem chave.
+// Casa palavras-chave da pergunta com uma base de conhecimento fixa sobre os
+// parâmetros/conceitos do simulador, e injeta números reais da última rodada
+// quando disponíveis.
+// ---------------------------------------------------------------------------
+
+function normalizarTexto(t) {
+  return t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+function semSimulacao() {
+  return !dadosUltimaSimulacao;
+}
+
+function resumoUtilizacao() {
+  if (semSimulacao()) return null;
+  return EQUIP_ORDEM.map(eq => `${eq} ${(dadosUltimaSimulacao.mediaUtil[eq] || 0).toFixed(0)}%`).join(', ');
+}
+
+function resumoProducao() {
+  if (semSimulacao()) return null;
+  const d = dadosUltimaSimulacao;
+  return `${mean(d.producaoTotal).toFixed(0)}t/mês no total (Puro: ${mean(d.producaoPorTipo.Puro).toFixed(0)}t, ` +
+    `Cálcio: ${mean(d.producaoPorTipo.Calcio).toFixed(0)}t, Sb/Sn: ${mean(d.producaoPorTipo['Sb/Sn']).toFixed(0)}t), ` +
+    `média de ${d.nReplicas} réplica(s).`;
+}
+
+function resumoTopBloqueios(n) {
+  if (semSimulacao()) return null;
+  const relevantes = dadosUltimaSimulacao.mediaBloq.filter(b => b.horasMedia > 0.1).slice(0, n || 5);
+  if (!relevantes.length) return 'nenhum bloqueio relevante nessa rodada.';
+  return relevantes.map(b => `${NOMES_MOTIVO[b.motivo] || b.motivo} (${b.equipamento}): ${b.horasMedia.toFixed(1)}h/réplica, ${b.ocorrenciasMedia.toFixed(1)}x`).join('; ') + '.';
+}
+
+const BASE_CONHECIMENTO = [
+  {
+    palavras: ['desvio', '%', 'percentual', 'coeficiente de variacao', 'cv'],
+    resposta: () =>
+      `O "desvio (%)" mostra o quanto uma etapa varia em relação à própria média — não é "média menos X%" (a distribuição usada, log-normal, nunca dá tempo negativo). ` +
+      `Até ~50% a etapa é bem previsível; 50-100% é variação moderada; acima de 100% é imprevisível (a maioria dos lotes é rápida, mas raros casos puxam a média pra cima). ` +
+      `Por isso etapas de "espera entre processos" costumam ter % bem mais alto que etapas de processo químico em si.`,
+  },
+  {
+    palavras: ['minimo', 'piso', 'tempo minimo'],
+    resposta: () =>
+      `O campo "mínimo (hh:mm)" de cada etapa é um piso: nenhum lote consegue sortear um tempo menor que esse valor, não importa o que a distribuição sorteie. ` +
+      `A maioria já vem preenchida com o menor tempo real observado na Cronoanálise (maio-junho/2026, ou a base completa quando a amostra do período era pequena demais).`,
+  },
+  {
+    palavras: ['teto', 'p98', 'maximo', 'percentil 98'],
+    resposta: () =>
+      `O teto automático é calculado sozinho no percentil 98 da distribuição de cada etapa (a partir da média e do desvio configurados) — não é um campo pra preencher. ` +
+      `Ele trava qualquer lote de passar desse valor, evitando que um sorteio extremo da distribuição distorça o resultado. Aparece como dica de texto embaixo de cada etapa no menu.`,
+  },
+  {
+    palavras: ['rota', 'rotas', 'roteamento', 'panela final', 'saida fisica'],
+    resposta: () =>
+      `As rotas definem a topologia física da planta: quais panelas iniciais (P1-P4) podem alimentar quais finais (P5-P7), quais equipamentos podem lingotar em quais saídas ` +
+      `(L1/L2/Hogueira), e quais saídas atendem pedido "H" ou "L". Tudo isso é editável via checkbox no menu "Rotas" — desmarcar uma opção remove aquela rota da simulação.`,
+  },
+  {
+    palavras: ['manutencao', 'parada', 'indisponivel', 'dias parado'],
+    resposta: () =>
+      `O bloco "Manutenção" deixa qualquer equipamento (P1-P10, P8/P9, L1/L2/Hogueira) ocupado desde 00:00 do dia 1 do mês pelo número de dias que você configurar — ` +
+      `qualquer lote que precisar dele espera na fila normal até acabar. 0 dias = disponível o mês inteiro (padrão).`,
+  },
+  {
+    palavras: ['panela inicial cheia', 'panelas iniciais cheias', 'cheia no inicio'],
+    resposta: () =>
+      `"Panelas iniciais cheias no início do mês" simula panelas que já estavam com material às 00:00 do dia 1. Valor inteiro = essa quantidade pula carregamento inteiro; ` +
+      `valor quebrado (ex: 0,5) = mais uma panela parcialmente cheia, que gasta metade do tempo de carregamento pro primeiro lote que usá-la.`,
+  },
+  {
+    palavras: ['troca de liga', 'calcio para puro', 'desestanhacao extra'],
+    resposta: () =>
+      `A "Troca de liga (Cálcio→Puro)" é uma penalidade de 5h (padrão) que uma panela final (P5/P6/P7) paga quando processou Cálcio por último e o próximo lote é Puro — ` +
+      `uma desestanhação extra pra limpar resíduo. Só existe nessa direção (Cálcio→Puro), não o contrário. Não aparece separado no relatório de gargalos, fica embutido no tempo processado.`,
+  },
+  {
+    palavras: ['setup', 'setup sb', 'novo carregamento sb'],
+    resposta: () =>
+      `O "Tempo de setup pra iniciar novo carregamento Sb/Sn" acontece ANTES do carregamento de um novo lote em P8/P9 (não depois do lingotamento do lote anterior, como era antes). ` +
+      `A panela libera assim que termina o lingotamento; quem paga o tempo de setup é o próximo lote que for carregar ali. Esse tempo também não conta como "panela em utilização" no relatório.`,
+  },
+  {
+    palavras: ['lingotamento', 'saida fisica tempo', 'ref115', 'ref50', 'interpolacao'],
+    resposta: () =>
+      `O tempo de lingotamento é interpolado linearmente pelo peso do lote entre dois pontos calibrados: lote pequeno (~50t) e lote grande (~115t), por saída (Hogueira/L1/L2) — ` +
+      `editável no bloco "Tempo de lingotamento". Reduzir esse tempo reduz a DURAÇÃO de cada disputa por linha, mas não elimina a disputa em si se várias panelas competirem pela mesma saída.`,
+  },
+  {
+    palavras: ['lingotando outro lote', 'aguardando saida', 'disputa de linha', 'gargalo de linha'],
+    resposta: () => {
+      const bloqueios = resumoTopBloqueios(10) || '';
+      const linha = bloqueios.match(/Lingotando outro lote[^;.]*/i);
+      return `"Lingotando outro lote" indica disputa entre panelas pela mesma linha de saída (L1/L2/Hogueira), não falta de panela em si — reduzir o tempo de lingotamento reduz ` +
+        `a duração de cada espera, mas não elimina a disputa (é gargalo estrutural/de rota, não de duração de processo).` +
+        (linha ? ` Na última rodada: ${linha[0]}.` : (semSimulacao() ? ' Rode uma simulação pra ver o valor atual.' : ''));
+    },
+  },
+  {
+    palavras: ['sb/sn', 'sbsn', 'p8', 'p9', 'antimonio', 'estanho'],
+    resposta: () => {
+      const util = semSimulacao() ? null : `${(dadosUltimaSimulacao.mediaUtil.P8 || 0).toFixed(0)}% (P8) e ${(dadosUltimaSimulacao.mediaUtil.P9 || 0).toFixed(0)}% (P9)`;
+      return `Sb/Sn usa as panelas P8/P9, com apenas 2 unidades dedicadas — é historicamente o gargalo estrutural nº1 do sistema (97-100% de utilização em cenários de referência), ` +
+        `sem rota alternativa (não "empresta" capacidade de P5-P7). Sempre sai pela linha L1 (é a única saída física compatível com a demanda "L" do Sb/Sn).` +
+        (util ? ` Na última rodada, utilização média: ${util}.` : '');
+    },
+  },
+  {
+    palavras: ['calcio', 'proporcao calcio', 'puro'],
+    resposta: () =>
+      `"Proporção Cálcio" define a fração de lotes sintéticos gerados como Cálcio (vs Puro) — calibrado hoje em ~39% (100 Puro / 64 Cálcio reais). ` +
+      `Cálcio e Puro compartilham o mesmo processo até a 2ª desantimoniação; só divergem depois disso (etapas "Panela Final — Cálcio" vs "Panela Final Puro/Ca").`,
+  },
+  {
+    palavras: ['fracionamento', 'panela 10', 'p10'],
+    resposta: () =>
+      `Fracionamento manda parte do material de Puro ou Cálcio pra Panela 10 (P10), que sempre sai pela linha L2. As probabilidades de fracionamento são configuráveis ` +
+      `separadamente pra Puro e Cálcio no bloco "Probabilidades".`,
+  },
+  {
+    palavras: ['replica', 'replicas'],
+    resposta: () =>
+      `"Réplicas" é quantas vezes a simulação inteira roda do zero com números aleatórios diferentes — o resultado final é a média entre elas. Mais réplicas dão um número ` +
+      `de capacidade mais confiável, mas demoram mais pra rodar. Padrão é 3.`,
+  },
+  {
+    palavras: ['lote sintetico', 'lotes sinteticos', 'quantos lotes'],
+    resposta: () =>
+      `"Lotes sintéticos" é quantos lotes o simulador gera artificialmente pra alimentar a fábrica durante o mês — é um teste de TETO de capacidade, então o número precisa ` +
+      `ser alto o bastante pra nunca faltar demanda. Passar do necessário não muda o resultado, só sobra lote sem processar.`,
+  },
+  {
+    palavras: ['producao', 'toneladas', 'quanto produz', 'capacidade'],
+    resposta: () => {
+      const p = resumoProducao();
+      return p ? `Na última rodada, a produção foi: ${p}` : 'Ainda não rodei nenhuma simulação pra te dar um número — clica em "Rodar simulação" primeiro.';
+    },
+  },
+  {
+    palavras: ['utilizacao', 'ocupacao', 'quanto uso'],
+    resposta: () => {
+      const u = resumoUtilizacao();
+      return u ? `Utilização média por equipamento na última rodada: ${u}.` : 'Ainda não rodei nenhuma simulação — clica em "Rodar simulação" primeiro pra eu ter números.';
+    },
+  },
+  {
+    palavras: ['gargalo', 'bloqueio', 'espera', 'travando', 'saturado'],
+    resposta: () => {
+      const b = resumoTopBloqueios(6);
+      return b ? `Principais bloqueios/esperas da última rodada: ${b}` : 'Ainda não rodei nenhuma simulação — clica em "Rodar simulação" primeiro pra eu ter números.';
+    },
+  },
+];
+
+function responderLocalmente(pergunta) {
+  const texto = normalizarTexto(pergunta);
+  let melhor = null, melhorPontos = 0;
+  BASE_CONHECIMENTO.forEach(item => {
+    const pontos = item.palavras.reduce((acc, p) => acc + (texto.includes(normalizarTexto(p)) ? 1 : 0), 0);
+    if (pontos > melhorPontos) { melhorPontos = pontos; melhor = item; }
+  });
+  if (melhor) return melhor.resposta();
+  return `Não tenho uma resposta fixa pra isso — sou um assistente local sem IA de verdade, só cubro os conceitos do simulador. ` +
+    `Pergunte sobre: desvio %, mínimo/teto automático, rotas, manutenção, panelas iniciais cheias, troca de liga, setup Sb/Sn, tempo de lingotamento, ` +
+    `Sb/Sn (P8/P9), Cálcio/Puro, fracionamento/P10, réplicas/lotes sintéticos, ou produção/utilização/gargalos da última rodada.`;
+}
+
 async function enviarMensagemChat() {
   const input = document.getElementById('chat-input');
   const texto = input.value.trim();
   if (!texto) return;
-  const btn = document.getElementById('chat-enviar-btn');
 
   chatHistory.push({ role: 'user', content: texto });
   input.value = '';
   renderMensagensChat();
 
-  const contEl = document.getElementById('chat-mensagens');
-  const pensando = document.createElement('div');
-  pensando.className = 'chat-msg pensando';
-  pensando.textContent = 'Pensando...';
-  contEl.appendChild(pensando);
-  contEl.scrollTop = contEl.scrollHeight;
+  // pequena pausa só pra não parecer instantâneo/robótico demais
+  await new Promise(r => setTimeout(r, 150));
 
-  input.disabled = true;
-  btn.disabled = true;
-
-  try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 1000,
-        system: chatContextoTexto,
-        messages: chatHistory.map(m => ({ role: m.role, content: m.content })),
-      }),
-    });
-    const data = await response.json();
-    const respostaTexto = (data.content || [])
-      .filter(b => b.type === 'text')
-      .map(b => b.text)
-      .join('\n') || 'Não consegui gerar uma resposta.';
-    chatHistory.push({ role: 'assistant', content: respostaTexto });
-  } catch (err) {
-    chatHistory.push({ role: 'assistant', content: 'Erro ao consultar a IA: ' + err.message });
-  } finally {
-    input.disabled = false;
-    btn.disabled = false;
-    renderMensagensChat();
-    input.focus();
-  }
+  const resposta = responderLocalmente(texto);
+  chatHistory.push({ role: 'assistant', content: resposta });
+  renderMensagensChat();
+  input.focus();
 }
 
 // ============================================================================
