@@ -716,6 +716,17 @@ function defaultParams() {
       proporcaoTerceiroManutencao: 0.30, // Pb terceiro sobe pra 30% quando 1 forno para
     },
 
+    // programação de produção por meta: em vez de sortear Puro/Cálcio aleatoriamente
+    // (probCalcio) e gerar Sb/Sn à parte, o simulador escolhe deterministicamente qual
+    // liga produzir a seguir, sempre priorizando quem está mais atrasado em relação à
+    // meta % (em toneladas). Tipos marcados "livre" ficam de fora dessa disputa e
+    // produzem o quanto conseguirem, sem limite pela meta.
+    programacao: {
+      ativa: false,
+      puro: 0.70, calcio: 0.20, sbsn: 0.10,
+      puroLivre: false, calcioLivre: false, sbsnLivre: false,
+    },
+
     processos: {
       // Tempos comuns a Puro e Cálcio: até aqui o lote ainda não "virou" uma liga
       // específica — a decisão física acontece só depois da 2ª desantimoniação.
@@ -825,7 +836,67 @@ class Simulation {
     this.eventos = [];
     this.bloqueios = [];
     this.resultados = [];
+
+    // "programação por meta": ao contrário do modo padrão (todos os lotes gerados
+    // de uma vez, aleatoriamente), aqui o tipo do PRÓXIMO lote é decidido no exato
+    // instante em que abre uma vaga, com base no que já foi de fato PRODUZIDO até
+    // ali — não no que só foi despachado. Isso é necessário porque Sb/Sn conclui
+    // muito mais rápido que Puro/Cálcio (que disputam recursos apertados), então
+    // decidir a mistura só na hora de gerar os lotes não bate com a mistura real
+    // que acaba sendo produzida.
+    this.progAtiva = !!(params.programacao && params.programacao.ativa);
+    this.tonProduzido = { Puro: 0, Calcio: 0, 'Sb/Sn': 0 };
+    this.progDispatchedPuroCalcio = 0;
+    this.progDispatchedSbsn = 0;
+
     this.iniciarManutencoes();
+    this.iniciarProgramacao();
+  }
+
+  iniciarProgramacao() {
+    if (!this.progAtiva) return;
+    for (let i = 0; i < 4; i++) this.tentarDispacharPuroCalcio(); // 4 panelas iniciais
+    for (let i = 0; i < 2; i++) this.tentarDispacharSbsn(); // P8/P9
+  }
+
+  // quanto (em toneladas) esse tipo está atrás da sua meta % acumulada até agora
+  deficitProgramacao(tipo) {
+    const pr = this.params.programacao;
+    const alvos = { Puro: pr.puro, Calcio: pr.calcio, 'Sb/Sn': pr.sbsn };
+    const total = this.tonProduzido.Puro + this.tonProduzido.Calcio + this.tonProduzido['Sb/Sn'];
+    return alvos[tipo] * total - this.tonProduzido[tipo];
+  }
+
+  registrarProducaoTipo(tipo, toneladas) {
+    if (this.tonProduzido[tipo] !== undefined) this.tonProduzido[tipo] += toneladas;
+  }
+
+  decidirTipoPuroCalcio() {
+    const pr = this.params.programacao;
+    if (pr.puroLivre && pr.calcioLivre) {
+      return Math.random() < this.params.probCalcio ? 'Calcio' : 'Puro';
+    }
+    if (pr.puroLivre) return this.deficitProgramacao('Calcio') > 0 ? 'Calcio' : 'Puro';
+    if (pr.calcioLivre) return this.deficitProgramacao('Puro') > 0 ? 'Puro' : 'Calcio';
+    return this.deficitProgramacao('Puro') >= this.deficitProgramacao('Calcio') ? 'Puro' : 'Calcio';
+  }
+
+  tentarDispacharPuroCalcio() {
+    if (!this.progAtiva || this.progDispatchedPuroCalcio >= this.params.nLotesSinteticos) return;
+    const tipo = this.decidirTipoPuroCalcio();
+    this.progDispatchedPuroCalcio++;
+    const lote = gerarLotePuroCalcio(this.params, this.progDispatchedPuroCalcio, tipo);
+    this.processarLotePuroCalcio(lote);
+  }
+
+  tentarDispacharSbsn() {
+    if (!this.progAtiva || this.progDispatchedSbsn >= this.params.nLotesSbsn) return;
+    const pr = this.params.programacao;
+    const podeDispachar = pr.sbsnLivre || this.deficitProgramacao('Sb/Sn') > 0;
+    if (!podeDispachar) return; // fica "ocioso" por enquanto — reavaliado no próximo gatilho
+    this.progDispatchedSbsn++;
+    const lote = gerarLoteSbsn(this.params, this.progDispatchedSbsn);
+    this.processarLoteSbsn(lote);
   }
 
   // acha o objeto Resource correspondente a um nome de equipamento ("P1".."P10",
@@ -947,6 +1018,7 @@ class Simulation {
     const { saidaNome } = await this.processarSaida('P10', identP10, this.params.kgRetiradoP10, demanda.saidaCliente, 'Aguardando saída (P10)');
     this.liberar('P10');
     this.resources.p10.release(this.env);
+    this.registrarProducaoTipo(demanda.tipo, this.params.kgRetiradoP10 / 1000);
     this.resultados.push({
       lote: identP10.lote, tipo: demanda.tipo, saidaCliente: demanda.saidaCliente,
       kg: this.params.kgRetiradoP10, toneladas: this.params.kgRetiradoP10 / 1000,
@@ -1017,6 +1089,7 @@ class Simulation {
     await this.rodarEtapasEstocasticas(panInicial, desdeDecup, lote, pular);
     this.liberar(panInicial);
     this.resources.iniciais[panInicial].release(this.env);
+    if (this.progAtiva) this.tentarDispacharPuroCalcio();
 
     await this.rodarEtapasEstocasticas(panFinal, p.processos.comum.transferencia1, lote, new Set());
 
@@ -1069,6 +1142,10 @@ class Simulation {
       chegada, inicioCarregamentoH: inicioCarregamento, fim,
       tempoTotalH: fim - inicioCarregamento, esperaPanelaInicialH, esperaPanelaFinalH, esperaSaidaH,
     });
+    if (this.progAtiva) {
+      this.registrarProducaoTipo(tipoKey, kgLotePrincipal / 1000);
+      this.tentarDispacharSbsn(); // pode ter ficado "pausado" esperando a meta — reavalia
+    }
   }
 
   async processarLoteSbsn(lote) {
@@ -1105,6 +1182,10 @@ class Simulation {
       chegada, inicioCarregamentoH: inicioCarregamento, fim,
       tempoTotalH: fim - inicioCarregamento, esperaSaidaH,
     });
+    if (this.progAtiva) {
+      this.registrarProducaoTipo('Sb/Sn', lote.kg / 1000);
+      this.tentarDispacharSbsn();
+    }
   }
 
   processarLote(lote) {
@@ -1121,8 +1202,8 @@ class Simulation {
 // GERAÇÃO DE DEMANDA
 // ============================================================================
 
-function gerarLotePuroCalcio(p, numero) {
-  const tipo = Math.random() < p.probCalcio ? 'Calcio' : 'Puro';
+function gerarLotePuroCalcio(p, numero, tipoForcado) {
+  const tipo = tipoForcado || (Math.random() < p.probCalcio ? 'Calcio' : 'Puro');
   let saida, probFrac;
   if (tipo === 'Puro') { saida = 'L'; probFrac = p.probFracionamentoPuro; }
   else { saida = Math.random() < p.probCalcioSaidaL ? 'L' : 'H'; probFrac = p.probFracionamentoCalcio; }
@@ -1146,13 +1227,18 @@ function gerarLoteSbsn(p, numero) {
 // ============================================================================
 
 async function runReplication(params) {
-  const sim = new Simulation(params);
-  const lotes = [];
-  for (let i = 1; i <= params.nLotesSinteticos; i++) lotes.push(gerarLotePuroCalcio(params, i));
-  const lotesSbsn = [];
-  for (let i = 1; i <= params.nLotesSbsn; i++) lotesSbsn.push(gerarLoteSbsn(params, i));
-  sim.despacharTodos(lotes);
-  sim.despacharTodos(lotesSbsn);
+  const sim = new Simulation(params); // se "programação por meta" estiver ativa, o próprio
+  // constructor já dispara o "alimentador" reativo (ver iniciarProgramacao)
+
+  if (!(params.programacao && params.programacao.ativa)) {
+    const lotes = [];
+    for (let i = 1; i <= params.nLotesSinteticos; i++) lotes.push(gerarLotePuroCalcio(params, i));
+    const lotesSbsn = [];
+    for (let i = 1; i <= params.nLotesSbsn; i++) lotesSbsn.push(gerarLoteSbsn(params, i));
+    sim.despacharTodos(lotes);
+    sim.despacharTodos(lotesSbsn);
+  }
+
   const TEMPO_MES = 30 * 24, MARGEM = 200;
   await sim.env.runUntil(TEMPO_MES + MARGEM);
   const dfMes = sim.resultados.filter(r => r.inicioCarregamentoH <= TEMPO_MES);
@@ -1598,6 +1684,14 @@ function scalarFieldPercentual(label, path, ajuda) {
   </div>`;
 }
 
+function scalarFieldCheckbox(label, path, ajuda) {
+  const help = ajuda ? `<span class="help-icon" title="${ajuda.replace(/"/g, '&quot;')}">?</span>` : '';
+  const marcado = getByPath(PARAMS, path);
+  return `<div class="field-row"><label>${label}${help}</label>
+    <input type="checkbox" ${marcado ? 'checked' : ''} data-path="${path}" data-tipo="bool">
+  </div>`;
+}
+
 function getByPath(obj, path) {
   return path.split('.').reduce((o, k) => o[k], obj);
 }
@@ -1606,6 +1700,14 @@ function setByPath(obj, path, value) {
   const last = parts.pop();
   const target = parts.reduce((o, k) => o[k], obj);
   target[last] = value;
+}
+
+function textoSomaProgramacao() {
+  const pr = PARAMS.programacao;
+  const soma = (pr.puro + pr.calcio + pr.sbsn) * 100;
+  const somaTexto = soma.toFixed(1).replace('.', ',');
+  if (Math.abs(soma - 100) < 0.05) return `Soma: ${somaTexto}% ✓`;
+  return `Soma: ${somaTexto}% — atenção, o ideal é somar 100% (o simulador usa os valores proporcionalmente mesmo assim, mas fica mais difícil de prever o resultado)`;
 }
 
 function textoAjudaFornos() {
@@ -1706,6 +1808,23 @@ function renderParamForm() {
     ${scalarFieldPercentual('Proporção Pb terceiro quando 1 forno para', 'manutencaoFornos.proporcaoTerceiroManutencao')}
     <div class="ajuda-manut" id="ajuda-fornos-texto">${textoAjudaFornos()}</div>`, false);
 
+  html += detailsBlock('Programação',
+    `${scalarFieldCheckbox('Ativar programação por meta', 'programacao.ativa',
+      'Quando ligado, o simulador para de sortear Puro/Cálcio aleatoriamente (ignora "Proporção Cálcio") e passa a escolher deterministicamente qual liga produzir a seguir, sempre priorizando quem está mais atrasado em relação à meta % — em toneladas, não em quantidade de lotes. Quando desligado, comportamento padrão de sempre (probabilístico).')}
+    ${scalarFieldPercentual('Puro', 'programacao.puro')}
+    ${scalarFieldCheckbox('Puro — Produção Livre', 'programacao.puroLivre',
+      'Quando marcado, Puro não fica limitado à meta % — produz o quanto conseguir, além do que a meta reservaria (usa o orçamento de "Lotes sintéticos" inteiro pra essa liga, de cima da meta).')}
+    ${scalarFieldPercentual('Cálcio', 'programacao.calcio')}
+    ${scalarFieldCheckbox('Cálcio — Produção Livre', 'programacao.calcioLivre',
+      'Mesma lógica do Puro, mas pro Cálcio.')}
+    ${scalarFieldPercentual('Sb/Sn', 'programacao.sbsn')}
+    ${scalarFieldCheckbox('Sb/Sn — Produção Livre', 'programacao.sbsnLivre',
+      'Mesma lógica, mas pro Sb/Sn — usa o orçamento de "Lotes Sb/Sn" inteiro além da meta. Faz sentido ligar aqui, já que Sb/Sn usa panelas próprias (P8/P9), sem disputar recurso com Puro/Cálcio.')}
+    <div class="ajuda-manut" id="programacao-soma-texto">${textoSomaProgramacao()}</div>
+    <div class="ajuda-manut">Exemplo: 70% Puro / 20% Cálcio / 10% Sb/Sn — a cada lote, o simulador produz sempre a liga que está mais
+    "atrasada" em relação à sua meta acumulada. Quando uma liga marcada "Produção Livre" já cobriu o que a meta reservou, ela
+    continua sendo produzida à parte, sem tirar espaço das outras.</div>`, false);
+
   el.innerHTML = html;
 
   el.querySelectorAll('input[data-path]').forEach(input => {
@@ -1747,6 +1866,12 @@ function renderParamForm() {
           const ajudaEl = document.getElementById('ajuda-fornos-texto');
           if (ajudaEl) ajudaEl.textContent = textoAjudaFornos();
         }
+        if (input.dataset.path.startsWith('programacao.')) {
+          const somaEl = document.getElementById('programacao-soma-texto');
+          if (somaEl) somaEl.textContent = textoSomaProgramacao();
+        }
+      } else if (tipo === 'bool') {
+        setByPath(PARAMS, input.dataset.path, input.checked);
       } else if (tipo === 'rota-bool') {
         const arr = getByPath(PARAMS, input.dataset.path) || [];
         const valor = input.dataset.valor;
