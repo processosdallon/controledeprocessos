@@ -3140,17 +3140,17 @@
     const autor = `${sessao.usuario.toUpperCase()} ${agora}`;
 
     ignorarUpdate = true;
-    const dados = Object.assign({}, cacheFirebase);
 
+    // Atualizar cacheFirebase ANTES de construir dados
     if (el.value) {
-      dados[key] = el.value;
       cacheFirebase[key] = el.value;
     } else {
-      delete dados[key];
       delete cacheFirebase[key];
     }
-    dados[key + '_autor'] = autor;
     cacheFirebase[key + '_autor'] = autor;
+
+    // Agora clonar cacheFirebase já atualizado
+    const dados = Object.assign({}, cacheFirebase);
 
     set(dbRef, dados).finally(() => {
       setTimeout(() => { ignorarUpdate = false; }, 500);
