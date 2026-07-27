@@ -2707,9 +2707,15 @@
       const key = el.dataset.field;
       // Não sobrescrever campo que está com foco
       if (document.activeElement === el) return;
-      // Não sobrescrever campo inp-livre salvo nos últimos 5 segundos (inclui apagar)
-      if (el.classList.contains('inp-livre') && camposLivresSalvos[key]) {
-        if ((Date.now() - camposLivresSalvos[key]) < 5000) return;
+      // Campos inp-livre são gerenciados manualmente — onValue nunca os sobrescreve
+      if (el.classList.contains('inp-livre')) {
+        // Só atualizar se não foi salvo recentemente E o Firebase tem um valor diferente
+        if (camposLivresSalvos[key]) return; // protegido
+        // Se Firebase tem valor e campo está vazio, restaurar (ex: reload da página)
+        const fbVal = cacheFirebase[key] || '';
+        if (el.value === '' && fbVal !== '') el.value = fbVal;
+        // Se Firebase não tem valor e campo tem valor, manter campo como está
+        return;
       }
       const val = cacheFirebase[key] || '';
       if (el.value !== val) {
