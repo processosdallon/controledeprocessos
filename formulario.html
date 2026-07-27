@@ -2684,15 +2684,7 @@
     dot.className = 'dot connected';
     statusTxt.textContent = '🟢 Conectado — tempo real ativo';
     const novosDados = snapshot.val() || {};
-    // Atualizar cache mas preservar valores locais de campos recentemente salvos
-    Object.keys(novosDados).forEach(k => {
-      if (camposLivresSalvos[k] && (Date.now() - camposLivresSalvos[k]) < 10000) return;
-      cacheFirebase[k] = novosDados[k];
-    });
-    // Remover campos que sumiram do Firebase (ex: apagados) exceto os protegidos
-    Object.keys(cacheFirebase).forEach(k => {
-      if (!(k in novosDados) && !(camposLivresSalvos[k])) delete cacheFirebase[k];
-    });
+    cacheFirebase = novosDados;
     verificarSetupsAtivos(cacheFirebase);
     carregarCalculadora(cacheFirebase);
     setTimeout(verificarAtrasos, 200);
@@ -2707,14 +2699,9 @@
       const key = el.dataset.field;
       // Não sobrescrever campo que está com foco
       if (document.activeElement === el) return;
-      // Campos inp-livre são gerenciados manualmente — onValue nunca os sobrescreve
       if (el.classList.contains('inp-livre')) {
-        // Só atualizar se não foi salvo recentemente E o Firebase tem um valor diferente
-        if (camposLivresSalvos[key]) return; // protegido
-        // Se Firebase tem valor e campo está vazio, restaurar (ex: reload da página)
         const fbVal = cacheFirebase[key] || '';
         if (el.value === '' && fbVal !== '') el.value = fbVal;
-        // Se Firebase não tem valor e campo tem valor, manter campo como está
         return;
       }
       const val = cacheFirebase[key] || '';
@@ -3149,35 +3136,29 @@
     const key = el.dataset.field;
     if (!key) return;
 
-    console.log(`[SALVAR] key=${key} value="${el.value}"`);
-
     const agora = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
     const autor = `${sessao.usuario.toUpperCase()} ${agora}`;
 
-    const atualizacao = {};
-    atualizacao[key] = el.value || null;
-    atualizacao[key + '_autor'] = autor;
+    ignorarUpdate = true;
+    const dados = Object.assign({}, cacheFirebase);
 
-    if (el.value) cacheFirebase[key] = el.value;
-    else delete cacheFirebase[key];
+    if (el.value) {
+      dados[key] = el.value;
+      cacheFirebase[key] = el.value;
+    } else {
+      delete dados[key];
+      delete cacheFirebase[key];
+    }
+    dados[key + '_autor'] = autor;
     cacheFirebase[key + '_autor'] = autor;
 
-    camposLivresSalvos[key] = Date.now();
-    setTimeout(() => { delete camposLivresSalvos[key]; }, 10000);
-
-    update(dbRef, atualizacao).then(() => {
-      console.log(`[SALVAR OK] key=${key} value="${el.value}" — Firebase confirmou`);
-      // Após confirmação, manter proteção por mais 2s
-      camposLivresSalvos[key] = Date.now();
-      setTimeout(() => { delete camposLivresSalvos[key]; }, 2000);
+    set(dbRef, dados).finally(() => {
+      setTimeout(() => { ignorarUpdate = false; }, 500);
       if (key.includes('_lingot_ini') && el.value) {
         const prefix = key.replace('_lingot_ini','');
         document.getElementById(`bloco-${prefix}`)?.classList.remove('atrasado');
       }
-      setTimeout(verificarAtrasos, 300);
-    }).catch(err => {
-      console.error(`[SALVAR ERRO] key=${key}`, err);
-      alert('⚠️ ERRO AO SALVAR: ' + err.message);
+      setTimeout(verificarAtrasos, 600);
     });
   }
 
