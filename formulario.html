@@ -2684,7 +2684,10 @@
     dot.className = 'dot connected';
     statusTxt.textContent = '🟢 Conectado — tempo real ativo';
     const novosDados = snapshot.val() || {};
-    cacheFirebase = novosDados;
+    // Só atualiza o cache se não estiver no meio de um save
+    if (!ignorarUpdate) {
+      cacheFirebase = novosDados;
+    }
     verificarSetupsAtivos(cacheFirebase);
     carregarCalculadora(cacheFirebase);
     setTimeout(verificarAtrasos, 200);
@@ -2692,9 +2695,8 @@
     setTimeout(calcularExecucao, 250);
     setTimeout(atualizarAcords, 300);
     setTimeout(atualizarTempoTotal, 300);
-    // Sempre popular os campos com dados do Firebase
-    // mas não sobrescrever campos inp-livre que o usuário acabou de editar
-    const agora2 = Date.now();
+    // Popular campos apenas quando não está salvando
+    if (ignorarUpdate) return;
     document.querySelectorAll('[data-field]').forEach(el => {
       const key = el.dataset.field;
       // Não sobrescrever campo que está com foco
