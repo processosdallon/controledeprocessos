@@ -2692,8 +2692,15 @@
     setTimeout(atualizarAcords, 300);
     setTimeout(atualizarTempoTotal, 300);
     // Sempre popular os campos com dados do Firebase
+    // mas não sobrescrever campos inp-livre que o usuário acabou de editar
+    const agora2 = Date.now();
     document.querySelectorAll('[data-field]').forEach(el => {
       const key = el.dataset.field;
+      // Não sobrescrever campo que está com foco
+      if (document.activeElement === el) return;
+      // Não sobrescrever campo inp-livre salvo nos últimos 3 segundos
+      if (el.classList.contains('inp-livre') && camposLivresSalvos[key] && (Date.now() - camposLivresSalvos[key]) < 3000) return;
+      if (el.classList.contains('inp-livre') && el.value && !cacheFirebase[key]) return;
       const val = cacheFirebase[key] || '';
       if (el.value !== val) {
         el.value = val;
@@ -3119,6 +3126,9 @@
 
 
   // Campos de livre edição (setuptemp e lingotamento) — salva inclusive vazio
+  // Registrar campos livres salvos recentemente (proteger de sobrescrita pelo onValue)
+  const camposLivresSalvos = {}; // key → timestamp
+
   function salvarCampoLivre(el) {
     const sessao = verificarSessao();
     if (!sessao) { alert('Sessão expirada.'); fazerLogout(); return; }
@@ -3128,14 +3138,16 @@
     const agora = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
     const autor = `${sessao.usuario.toUpperCase()} ${agora}`;
 
-    // update salva APENAS esses campos sem sobrescrever o restante do Firebase
     const atualizacao = {};
-    atualizacao[key] = el.value || null; // null remove no Firebase
+    atualizacao[key] = el.value || null;
     atualizacao[key + '_autor'] = autor;
 
     if (el.value) cacheFirebase[key] = el.value;
     else delete cacheFirebase[key];
     cacheFirebase[key + '_autor'] = autor;
+
+    // Marcar como salvo localmente por 3 segundos para proteger do onValue
+    camposLivresSalvos[key] = Date.now();
 
     update(dbRef, atualizacao).then(() => {
       if (key.includes('_lingot_ini') && el.value) {
