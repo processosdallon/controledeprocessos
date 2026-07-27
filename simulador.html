@@ -262,22 +262,29 @@ main{
 }
 .board{
   display:grid;
-  grid-template-columns: repeat(auto-fill, minmax(96px,1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(160px,1fr));
+  gap: 14px;
 }
 .pot{
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 10px 8px;
+  border-radius: 10px;
+  padding: 18px 16px;
   text-align:center;
   background: var(--panel-2);
   position:relative;
 }
-.pot .name{ font-family:var(--display); font-weight:600; font-size:13px; }
-.pot .grp{ font-size:9px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em;}
-.pot .pct{ font-family:var(--mono); font-weight:600; font-size:16px; margin-top:4px; }
-.pot .heatbar{ height:4px; border-radius:2px; margin-top:6px; background: var(--border); overflow:hidden; }
-.pot .heatbar > div{ height:100%; }
+.pot .name{ font-family:var(--display); font-weight:600; font-size:16px; }
+.pot .grp{ font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.06em;}
+.pot .pct{ font-family:var(--mono); font-weight:700; font-size:26px; margin-top:8px; }
+.pot .livre-badge{ font-family:var(--mono); font-size:11.5px; color:var(--text-muted); margin-top:2px; }
+.pot .heatbar{ height:8px; border-radius:4px; margin-top:11px; background: var(--border); overflow:hidden; display:flex; }
+.pot .heatbar > div{ height:100%; flex:none; }
+.pot .manut-badge{
+  display:inline-flex; align-items:center; gap:4px;
+  font-family:var(--mono); font-size:11.5px; font-weight:600; color:#d9ad4f;
+  background: rgba(201,154,58,0.14); border:1px solid rgba(201,154,58,0.4);
+  border-radius:5px; padding:4px 8px; margin-top:10px;
+}
 
 .cards{ display:grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap:12px; }
 .card{
@@ -1249,21 +1256,32 @@ async function runReplication(params) {
 function calcularUtilizacao(eventos, tempoLimite) {
   const porEquip = {};
   eventos.forEach(e => { (porEquip[e.equipamento] ||= []).push(e); });
-  const uso = {};
+  const uso = {}, manutPct = {}, manutDias = {}, livrePct = {};
   for (const eq in porEquip) {
     const evs = porEquip[eq].slice().sort((a, b) => a.tempo - b.tempo);
-    let total = 0;
+    let total = 0, totalManutH = 0, totalLivreH = 0;
     for (let i = 0; i < evs.length; i++) {
       const t0 = Math.min(Math.max(evs[i].tempo, 0), tempoLimite);
       const t1raw = i + 1 < evs.length ? evs[i + 1].tempo : tempoLimite;
       const t1 = Math.min(Math.max(t1raw, 0), tempoLimite);
-      // "Setup" (preparação antes do carregamento Sb/Sn) não conta como panela em uso
-      const emUso = evs[i].estado !== 'Livre' && !String(evs[i].estado).toLowerCase().includes('setup');
-      if (t1 > t0 && emUso) total += (t1 - t0);
+      const estadoLower = String(evs[i].estado).toLowerCase();
+      const emManutencao = estadoLower.includes('manutenção') || estadoLower.includes('manutencao');
+      const emLivre = evs[i].estado === 'Livre';
+      // "Setup" e "Em manutenção" não contam como panela em uso — manutenção é
+      // indisponibilidade, o oposto de estar em uso, então vira um segmento à parte.
+      const emUso = !emLivre && !estadoLower.includes('setup') && !emManutencao;
+      if (t1 > t0) {
+        if (emUso) total += (t1 - t0);
+        if (emManutencao) totalManutH += (t1 - t0);
+        if (emLivre) totalLivreH += (t1 - t0);
+      }
     }
     uso[eq] = 100 * total / tempoLimite;
+    manutPct[eq] = 100 * totalManutH / tempoLimite;
+    manutDias[eq] = totalManutH / 24;
+    livrePct[eq] = 100 * totalLivreH / tempoLimite;
   }
-  return uso;
+  return { uso, manutPct, manutDias, livrePct };
 }
 
 function agregarBloqueios(bloqueios) {
@@ -1952,6 +1970,9 @@ document.getElementById('btn-run').addEventListener('click', async () => {
   const producaoTotal = [];
   const producaoPorTipo = { Puro: [], Calcio: [], 'Sb/Sn': [] };
   const utilizacoes = [];
+  const manutPcts = [];
+  const manutDiasArr = [];
+  const livrePcts = [];
   const bloqueiosAgg = [];
   let animacaoDados = null;
 
@@ -1961,7 +1982,11 @@ document.getElementById('btn-run').addEventListener('click', async () => {
     dfMes.forEach(l => { porTipo[l.tipo] += l.toneladas; });
     producaoTotal.push(porTipo.Puro + porTipo.Calcio + porTipo['Sb/Sn']);
     for (const k in porTipo) producaoPorTipo[k].push(porTipo[k]);
-    utilizacoes.push(calcularUtilizacao(sim.eventos, tempoTotal));
+    const resUtil = calcularUtilizacao(sim.eventos, tempoTotal);
+    utilizacoes.push(resUtil.uso);
+    manutPcts.push(resUtil.manutPct);
+    manutDiasArr.push(resUtil.manutDias);
+    livrePcts.push(resUtil.livrePct);
     bloqueiosAgg.push(agregarBloqueios(sim.bloqueios));
     if (r === 0) {
       const tempoFinalAnim = sim.eventos.length ? Math.max(...sim.eventos.map(e => e.tempo)) : tempoTotal;
@@ -1971,10 +1996,13 @@ document.getElementById('btn-run').addEventListener('click', async () => {
 
   const tempoExec = ((performance.now() - t0) / 1000).toFixed(1);
   const mediaUtil = mediaUtilizacoes(utilizacoes);
+  const mediaManutPct = mediaUtilizacoes(manutPcts);
+  const mediaManutDias = mediaUtilizacoes(manutDiasArr);
+  const mediaLivrePct = mediaUtilizacoes(livrePcts);
   const mediaBloq = mediaBloqueios(bloqueiosAgg);
 
   renderResultados({
-    producaoTotal, producaoPorTipo, mediaUtil, mediaBloq, nReplicas,
+    producaoTotal, producaoPorTipo, mediaUtil, mediaManutPct, mediaManutDias, mediaLivrePct, mediaBloq, nReplicas,
   });
   renderAnimacao(animacaoDados);
   atualizarContextoChat({ producaoTotal, producaoPorTipo, mediaUtil, mediaBloq, nReplicas });
@@ -2049,7 +2077,7 @@ function gerarSugestoes(mediaUtil, mediaBloq, params) {
   return sugestoes;
 }
 
-function renderResultados({ producaoTotal, producaoPorTipo, mediaUtil, mediaBloq, nReplicas }) {
+function renderResultados({ producaoTotal, producaoPorTipo, mediaUtil, mediaManutPct, mediaManutDias, mediaLivrePct, mediaBloq, nReplicas }) {
   const el = document.getElementById('results');
   const mediaTotal = mean(producaoTotal);
   const desvioTotal = stdev(producaoTotal);
@@ -2074,12 +2102,22 @@ function renderResultados({ producaoTotal, producaoPorTipo, mediaUtil, mediaBloq
   html += `<div class="section-title">Utilização dos equipamentos</div><div class="board">`;
   EQUIP_ORDEM.forEach(eq => {
     const pct = mediaUtil[eq] || 0;
+    const manutPct = (mediaManutPct && mediaManutPct[eq]) || 0;
+    const manutDias = (mediaManutDias && mediaManutDias[eq]) || 0;
+    const livrePct = (mediaLivrePct && mediaLivrePct[eq]) || 0;
     const cor = corUtilizacao(pct);
+    const manutBadge = manutDias > 0.05
+      ? `<div class="manut-badge">🔧 ${manutPct.toFixed(0)}% · ${manutDias.toFixed(1)}d</div>` : '';
     html += `<div class="pot">
       <div class="grp">${EQUIP_INFO[eq].grupo}</div>
       <div class="name">${eq}</div>
       <div class="pct" style="color:${cor}">${pct.toFixed(0)}%</div>
-      <div class="heatbar"><div style="width:${Math.min(pct,100)}%; background:${cor}"></div></div>
+      <div class="livre-badge">${livrePct.toFixed(0)}% livre</div>
+      <div class="heatbar">
+        <div style="width:${Math.min(pct, 100)}%; background:${cor}"></div>
+        <div style="width:${Math.min(manutPct, 100 - Math.min(pct, 100))}%; background:#9c7a1f"></div>
+      </div>
+      ${manutBadge}
     </div>`;
   });
   html += `</div>`;
