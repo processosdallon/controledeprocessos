@@ -3140,27 +3140,33 @@
 
     const agora = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
     const autor = `${sessao.usuario.toUpperCase()} ${agora}`;
+    const valorAtual = el.value;
 
     ignorarUpdate = true;
 
-    // Atualizar cacheFirebase ANTES de construir dados
-    if (el.value) {
-      cacheFirebase[key] = el.value;
+    if (valorAtual) {
+      cacheFirebase[key] = valorAtual;
     } else {
       delete cacheFirebase[key];
     }
     cacheFirebase[key + '_autor'] = autor;
 
-    // Agora clonar cacheFirebase já atualizado
     const dados = Object.assign({}, cacheFirebase);
+    if (!valorAtual) delete dados[key];
 
-    set(dbRef, dados).finally(() => {
-      setTimeout(() => { ignorarUpdate = false; }, 500);
-      if (key.includes('_lingot_ini') && el.value) {
+    console.log(`[SAVE] key=${key} valor="${valorAtual}" temNoObj=${key in dados}`);
+
+    set(dbRef, dados).then(() => {
+      console.log(`[SAVE OK] Firebase confirmou remoção de ${key}`);
+    }).catch(err => {
+      console.error(`[SAVE ERRO]`, err);
+    }).finally(() => {
+      setTimeout(() => { ignorarUpdate = false; }, 800);
+      if (key.includes('_lingot_ini') && valorAtual) {
         const prefix = key.replace('_lingot_ini','');
         document.getElementById(`bloco-${prefix}`)?.classList.remove('atrasado');
       }
-      setTimeout(verificarAtrasos, 600);
+      setTimeout(verificarAtrasos, 900);
     });
   }
 
