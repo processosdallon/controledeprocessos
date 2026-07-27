@@ -285,6 +285,12 @@ main{
   background: rgba(201,154,58,0.14); border:1px solid rgba(201,154,58,0.4);
   border-radius:5px; padding:4px 8px; margin-top:10px;
 }
+.pot .setup-badge{
+  display:inline-flex; align-items:center; gap:4px;
+  font-family:var(--mono); font-size:11.5px; font-weight:600; color:#9fb08c;
+  background: rgba(122,138,106,0.14); border:1px solid rgba(122,138,106,0.4);
+  border-radius:5px; padding:4px 8px; margin-top:6px;
+}
 
 .cards{ display:grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap:12px; }
 .card{
@@ -695,12 +701,26 @@ function defaultParams() {
     // topologia física da planta — quais equipamentos podem receber lotes de quais
     // origens. Editável no menu "Rotas".
     rotas: {
-      iniciaisParaFinais: { P1: ["P5"], P2: ["P5", "P6"], P3: ["P6", "P7"], P4: ["P7"] },
+      // agora vale pra QUALQUER panela com saída (Inicial ou Intermediária), não só
+      // P1-P4 — panelas com papel Final/Sb-Sn ficam com lista vazia (são terminais)
+      iniciaisParaFinais: {
+        P1: ["P5"], P2: ["P5", "P6"], P3: ["P6", "P7"], P4: ["P7"],
+        P5: [], P6: [], P7: [], P8: [], P9: [],
+      },
       finaisParaSaidas: {
         P5: ["L1", "Hogueira"], P6: ["L1", "L2", "Hogueira"], P7: ["L2"],
         P10: ["L2"], P8: ["L1", "Hogueira"], P9: ["L1", "Hogueira"],
       },
       clientesParaSaidas: { H: ["Hogueira"], L: ["L1", "L2"] },
+    },
+
+    // papel de cada panela (P1-P9) — "inicial", "intermediaria", "final",
+    // "finalPuro", "finalCalcio" ou "sbsn". P10 é sempre fixa (fracionamento).
+    // Editável no menu "Papéis das Panelas".
+    papeisPanelas: {
+      P1: 'inicial', P2: 'inicial', P3: 'inicial', P4: 'inicial',
+      P5: 'final', P6: 'final', P7: 'final',
+      P8: 'sbsn', P9: 'sbsn',
     },
 
     // dias de indisponibilidade por manutenção no início do mês simulado, por
@@ -761,6 +781,10 @@ function defaultParams() {
           "Entre decuprização e 1ª transferência": { media: 1.262, desvio: 1.781, minimo: 0.150 },
         },
         transferencia1: { "1ª transferência": { media: 0.546, desvio: 0.266, minimo: 0.183 } },
+        // usada só quando alguma panela está com o papel "Intermediária" — o trajeto
+        // extra Intermediária → Final. Valores iniciais = mesmos da 1ª transferência
+        // (não há dado real calibrado especificamente pra esse trajeto ainda).
+        transferenciaIntermediaria: { "Transferência Intermediária → Final": { media: 0.546, desvio: 0.266, minimo: 0.183 } },
         finalComum: {
           "Entre 1ª transferência e 2ª desantimoniação": { media: 1.820, desvio: 2.226, minimo: 0.050 },
           "2ª desantimoniação": { media: 4.971, desvio: 2.061, minimo: 1.250 },
@@ -811,12 +835,26 @@ function tempoSaidaInterpolado(saidaNome, kgTotal, params) {
   return Math.max(t50 + inclinacao * (kgTotal - PESO_REF_50T), 0);
 }
 
-function finaisCompativeis(candidatas, saidaCliente, rotas) {
-  const permitidos = rotas.clientesParaSaidas[saidaCliente];
-  return candidatas.filter(c => (rotas.finaisParaSaidas[c] || []).some(s => permitidos.includes(s)));
+function finaisCompativeis(candidatas, saidaCliente, rotas, papeis, tipoKey) {
+  const permitidos = rotas.clientesParaSaidas[saidaCliente] || [];
+  const compativelTipo = (nome) => {
+    if (!papeis || !tipoKey) return true;
+    const papel = papeis[nome];
+    if (papel === 'finalPuro') return tipoKey === 'Puro';
+    if (papel === 'finalCalcio') return tipoKey === 'Calcio';
+    return true;
+  };
+  return candidatas.filter(c => {
+    // panela intermediária não lingota — o que importa é se ela alcança, por meio
+    // das finais que alimenta, uma saída compatível (2 saltos: intermediária → final → saída)
+    if (papeis && papeis[c] === 'intermediaria') {
+      return (rotas.iniciaisParaFinais[c] || []).some(dest => compativelTipo(dest) && (rotas.finaisParaSaidas[dest] || []).some(s => permitidos.includes(s)));
+    }
+    return compativelTipo(c) && (rotas.finaisParaSaidas[c] || []).some(s => permitidos.includes(s));
+  });
 }
-function iniciaisCompativeis(saidaCliente, rotas) {
-  return ["P1", "P2", "P3", "P4"].filter(p => finaisCompativeis(rotas.iniciaisParaFinais[p] || [], saidaCliente, rotas).length > 0);
+function iniciaisCompativeis(saidaCliente, rotas, nomesIniciais, papeis, tipoKey) {
+  return nomesIniciais.filter(p => finaisCompativeis(rotas.iniciaisParaFinais[p] || [], saidaCliente, rotas, papeis, tipoKey).length > 0);
 }
 
 // ============================================================================
@@ -827,16 +865,29 @@ class Simulation {
   constructor(params) {
     this.params = params;
     this.env = new SimEnv();
+
+    // monta as pools de recursos a partir do "papel" atribuído a cada panela
+    // (menu "Papéis das Panelas") em vez de assumir P1-P4/P5-P7 fixos — isso
+    // permite reatribuir qualquer panela pra qualquer função.
+    const papeis = params.papeisPanelas || {};
     this.resources = {
-      iniciais: { P1: new Resource('P1'), P2: new Resource('P2'), P3: new Resource('P3'), P4: new Resource('P4') },
+      iniciais: {}, intermediarias: {}, finais: {}, sbsn: {},
       ponteInicial: new Resource('ponteInicial'),
-      finais: { P5: new Resource('P5'), P6: new Resource('P6'), P7: new Resource('P7') },
       p10: new Resource('P10'),
-      sbsn: { P8: new Resource('P8'), P9: new Resource('P9') },
       ponteSbsn: new Resource('ponteSbsn'),
       saidas: { L1: new Resource('L1'), L2: new Resource('L2'), Hogueira: new Resource('Hogueira') },
     };
-    this.ultimaLigaFinal = { P5: null, P6: null, P7: null };
+    ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9'].forEach(nome => {
+      const papel = papeis[nome] || 'inicial';
+      if (papel === 'inicial') this.resources.iniciais[nome] = new Resource(nome);
+      else if (papel === 'intermediaria') this.resources.intermediarias[nome] = new Resource(nome);
+      else if (papel === 'final' || papel === 'finalPuro' || papel === 'finalCalcio') this.resources.finais[nome] = new Resource(nome);
+      else if (papel === 'sbsn') this.resources.sbsn[nome] = new Resource(nome);
+    });
+
+    this.ultimaLigaFinal = {};
+    Object.keys(this.resources.finais).forEach(nome => { this.ultimaLigaFinal[nome] = null; });
+    Object.keys(this.resources.intermediarias).forEach(nome => { this.ultimaLigaFinal[nome] = null; });
     this.demandaP10 = [];
     this.contadorP10 = 0;
     this.creditoPanelasCheias = Math.max(0, Math.min(4, params.panelasIniciaisCheias || 0));
@@ -862,8 +913,10 @@ class Simulation {
 
   iniciarProgramacao() {
     if (!this.progAtiva) return;
-    for (let i = 0; i < 4; i++) this.tentarDispacharPuroCalcio(); // 4 panelas iniciais
-    for (let i = 0; i < 2; i++) this.tentarDispacharSbsn(); // P8/P9
+    const nIniciais = Object.keys(this.resources.iniciais).length;
+    const nSbsn = Object.keys(this.resources.sbsn).length;
+    for (let i = 0; i < nIniciais; i++) this.tentarDispacharPuroCalcio();
+    for (let i = 0; i < nSbsn; i++) this.tentarDispacharSbsn();
   }
 
   // quanto (em toneladas) esse tipo está atrás da sua meta % acumulada até agora
@@ -909,7 +962,7 @@ class Simulation {
   // acha o objeto Resource correspondente a um nome de equipamento ("P1".."P10",
   // "L1","L2","Hogueira"), independente de em qual sub-mapa ele vive
   getResourceByName(nome) {
-    return this.resources.iniciais[nome] || this.resources.finais[nome]
+    return this.resources.iniciais[nome] || this.resources.intermediarias[nome] || this.resources.finais[nome]
       || (nome === 'P10' ? this.resources.p10 : null)
       || this.resources.sbsn[nome] || this.resources.saidas[nome] || null;
   }
@@ -1034,14 +1087,28 @@ class Simulation {
     });
   }
 
+  // verifica se `origem` alcança `destinoAlvo` diretamente OU através de uma
+  // panela Intermediária no meio do caminho (só 1 salto de intermediária, não
+  // cadeias arbitrárias)
+  alcancaDestino(origem, destinoAlvo) {
+    const rotas = this.params.rotas;
+    const diretos = rotas.iniciaisParaFinais[origem] || [];
+    if (diretos.includes(destinoAlvo)) return true;
+    return diretos.some(d => this.params.papeisPanelas[d] === 'intermediaria' && (rotas.iniciaisParaFinais[d] || []).includes(destinoAlvo));
+  }
+
   async processarLotePuroCalcio(lote) {
     const p = this.params;
+    const papeis = p.papeisPanelas;
     const tipoKey = lote.tipo;
     const chegada = this.env.now;
 
+    const nomesIniciais = Object.keys(this.resources.iniciais);
+    // fracionamento é uma exceção conhecida: sempre mira direto na P7 (limitação
+    // documentada — não passa por Intermediária mesmo se uma estiver configurada)
     let candidatosIniciais = lote.fracionamento
-      ? ["P1", "P2", "P3", "P4"].filter(pp => (p.rotas.iniciaisParaFinais[pp] || []).includes("P7"))
-      : iniciaisCompativeis(lote.saidaCliente, p.rotas);
+      ? nomesIniciais.filter(pp => this.alcancaDestino(pp, 'P7'))
+      : iniciaisCompativeis(lote.saidaCliente, p.rotas, nomesIniciais, papeis, tipoKey);
     let t0 = this.env.now;
     let { name: panInicial } = await this.disputarQualquer(this.resources.iniciais, candidatosIniciais);
     let t1 = this.env.now;
@@ -1086,30 +1153,77 @@ class Simulation {
     const desdeDecup = {}; nomes.slice(idxDecup).forEach(n => desdeDecup[n] = dictInicial[n]);
     await this.rodarEtapasEstocasticas(panInicial, antesDecup, lote, pular);
 
-    let candidatosFinais = lote.fracionamento ? ["P7"] : finaisCompativeis(p.rotas.iniciaisParaFinais[panInicial] || [], lote.saidaCliente, p.rotas);
+    // escolhe o próximo destino — pode ser uma panela Final (fluxo de sempre) ou
+    // uma Intermediária (faz a química completa e depois repassa pra uma Final,
+    // que só lingota)
+    let candidatosProximo = lote.fracionamento ? ["P7"]
+      : (p.rotas.iniciaisParaFinais[panInicial] || []).filter(dest => {
+        if (papeis[dest] === 'intermediaria') {
+          return (p.rotas.iniciaisParaFinais[dest] || []).some(d2 => finaisCompativeis([d2], lote.saidaCliente, p.rotas, papeis, tipoKey).length > 0);
+        }
+        return finaisCompativeis([dest], lote.saidaCliente, p.rotas, papeis, tipoKey).length > 0;
+      });
+    const poolProximo = Object.assign({}, this.resources.intermediarias, this.resources.finais);
     t0 = this.env.now;
-    const { name: panFinal } = await this.disputarQualquer(this.resources.finais, candidatosFinais);
+    const { name: panProximo } = await this.disputarQualquer(poolProximo, candidatosProximo);
     t1 = this.env.now;
-    const esperaPanelaFinalH = t1 - t0;
-    this.bloqueio(t0, t1, 'Aguardando panela final', panFinal, lote, panInicial, panFinal, lote.kg);
+    let esperaPanelaFinalH = t1 - t0;
+    const ehIntermediaria = papeis[panProximo] === 'intermediaria';
+    this.bloqueio(t0, t1, ehIntermediaria ? 'Aguardando panela intermediária' : 'Aguardando panela final', panProximo, lote, panInicial, panProximo, lote.kg);
 
     await this.rodarEtapasEstocasticas(panInicial, desdeDecup, lote, pular);
     this.liberar(panInicial);
     this.resources.iniciais[panInicial].release(this.env);
     if (this.progAtiva) this.tentarDispacharPuroCalcio();
 
-    await this.rodarEtapasEstocasticas(panFinal, p.processos.comum.transferencia1, lote, new Set());
+    let panFinal;
+    if (ehIntermediaria) {
+      // panela intermediária: só faz a parte COMUM da química final, até a 2ª
+      // desantimoniação (igual pra Puro e Cálcio) — a parte que diverge por
+      // liga (inclusive o Agregar do Cálcio) e a troca de liga ficam pra
+      // panela Final, que é quem "guarda a identidade" de qual liga processou
+      // por último
+      await this.rodarEtapasEstocasticas(panProximo, p.processos.comum.transferencia1, lote, new Set());
+      await this.rodarEtapasEstocasticas(panProximo, p.processos.comum.finalComum, lote, new Set());
 
-    if (this.ultimaLigaFinal[panFinal] === 'Calcio' && tipoKey === 'Puro') {
-      this.log(panFinal, 'Desestanhação extra (troca de liga)', lote);
-      await this.env.timeout(p.trocaLigaH);
+      // agora escolhe a panela FINAL de verdade
+      const candidatosFinaisReais = (p.rotas.iniciaisParaFinais[panProximo] || [])
+        .filter(d => finaisCompativeis([d], lote.saidaCliente, p.rotas, papeis, tipoKey).length > 0);
+      t0 = this.env.now;
+      const { name: panFinalReal } = await this.disputarQualquer(this.resources.finais, candidatosFinaisReais);
+      t1 = this.env.now;
+      esperaPanelaFinalH += (t1 - t0);
+      this.bloqueio(t0, t1, 'Aguardando panela final', panFinalReal, lote, panProximo, panFinalReal, lote.kg);
+
+      await this.rodarEtapasEstocasticas(panProximo, p.processos.comum.transferenciaIntermediaria, lote, new Set());
+      this.liberar(panProximo);
+      this.resources.intermediarias[panProximo].release(this.env);
+
+      if (this.ultimaLigaFinal[panFinalReal] === 'Calcio' && tipoKey === 'Puro') {
+        this.log(panFinalReal, 'Desestanhação extra (troca de liga)', lote);
+        await this.env.timeout(p.trocaLigaH);
+      }
+      this.ultimaLigaFinal[panFinalReal] = tipoKey;
+      await this.rodarEtapasEstocasticas(panFinalReal, p.processos[tipoKey].finalDivergente, lote, new Set());
+
+      panFinal = panFinalReal;
+    } else {
+      // fluxo de sempre: o destino já é a panela final, faz a química completa ali
+      await this.rodarEtapasEstocasticas(panProximo, p.processos.comum.transferencia1, lote, new Set());
+
+      if (this.ultimaLigaFinal[panProximo] === 'Calcio' && tipoKey === 'Puro') {
+        this.log(panProximo, 'Desestanhação extra (troca de liga)', lote);
+        await this.env.timeout(p.trocaLigaH);
+      }
+      this.ultimaLigaFinal[panProximo] = tipoKey;
+
+      // até aqui (2ª desantimoniação) o processo é idêntico pra Puro e Cálcio —
+      // a partir daqui é que a liga se define de fato
+      await this.rodarEtapasEstocasticas(panProximo, p.processos.comum.finalComum, lote, new Set());
+      await this.rodarEtapasEstocasticas(panProximo, p.processos[tipoKey].finalDivergente, lote, new Set());
+
+      panFinal = panProximo;
     }
-    this.ultimaLigaFinal[panFinal] = tipoKey;
-
-    // até aqui (2ª desantimoniação) o processo é idêntico pra Puro e Cálcio —
-    // a partir daqui é que a liga se define de fato
-    await this.rodarEtapasEstocasticas(panFinal, p.processos.comum.finalComum, lote, new Set());
-    await this.rodarEtapasEstocasticas(panFinal, p.processos[tipoKey].finalDivergente, lote, new Set());
 
     let demanda = null, kgLotePrincipal = lote.kg;
     if (panFinal === 'P7' && lote.fracionamento) {
@@ -1159,7 +1273,7 @@ class Simulation {
     const p = this.params;
     const chegada = this.env.now;
     let t0 = this.env.now;
-    const { name: pan } = await this.disputarQualquer(this.resources.sbsn, ["P8", "P9"]);
+    const { name: pan } = await this.disputarQualquer(this.resources.sbsn, Object.keys(this.resources.sbsn));
     let t1 = this.env.now;
     this.bloqueio(t0, t1, 'Aguardando panela Sb/Sn', pan, lote, null, pan, lote.kg);
 
@@ -1255,11 +1369,20 @@ async function runReplication(params) {
 
 function calcularUtilizacao(eventos, tempoLimite) {
   const porEquip = {};
-  eventos.forEach(e => { (porEquip[e.equipamento] ||= []).push(e); });
-  const uso = {}, manutPct = {}, manutDias = {}, livrePct = {};
+  EQUIP_ORDEM.forEach(eq => { porEquip[eq] = []; });
+  eventos.forEach(e => { if (porEquip[e.equipamento]) porEquip[e.equipamento].push(e); });
+  const uso = {}, manutPct = {}, manutDias = {}, livrePct = {}, setupPct = {};
   for (const eq in porEquip) {
     const evs = porEquip[eq].slice().sort((a, b) => a.tempo - b.tempo);
-    let total = 0, totalManutH = 0, totalLivreH = 0;
+    let total = 0, totalManutH = 0, totalLivreH = 0, totalSetupH = 0;
+
+    // se o primeiro evento registrado não é em t=0 (ou não há evento nenhum),
+    // o equipamento ficou "Livre" implicitamente antes disso — sem essa conta,
+    // esse tempo inicial não entrava em nenhuma categoria (nem uso, nem
+    // manutenção, nem livre), e a soma das três nunca batia 100%.
+    const primeiroTempo = evs.length ? Math.min(Math.max(evs[0].tempo, 0), tempoLimite) : tempoLimite;
+    if (primeiroTempo > 0) totalLivreH += primeiroTempo;
+
     for (let i = 0; i < evs.length; i++) {
       const t0 = Math.min(Math.max(evs[i].tempo, 0), tempoLimite);
       const t1raw = i + 1 < evs.length ? evs[i + 1].tempo : tempoLimite;
@@ -1267,21 +1390,24 @@ function calcularUtilizacao(eventos, tempoLimite) {
       const estadoLower = String(evs[i].estado).toLowerCase();
       const emManutencao = estadoLower.includes('manutenção') || estadoLower.includes('manutencao');
       const emLivre = evs[i].estado === 'Livre';
+      const emSetup = estadoLower.includes('setup');
       // "Setup" e "Em manutenção" não contam como panela em uso — manutenção é
-      // indisponibilidade, o oposto de estar em uso, então vira um segmento à parte.
-      const emUso = !emLivre && !estadoLower.includes('setup') && !emManutencao;
+      // indisponibilidade, o oposto de estar em uso; setup também vira segmento à parte.
+      const emUso = !emLivre && !emSetup && !emManutencao;
       if (t1 > t0) {
         if (emUso) total += (t1 - t0);
         if (emManutencao) totalManutH += (t1 - t0);
         if (emLivre) totalLivreH += (t1 - t0);
+        if (emSetup) totalSetupH += (t1 - t0);
       }
     }
     uso[eq] = 100 * total / tempoLimite;
     manutPct[eq] = 100 * totalManutH / tempoLimite;
     manutDias[eq] = totalManutH / 24;
     livrePct[eq] = 100 * totalLivreH / tempoLimite;
+    setupPct[eq] = 100 * totalSetupH / tempoLimite;
   }
-  return { uso, manutPct, manutDias, livrePct };
+  return { uso, manutPct, manutDias, livrePct, setupPct };
 }
 
 function agregarBloqueios(bloqueios) {
@@ -1320,6 +1446,18 @@ const EQUIP_INFO = {
   L1: { grupo: 'Saída' }, L2: { grupo: 'Saída' }, Hogueira: { grupo: 'Saída' },
 };
 const EQUIP_ORDEM = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P10', 'P8', 'P9', 'L1', 'L2', 'Hogueira'];
+
+// rótulo do grupo mostrado no relatório de utilização — pra P1-P9, reflete o
+// papel ATUAL atribuído no menu "Papéis das Panelas" (não fica preso no padrão
+// de fábrica); P10/L1/L2/Hogueira usam o rótulo fixo de sempre.
+function rotuloGrupoPanela(eq) {
+  const papel = PARAMS.papeisPanelas ? PARAMS.papeisPanelas[eq] : undefined;
+  if (papel) {
+    const opcao = OPCOES_PAPEL_PANELA.find(o => o.valor === papel);
+    if (opcao) return opcao.rotulo;
+  }
+  return EQUIP_INFO[eq].grupo;
+}
 
 // ============================================================================
 // ANIMAÇÃO DO PROCESSO (porte do diagrama matplotlib original pra SVG/JS)
@@ -1586,6 +1724,7 @@ function renderAnimacao(dados) {
 
 const NOMES_MOTIVO = {
   'Aguardando panela final': 'Panela final ocupada',
+  'Aguardando panela intermediária': 'Panela intermediária ocupada',
   'Aguardando saída': 'Lingotando outro lote',
   'Aguardando saída Sb/Sn': 'Lingotando outro lote (Sb/Sn)',
 };
@@ -1646,8 +1785,9 @@ function buildRotaCheckboxes(dictRotas, opcoes, pathPrefix) {
   let html = '<div class="rota-editor">';
   for (const origem in dictRotas) {
     const atuais = dictRotas[origem] || [];
+    const opcoesFiltradas = opcoes.filter(o => o !== origem);
     html += `<div class="rota-linha"><span class="rota-origem">${origem}</span><div class="rota-opcoes">`;
-    opcoes.forEach(destino => {
+    opcoesFiltradas.forEach(destino => {
       const marcado = atuais.includes(destino);
       html += `<label class="rota-check">
         <input type="checkbox" ${marcado ? 'checked' : ''} data-tipo="rota-bool" data-path="rotas.${pathPrefix}.${origem}" data-valor="${destino}">
@@ -1707,6 +1847,23 @@ function scalarFieldCheckbox(label, path, ajuda) {
   const marcado = getByPath(PARAMS, path);
   return `<div class="field-row"><label>${label}${help}</label>
     <input type="checkbox" ${marcado ? 'checked' : ''} data-path="${path}" data-tipo="bool">
+  </div>`;
+}
+
+const OPCOES_PAPEL_PANELA = [
+  { valor: 'inicial', rotulo: 'Inicial' },
+  { valor: 'intermediaria', rotulo: 'Intermediária' },
+  { valor: 'final', rotulo: 'Final' },
+  { valor: 'finalPuro', rotulo: 'Final só Puro' },
+  { valor: 'finalCalcio', rotulo: 'Final só Cálcio' },
+  { valor: 'sbsn', rotulo: 'Sb/Sn' },
+];
+
+function scalarFieldSelect(label, path, opcoes) {
+  const valorAtual = getByPath(PARAMS, path);
+  const options = opcoes.map(o => `<option value="${o.valor}" ${o.valor === valorAtual ? 'selected' : ''}>${o.rotulo}</option>`).join('');
+  return `<div class="field-row"><label>${label}</label>
+    <select data-path="${path}" data-tipo="select">${options}</select>
   </div>`;
 }
 
@@ -1793,6 +1950,10 @@ function renderParamForm() {
     buildStageInputs(PARAMS.processos.comum.inicial, 'processos.comum.inicial') +
     buildStageInputs(PARAMS.processos.comum.transferencia1, 'processos.comum.transferencia1'), false);
 
+  html += detailsBlock('Tempos — Transferência Intermediária → Final',
+    `<div class="ajuda-manut">Só é usada quando alguma panela estiver com o papel "Intermediária" (menu "Papéis das Panelas"). Sem nenhuma Intermediária configurada, esse tempo não entra no cálculo.</div>` +
+    buildStageInputs(PARAMS.processos.comum.transferenciaIntermediaria, 'processos.comum.transferenciaIntermediaria'), false);
+
   html += detailsBlock('Panela Final Puro/Ca (2ª Desantimoniação até Lingotamento — caso for Puro)',
     buildStageInputs(PARAMS.processos.comum.finalComum, 'processos.comum.finalComum') +
     buildStageInputs(PARAMS.processos.Puro.finalDivergente, 'processos.Puro.finalDivergente'), false);
@@ -1802,8 +1963,18 @@ function renderParamForm() {
 
   html += detailsBlock('Tempos — Sb/Sn', buildStageInputs(PARAMS.sbsnEtapas, 'sbsnEtapas'), false);
 
-  html += detailsBlock('Rotas — Panela inicial → Panela final',
-    buildRotaCheckboxes(PARAMS.rotas.iniciaisParaFinais, ['P5', 'P6', 'P7'], 'iniciaisParaFinais'), false);
+  html += detailsBlock('Papéis das Panelas',
+    `<div class="ajuda-manut">Define a função de cada panela. "Inicial" faz as etapas de 1ª limpeza até decuprização.
+    "Intermediária" recebe de uma Inicial, faz TODA a química final (o que "Final" faz normalmente) e transfere pra uma
+    panela "Final", que aí só lingota. "Final" faz a química completa + lingotamento — a menos que receba de uma
+    Intermediária, aí só lingota. "Final só Puro"/"Final só Cálcio" restringem a panela a uma única liga. Se nenhuma
+    panela estiver marcada "Intermediária", o fluxo é exatamente o de sempre (Inicial → Final direto, sem escala).</div>` +
+    ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9'].map(pn => scalarFieldSelect(pn, `papeisPanelas.${pn}`, OPCOES_PAPEL_PANELA)).join('') +
+    `<div class="field-row"><label>P10</label><span style="color:var(--text-muted); font-family:var(--mono); font-size:12px;">Fracionamento (fixo)</span></div>`,
+    false);
+
+  html += detailsBlock('Rotas — Panela inicial/intermediária → Próxima panela',
+    buildRotaCheckboxes(PARAMS.rotas.iniciaisParaFinais, ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9'], 'iniciaisParaFinais'), false);
 
   html += detailsBlock('Rotas — Panela final / P10 / Sb-Sn → Saída física',
     buildRotaCheckboxes(PARAMS.rotas.finaisParaSaidas, ['L1', 'L2', 'Hogueira'], 'finaisParaSaidas'), false);
@@ -1845,7 +2016,7 @@ function renderParamForm() {
 
   el.innerHTML = html;
 
-  el.querySelectorAll('input[data-path]').forEach(input => {
+  el.querySelectorAll('input[data-path], select[data-path]').forEach(input => {
     input.addEventListener('change', () => {
       const tipo = input.dataset.tipo || 'numero';
       if (tipo === 'horas') {
@@ -1890,6 +2061,8 @@ function renderParamForm() {
         }
       } else if (tipo === 'bool') {
         setByPath(PARAMS, input.dataset.path, input.checked);
+      } else if (tipo === 'select') {
+        setByPath(PARAMS, input.dataset.path, input.value);
       } else if (tipo === 'rota-bool') {
         const arr = getByPath(PARAMS, input.dataset.path) || [];
         const valor = input.dataset.valor;
@@ -1973,6 +2146,7 @@ document.getElementById('btn-run').addEventListener('click', async () => {
   const manutPcts = [];
   const manutDiasArr = [];
   const livrePcts = [];
+  const setupPcts = [];
   const bloqueiosAgg = [];
   let animacaoDados = null;
 
@@ -1987,6 +2161,7 @@ document.getElementById('btn-run').addEventListener('click', async () => {
     manutPcts.push(resUtil.manutPct);
     manutDiasArr.push(resUtil.manutDias);
     livrePcts.push(resUtil.livrePct);
+    setupPcts.push(resUtil.setupPct);
     bloqueiosAgg.push(agregarBloqueios(sim.bloqueios));
     if (r === 0) {
       const tempoFinalAnim = sim.eventos.length ? Math.max(...sim.eventos.map(e => e.tempo)) : tempoTotal;
@@ -1999,10 +2174,11 @@ document.getElementById('btn-run').addEventListener('click', async () => {
   const mediaManutPct = mediaUtilizacoes(manutPcts);
   const mediaManutDias = mediaUtilizacoes(manutDiasArr);
   const mediaLivrePct = mediaUtilizacoes(livrePcts);
+  const mediaSetupPct = mediaUtilizacoes(setupPcts);
   const mediaBloq = mediaBloqueios(bloqueiosAgg);
 
   renderResultados({
-    producaoTotal, producaoPorTipo, mediaUtil, mediaManutPct, mediaManutDias, mediaLivrePct, mediaBloq, nReplicas,
+    producaoTotal, producaoPorTipo, mediaUtil, mediaManutPct, mediaManutDias, mediaLivrePct, mediaSetupPct, mediaBloq, nReplicas,
   });
   renderAnimacao(animacaoDados);
   atualizarContextoChat({ producaoTotal, producaoPorTipo, mediaUtil, mediaBloq, nReplicas });
@@ -2077,7 +2253,7 @@ function gerarSugestoes(mediaUtil, mediaBloq, params) {
   return sugestoes;
 }
 
-function renderResultados({ producaoTotal, producaoPorTipo, mediaUtil, mediaManutPct, mediaManutDias, mediaLivrePct, mediaBloq, nReplicas }) {
+function renderResultados({ producaoTotal, producaoPorTipo, mediaUtil, mediaManutPct, mediaManutDias, mediaLivrePct, mediaSetupPct, mediaBloq, nReplicas }) {
   const el = document.getElementById('results');
   const mediaTotal = mean(producaoTotal);
   const desvioTotal = stdev(producaoTotal);
@@ -2105,19 +2281,27 @@ function renderResultados({ producaoTotal, producaoPorTipo, mediaUtil, mediaManu
     const manutPct = (mediaManutPct && mediaManutPct[eq]) || 0;
     const manutDias = (mediaManutDias && mediaManutDias[eq]) || 0;
     const livrePct = (mediaLivrePct && mediaLivrePct[eq]) || 0;
+    const setupPct = (mediaSetupPct && mediaSetupPct[eq]) || 0;
     const cor = corUtilizacao(pct);
     const manutBadge = manutDias > 0.05
       ? `<div class="manut-badge">🔧 ${manutPct.toFixed(0)}% · ${manutDias.toFixed(1)}d</div>` : '';
+    const setupBadge = setupPct > 0.5
+      ? `<div class="setup-badge">⚙️ ${setupPct.toFixed(0)}% setup</div>` : '';
+    const larguraUso = Math.min(pct, 100);
+    const larguraManut = Math.min(manutPct, 100 - larguraUso);
+    const larguraSetup = Math.min(setupPct, 100 - larguraUso - larguraManut);
     html += `<div class="pot">
-      <div class="grp">${EQUIP_INFO[eq].grupo}</div>
+      <div class="grp">${rotuloGrupoPanela(eq)}</div>
       <div class="name">${eq}</div>
       <div class="pct" style="color:${cor}">${pct.toFixed(0)}%</div>
-      <div class="livre-badge">${livrePct.toFixed(0)}% livre</div>
+      <div class="livre-badge">${(livrePct + setupPct).toFixed(0)}% livre</div>
       <div class="heatbar">
-        <div style="width:${Math.min(pct, 100)}%; background:${cor}"></div>
-        <div style="width:${Math.min(manutPct, 100 - Math.min(pct, 100))}%; background:#9c7a1f"></div>
+        <div style="width:${larguraUso}%; background:${cor}"></div>
+        <div style="width:${larguraManut}%; background:#9c7a1f"></div>
+        <div style="width:${larguraSetup}%; background:#7a8a6a"></div>
       </div>
       ${manutBadge}
+      ${setupBadge}
     </div>`;
   });
   html += `</div>`;
