@@ -3288,6 +3288,20 @@
     });
   });
 
+  // Detectar deleção em campos time (Delete/Backspace não disparam onchange no Chrome)
+  document.addEventListener('keydown', (e) => {
+    const el = document.activeElement;
+    if (!el || el.type !== 'time' || !el.dataset.field) return;
+    if (e.key === 'Delete' || e.key === 'Backspace') {
+      // Aguardar o campo ser limpo pelo browser e então salvar
+      setTimeout(() => {
+        if (el.value === '' && el.classList.contains('inp-livre')) {
+          window.salvarCampoLivre(el);
+        }
+      }, 100);
+    }
+  });
+
   // Listener global para botões lápis (evita problema de escopo em type="module")
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('.btn-lapis');
