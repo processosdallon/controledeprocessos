@@ -2699,9 +2699,10 @@
       const key = el.dataset.field;
       // Não sobrescrever campo que está com foco
       if (document.activeElement === el) return;
-      // Não sobrescrever campo inp-livre salvo nos últimos 5 segundos
-      if (el.classList.contains('inp-livre') && camposLivresSalvos[key] && (Date.now() - camposLivresSalvos[key]) < 5000) return;
-      if (el.classList.contains('inp-livre') && el.value && !cacheFirebase[key]) return;
+      // Não sobrescrever campo inp-livre salvo nos últimos 5 segundos (inclui apagar)
+      if (el.classList.contains('inp-livre') && camposLivresSalvos[key]) {
+        if ((Date.now() - camposLivresSalvos[key]) < 5000) return;
+      }
       const val = cacheFirebase[key] || '';
       if (el.value !== val) {
         if (key.includes('lingot')) console.log(`[onValue] sobrescrevendo ${key}: "${el.value}" → "${val}" | protegido=${!!camposLivresSalvos[key]}`);
@@ -3148,10 +3149,13 @@
     cacheFirebase[key + '_autor'] = autor;
 
     camposLivresSalvos[key] = Date.now();
-    setTimeout(() => { delete camposLivresSalvos[key]; }, 5000);
+    setTimeout(() => { delete camposLivresSalvos[key]; }, 10000);
 
     update(dbRef, atualizacao).then(() => {
       console.log(`[SALVAR OK] key=${key} value="${el.value}" — Firebase confirmou`);
+      // Após confirmação, manter proteção por mais 2s
+      camposLivresSalvos[key] = Date.now();
+      setTimeout(() => { delete camposLivresSalvos[key]; }, 2000);
       if (key.includes('_lingot_ini') && el.value) {
         const prefix = key.replace('_lingot_ini','');
         document.getElementById(`bloco-${prefix}`)?.classList.remove('atrasado');
