@@ -2683,8 +2683,16 @@
   onValue(dbRef, (snapshot) => {
     dot.className = 'dot connected';
     statusTxt.textContent = '🟢 Conectado — tempo real ativo';
-    // Sempre atualizar o cache com dados do Firebase
-    cacheFirebase = snapshot.val() || {};
+    const novosDados = snapshot.val() || {};
+    // Atualizar cache mas preservar valores locais de campos recentemente salvos
+    Object.keys(novosDados).forEach(k => {
+      if (camposLivresSalvos[k] && (Date.now() - camposLivresSalvos[k]) < 10000) return;
+      cacheFirebase[k] = novosDados[k];
+    });
+    // Remover campos que sumiram do Firebase (ex: apagados) exceto os protegidos
+    Object.keys(cacheFirebase).forEach(k => {
+      if (!(k in novosDados) && !(camposLivresSalvos[k])) delete cacheFirebase[k];
+    });
     verificarSetupsAtivos(cacheFirebase);
     carregarCalculadora(cacheFirebase);
     setTimeout(verificarAtrasos, 200);
