@@ -3128,7 +3128,7 @@
 
 
   // Campos de livre edição (setuptemp e lingotamento) — salva inclusive vazio
-  function salvarCampoLivre(el) {
+  window.salvarCampoLivre = function(el) {
     const sessao = verificarSessao();
     if (!sessao) { alert('Sessão expirada.'); fazerLogout(); return; }
     const key = el.dataset.field;
