@@ -683,6 +683,10 @@ function defaultParams() {
 
     probDesestanhacao: 180 / 381,
     probPulaLanca: 10 / 381,
+    // chance de um lote Sb/Sn pular a desestanhação (e, com isso, também o
+    // tempo de espera entre decuprização e desestanhação) — mesma lógica do
+    // "Pula etapa de lança" pro Puro/Cálcio, mas específica pra Sb/Sn
+    probPulaDesestanhacaoSbsn: 0,
     probCalcio: 64 / 164,
     probCalcioSaidaL: 0.119,
     probFracionamentoPuro: 0.198,
@@ -1055,6 +1059,15 @@ class Simulation {
     return pular;
   }
 
+  sortearEtapasAPularSbsn() {
+    const pular = new Set();
+    if (Math.random() < this.params.probPulaDesestanhacaoSbsn) {
+      pular.add("Desestanhação Sb/Sn");
+      pular.add("Entre decuprização e desestanhação Sb/Sn");
+    }
+    return pular;
+  }
+
   async rodarEtapasEstocasticas(equip, dictEtapas, lote, pular) {
     pular = pular || new Set();
     for (const nome in dictEtapas) {
@@ -1313,7 +1326,7 @@ class Simulation {
     await this.env.timeout(p.carregamentoSbsnH);
     this.resources.ponteSbsn.release(this.env);
 
-    await this.rodarEtapasEstocasticas(pan, p.sbsnEtapas, lote, new Set());
+    await this.rodarEtapasEstocasticas(pan, p.sbsnEtapas, lote, this.sortearEtapasAPularSbsn());
     this.marcarLingotando(pan, lote);
     const { saidaNome, espera: esperaSaidaH } = await this.processarSaida(pan, lote, lote.kg, lote.saidaCliente, 'Aguardando saída Sb/Sn');
     this.liberar(pan);
@@ -1989,6 +2002,8 @@ function renderParamForm() {
       'Mesma lógica, mas pra lotes de Cálcio. Vale só pra panelas com papel "Final + Fracionamento" (ou suas variantes); não afeta panelas com outros papéis.')}
     ${scalarFieldPercentual('Precisa desestanhação', 'probDesestanhacao')}
     ${scalarFieldPercentual('Pula etapa de lança', 'probPulaLanca')}
+    ${scalarFieldPercentual('Pula desestanhação (Sb/Sn)', 'probPulaDesestanhacaoSbsn',
+      'Chance de um lote Sb/Sn pular a etapa de desestanhação — e, com isso, também pular o tempo de espera "Entre decuprização e desestanhação Sb/Sn" (já que não precisa esperar pra fazer uma etapa que não vai acontecer). Reduz o tempo total do lote quando isso ocorre.')}
   `, false, 'probabilidades');
 
   html += detailsBlock('Pesos (kg)', `
