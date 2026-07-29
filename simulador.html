@@ -729,6 +729,7 @@ function defaultParams() {
         P5: [], P6: [], P7: [], P8: [], P9: [], P10: [], P11: [],
       },
       finaisParaSaidas: {
+        P1: [], P2: [], P3: [], P4: [],
         P5: ["L1", "Hogueira"], P6: ["L1", "L2", "Hogueira"], P7: ["L2"],
         P10: ["L2"], P11: ["L2"], P8: ["L1", "Hogueira"], P9: ["L1", "Hogueira"],
       },
@@ -1189,13 +1190,7 @@ class Simulation {
   // verifica se `origem` alcança alguma panela com o papel `papelAlvo`,
   // diretamente ou através de uma Intermediária no meio do caminho (só 1 salto
   // de intermediária, não cadeias arbitrárias)
-  alcancaAlgumQueSatisfaz(origem, predicado) {
-    const rotas = this.params.rotas;
-    const papeis = this.params.papeisPanelas;
-    const diretos = rotas.iniciaisParaFinais[origem] || [];
-    if (diretos.some(d => predicado(papeis[d]))) return true;
-    return diretos.some(d => papeis[d] === 'intermediaria' && (rotas.iniciaisParaFinais[d] || []).some(d2 => predicado(papeis[d2])));
-  }
+
 
   async processarLotePuroCalcio(lote) {
     const p = this.params;
@@ -1205,17 +1200,7 @@ class Simulation {
 
     const nomesIniciais = Object.keys(this.resources.iniciais);
     // fracionamento mira em QUALQUER panela com papel "Final + Fracionamento"
-    // (qualquer variante aceita Puro ou Cálcio como lote principal — o "(Só X)"
-    // é sobre em que liga a FRAÇÃO vira, não sobre o que a panela aceita)
-    const aceitaFracionamentoDoTipo = (papel) => {
-      if (!ehPapelFracionamento(papel)) return false;
-      if (papel === 'finalPuroFracionamento') return tipoKey === 'Puro';
-      if (papel === 'finalCalcioFracionamento') return tipoKey === 'Calcio';
-      return true;
-    };
-    let candidatosIniciais = lote.fracionamento
-      ? nomesIniciais.filter(pp => this.alcancaAlgumQueSatisfaz(pp, aceitaFracionamentoDoTipo))
-      : iniciaisCompativeis(lote.saidaCliente, p.rotas, nomesIniciais, papeis, tipoKey);
+    let candidatosIniciais = iniciaisCompativeis(lote.saidaCliente, p.rotas, nomesIniciais, papeis, tipoKey);
     let t0 = this.env.now;
     let { name: panInicial } = await this.disputarQualquer(this.resources.iniciais, candidatosIniciais);
     let t1 = this.env.now;
@@ -1263,9 +1248,7 @@ class Simulation {
     // escolhe o próximo destino — pode ser uma panela Final (fluxo de sempre) ou
     // uma Intermediária (faz a química completa e depois repassa pra uma Final,
     // que só lingota)
-    let candidatosProximo = lote.fracionamento
-      ? (p.rotas.iniciaisParaFinais[panInicial] || []).filter(dest => aceitaFracionamentoDoTipo(papeis[dest]))
-      : (p.rotas.iniciaisParaFinais[panInicial] || []).filter(dest => {
+    let candidatosProximo = (p.rotas.iniciaisParaFinais[panInicial] || []).filter(dest => {
         if (papeis[dest] === 'intermediaria') {
           return (p.rotas.iniciaisParaFinais[dest] || []).some(d2 => finaisCompativeis([d2], lote.saidaCliente, p.rotas, papeis, tipoKey).length > 0);
         }
@@ -1349,7 +1332,11 @@ class Simulation {
         kgLotePrincipal -= p.kgRetiradoP10;
         numFracoes++;
         const tipoFrac = this.decidirTipoFracaoPorDeficit();
-        this.dispararFracaoCalcio(panFrac, panFinal, tipoFrac, lote.saidaCliente, chegada, lote.lote);
+        // a saída da fração é decidida pela liga que ela REALMENTE vira, não
+        // herdada do lote principal (que pode ser de outra liga) — mesma regra
+        // de sempre: Puro sempre sai por L, Cálcio sorteia L/H por probCalcioSaidaL
+        const saidaClienteFrac = tipoFrac === 'Puro' ? 'L' : (Math.random() < p.probCalcioSaidaL ? 'L' : 'H');
+        this.dispararFracaoCalcio(panFrac, panFinal, tipoFrac, saidaClienteFrac, chegada, lote.lote);
       }
       if (numFracoes > 0) {
         this.log(panFinal, 'Transferência fracionada', lote);
