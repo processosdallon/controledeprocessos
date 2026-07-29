@@ -123,6 +123,14 @@ details summary::after{
 details[open] summary::after{ content: '−'; }
 details summary:hover{ background: rgba(217,96,28,0.08); }
 .details-body{ padding: 4px 12px 12px; }
+.btn-definir-padrao{
+  display: block; margin: 4px 0 10px auto;
+  font-size: 10.5px; font-family: var(--mono); color: var(--text-muted);
+  background: transparent; border: 1px solid var(--border); border-radius: 5px;
+  padding: 4px 9px; cursor: pointer;
+}
+.btn-definir-padrao:hover{ color: var(--text); border-color: var(--molten); }
+.btn-definir-padrao.confirmado{ color: var(--molten-bright); border-color: var(--molten-bright); }
 
 .field-row{
   display:flex; align-items:center; justify-content:space-between;
@@ -705,11 +713,11 @@ function defaultParams() {
       // P1-P4 — panelas com papel Final/Sb-Sn ficam com lista vazia (são terminais)
       iniciaisParaFinais: {
         P1: ["P5"], P2: ["P5", "P6"], P3: ["P6", "P7"], P4: ["P7"],
-        P5: [], P6: [], P7: [], P8: [], P9: [],
+        P5: [], P6: [], P7: [], P8: [], P9: [], P10: [], P11: [],
       },
       finaisParaSaidas: {
         P5: ["L1", "Hogueira"], P6: ["L1", "L2", "Hogueira"], P7: ["L2"],
-        P10: ["L2"], P8: ["L1", "Hogueira"], P9: ["L1", "Hogueira"],
+        P10: ["L2"], P11: ["L2"], P8: ["L1", "Hogueira"], P9: ["L1", "Hogueira"],
       },
       clientesParaSaidas: { H: ["Hogueira"], L: ["L1", "L2"] },
     },
@@ -719,14 +727,15 @@ function defaultParams() {
     // Editável no menu "Papéis das Panelas".
     papeisPanelas: {
       P1: 'inicial', P2: 'inicial', P3: 'inicial', P4: 'inicial',
-      P5: 'final', P6: 'final', P7: 'final',
+      P5: 'final', P6: 'final', P7: 'finalFracionamento',
       P8: 'sbsn', P9: 'sbsn',
+      P10: 'fracionamentoCalcio', P11: 'desativada',
     },
 
     // dias de indisponibilidade por manutenção no início do mês simulado, por
     // equipamento (0 = disponível o mês inteiro). Editável no menu "Manutenção".
     manutencoes: {
-      P1: 0, P2: 0, P3: 0, P4: 0, P5: 0, P6: 0, P7: 0, P10: 0, P8: 0, P9: 0,
+      P1: 0, P2: 0, P3: 0, P4: 0, P5: 0, P6: 0, P7: 0, P10: 0, P11: 0, P8: 0, P9: 0,
       L1: 0, L2: 0, Hogueira: 0,
     },
 
@@ -835,13 +844,21 @@ function tempoSaidaInterpolado(saidaNome, kgTotal, params) {
   return Math.max(t50 + inclinacao * (kgTotal - PESO_REF_50T), 0);
 }
 
+// true pra qualquer variante do papel "Final + Fracionamento" (genérico ou
+// restrito a uma liga específica)
+function ehPapelFracionamento(papel) {
+  return papel === 'finalFracionamento' || papel === 'finalFracionamentoPuro' || papel === 'finalFracionamentoCalcio';
+}
+
 function finaisCompativeis(candidatas, saidaCliente, rotas, papeis, tipoKey) {
   const permitidos = rotas.clientesParaSaidas[saidaCliente] || [];
   const compativelTipo = (nome) => {
-    if (!papeis || !tipoKey) return true;
+    if (!papeis) return true;
     const papel = papeis[nome];
-    if (papel === 'finalPuro') return tipoKey === 'Puro';
-    if (papel === 'finalCalcio') return tipoKey === 'Calcio';
+    if (papel === 'desativada') return false; // panela desativada nunca é destino válido
+    if (!tipoKey) return true;
+    if (papel === 'finalPuro' || papel === 'finalFracionamentoPuro') return tipoKey === 'Puro';
+    if (papel === 'finalCalcio' || papel === 'finalFracionamentoCalcio') return tipoKey === 'Calcio';
     return true;
   };
   return candidatas.filter(c => {
@@ -867,22 +884,23 @@ class Simulation {
     this.env = new SimEnv();
 
     // monta as pools de recursos a partir do "papel" atribuído a cada panela
-    // (menu "Papéis das Panelas") em vez de assumir P1-P4/P5-P7 fixos — isso
-    // permite reatribuir qualquer panela pra qualquer função.
+    // (menu "Papéis das Panelas") — todas as panelas P1-P11 são reatribuíveis;
+    // "Desativada" simplesmente não entra em pool nenhuma (fica fora da simulação).
     const papeis = params.papeisPanelas || {};
     this.resources = {
-      iniciais: {}, intermediarias: {}, finais: {}, sbsn: {},
+      iniciais: {}, intermediarias: {}, finais: {}, sbsn: {}, fracionamentoCalcio: {},
       ponteInicial: new Resource('ponteInicial'),
-      p10: new Resource('P10'),
       ponteSbsn: new Resource('ponteSbsn'),
       saidas: { L1: new Resource('L1'), L2: new Resource('L2'), Hogueira: new Resource('Hogueira') },
     };
-    ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9'].forEach(nome => {
+    ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9', 'P10', 'P11'].forEach(nome => {
       const papel = papeis[nome] || 'inicial';
       if (papel === 'inicial') this.resources.iniciais[nome] = new Resource(nome);
       else if (papel === 'intermediaria') this.resources.intermediarias[nome] = new Resource(nome);
-      else if (papel === 'final' || papel === 'finalPuro' || papel === 'finalCalcio') this.resources.finais[nome] = new Resource(nome);
+      else if (['final', 'finalPuro', 'finalCalcio', 'finalFracionamento', 'finalFracionamentoPuro', 'finalFracionamentoCalcio'].includes(papel)) this.resources.finais[nome] = new Resource(nome);
       else if (papel === 'sbsn') this.resources.sbsn[nome] = new Resource(nome);
+      else if (papel === 'fracionamentoCalcio') this.resources.fracionamentoCalcio[nome] = new Resource(nome);
+      // 'desativada' -> não entra em pool nenhuma, fica de fora da simulação
     });
 
     this.ultimaLigaFinal = {};
@@ -963,7 +981,7 @@ class Simulation {
   // "L1","L2","Hogueira"), independente de em qual sub-mapa ele vive
   getResourceByName(nome) {
     return this.resources.iniciais[nome] || this.resources.intermediarias[nome] || this.resources.finais[nome]
-      || (nome === 'P10' ? this.resources.p10 : null)
+      || this.resources.fracionamentoCalcio[nome]
       || this.resources.sbsn[nome] || this.resources.saidas[nome] || null;
   }
 
@@ -1072,29 +1090,30 @@ class Simulation {
     return { saidaNome, espera: t1 - t0 };
   }
 
-  async continuarP10(demanda, identP10, chegadaLoteMae, esperaP10, inicioTransfP10) {
-    await this.rodarEtapasFixas('P10', this.params.calcio50.depoisTransferenciaP10, identP10);
-    this.marcarLingotando('P10', identP10);
-    const { saidaNome } = await this.processarSaida('P10', identP10, this.params.kgRetiradoP10, demanda.saidaCliente, 'Aguardando saída (P10)');
-    this.liberar('P10');
-    this.resources.p10.release(this.env);
+  async continuarFracionamentoCalcio(panFrac, panOrigem, demanda, identFrac, chegadaLoteMae, esperaFrac, inicioTransfFrac) {
+    await this.rodarEtapasFixas(panFrac, this.params.calcio50.depoisTransferenciaP10, identFrac);
+    this.marcarLingotando(panFrac, identFrac);
+    const { saidaNome } = await this.processarSaida(panFrac, identFrac, this.params.kgRetiradoP10, demanda.saidaCliente, 'Aguardando saída (fracionamento)');
+    this.liberar(panFrac);
+    this.resources.fracionamentoCalcio[panFrac].release(this.env);
     this.registrarProducaoTipo(demanda.tipo, this.params.kgRetiradoP10 / 1000);
     this.resultados.push({
-      lote: identP10.lote, tipo: demanda.tipo, saidaCliente: demanda.saidaCliente,
+      lote: identFrac.lote, tipo: demanda.tipo, saidaCliente: demanda.saidaCliente,
       kg: this.params.kgRetiradoP10, toneladas: this.params.kgRetiradoP10 / 1000,
-      panelaFinal: 'P7', panelaP10: 'P10', saidaReal: saidaNome,
-      chegada: chegadaLoteMae, inicioCarregamentoH: inicioTransfP10, fim: this.env.now,
+      panelaFinal: panOrigem, panelaP10: panFrac, saidaReal: saidaNome,
+      chegada: chegadaLoteMae, inicioCarregamentoH: inicioTransfFrac, fim: this.env.now,
     });
   }
 
-  // verifica se `origem` alcança `destinoAlvo` diretamente OU através de uma
-  // panela Intermediária no meio do caminho (só 1 salto de intermediária, não
-  // cadeias arbitrárias)
-  alcancaDestino(origem, destinoAlvo) {
+  // verifica se `origem` alcança alguma panela com o papel `papelAlvo`,
+  // diretamente ou através de uma Intermediária no meio do caminho (só 1 salto
+  // de intermediária, não cadeias arbitrárias)
+  alcancaAlgumQueSatisfaz(origem, predicado) {
     const rotas = this.params.rotas;
+    const papeis = this.params.papeisPanelas;
     const diretos = rotas.iniciaisParaFinais[origem] || [];
-    if (diretos.includes(destinoAlvo)) return true;
-    return diretos.some(d => this.params.papeisPanelas[d] === 'intermediaria' && (rotas.iniciaisParaFinais[d] || []).includes(destinoAlvo));
+    if (diretos.some(d => predicado(papeis[d]))) return true;
+    return diretos.some(d => papeis[d] === 'intermediaria' && (rotas.iniciaisParaFinais[d] || []).some(d2 => predicado(papeis[d2])));
   }
 
   async processarLotePuroCalcio(lote) {
@@ -1104,10 +1123,13 @@ class Simulation {
     const chegada = this.env.now;
 
     const nomesIniciais = Object.keys(this.resources.iniciais);
-    // fracionamento é uma exceção conhecida: sempre mira direto na P7 (limitação
-    // documentada — não passa por Intermediária mesmo se uma estiver configurada)
+    // fracionamento mira em QUALQUER panela com papel "Final + Fracionamento"
+    // (genérico ou restrito à liga do próprio lote) alcançável
+    const aceitaFracionamentoDoTipo = (papel) => ehPapelFracionamento(papel)
+      && (papel !== 'finalFracionamentoPuro' || tipoKey === 'Puro')
+      && (papel !== 'finalFracionamentoCalcio' || tipoKey === 'Calcio');
     let candidatosIniciais = lote.fracionamento
-      ? nomesIniciais.filter(pp => this.alcancaDestino(pp, 'P7'))
+      ? nomesIniciais.filter(pp => this.alcancaAlgumQueSatisfaz(pp, aceitaFracionamentoDoTipo))
       : iniciaisCompativeis(lote.saidaCliente, p.rotas, nomesIniciais, papeis, tipoKey);
     let t0 = this.env.now;
     let { name: panInicial } = await this.disputarQualquer(this.resources.iniciais, candidatosIniciais);
@@ -1156,7 +1178,8 @@ class Simulation {
     // escolhe o próximo destino — pode ser uma panela Final (fluxo de sempre) ou
     // uma Intermediária (faz a química completa e depois repassa pra uma Final,
     // que só lingota)
-    let candidatosProximo = lote.fracionamento ? ["P7"]
+    let candidatosProximo = lote.fracionamento
+      ? (p.rotas.iniciaisParaFinais[panInicial] || []).filter(dest => aceitaFracionamentoDoTipo(papeis[dest]))
       : (p.rotas.iniciaisParaFinais[panInicial] || []).filter(dest => {
         if (papeis[dest] === 'intermediaria') {
           return (p.rotas.iniciaisParaFinais[dest] || []).some(d2 => finaisCompativeis([d2], lote.saidaCliente, p.rotas, papeis, tipoKey).length > 0);
@@ -1226,27 +1249,27 @@ class Simulation {
     }
 
     let demanda = null, kgLotePrincipal = lote.kg;
-    if (panFinal === 'P7' && lote.fracionamento) {
+    if (ehPapelFracionamento(papeis[panFinal]) && lote.fracionamento) {
       demanda = lote.fracionamento; kgLotePrincipal = lote.kg;
-    } else if (panFinal === 'P7' && this.demandaP10.length > 0) {
+    } else if (ehPapelFracionamento(papeis[panFinal]) && this.demandaP10.length > 0) {
       demanda = this.demandaP10.shift();
       kgLotePrincipal = tipoKey === 'Puro' ? p.kgRetiradoP7FracionadoPuro : p.kgRetiradoP7FracionadoCalcio;
     }
 
     if (demanda) {
+      const nomesFrac = Object.keys(this.resources.fracionamentoCalcio);
       t0 = this.env.now;
-      const tokP10 = this.resources.p10.request(this.env);
-      await tokP10.promise;
+      const { name: panFrac } = await this.disputarQualquer(this.resources.fracionamentoCalcio, nomesFrac);
       t1 = this.env.now;
-      this.bloqueio(t0, t1, 'Aguardando Panela 10', 'P10', lote, 'P7', 'P10', p.kgRetiradoP10);
+      this.bloqueio(t0, t1, 'Aguardando panela de fracionamento', panFrac, lote, panFinal, panFrac, p.kgRetiradoP10);
       this.contadorP10++;
-      const identP10 = { lote: `${lote.lote}-P10-${this.contadorP10}`, tipo: demanda.tipo, saidaCliente: demanda.saidaCliente };
-      const inicioTransfP10 = this.env.now;
-      this.log('P7', 'Transferência fracionada para Panela 10', lote);
-      await this.rodarEtapasFixas('P10', p.calcio50.transferenciaP10, identP10);
-      this.continuarP10(demanda, identP10, chegada, t1 - t0, inicioTransfP10);
+      const identFrac = { lote: `${lote.lote}-FRAC-${this.contadorP10}`, tipo: demanda.tipo, saidaCliente: demanda.saidaCliente };
+      const inicioTransfFrac = this.env.now;
+      this.log(panFinal, 'Transferência fracionada', lote);
+      await this.rodarEtapasFixas(panFrac, p.calcio50.transferenciaP10, identFrac);
+      this.continuarFracionamentoCalcio(panFrac, panFinal, demanda, identFrac, chegada, t1 - t0, inicioTransfFrac);
       if (tipoKey === 'Calcio') {
-        await this.rodarEtapasFixas('P7', p.calcioP7PosFracionamento, lote);
+        await this.rodarEtapasFixas(panFinal, p.calcioP7PosFracionamento, lote);
       }
     }
 
@@ -1436,20 +1459,20 @@ const CHAVE_API_FIXA = 'sk-ant-api03-z4XZN5kCX4qNg2loTc_IQlRPADf9nXhu56vx_XgNwos
 // ============================================================================
 // ESTADO GLOBAL
 // ============================================================================
-let PARAMS = defaultParams();
+let PARAMS = defaultParamsComCustom();
 
 const EQUIP_INFO = {
   P1: { grupo: 'Inicial' }, P2: { grupo: 'Inicial' }, P3: { grupo: 'Inicial' }, P4: { grupo: 'Inicial' },
   P5: { grupo: 'Final' }, P6: { grupo: 'Final' }, P7: { grupo: 'Final' },
-  P10: { grupo: 'Fracionamento' },
+  P10: { grupo: 'Fracionamento' }, P11: { grupo: 'Fracionamento' },
   P8: { grupo: 'Sb/Sn' }, P9: { grupo: 'Sb/Sn' },
   L1: { grupo: 'Saída' }, L2: { grupo: 'Saída' }, Hogueira: { grupo: 'Saída' },
 };
-const EQUIP_ORDEM = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P10', 'P8', 'P9', 'L1', 'L2', 'Hogueira'];
+const EQUIP_ORDEM = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P10', 'P11', 'P8', 'P9', 'L1', 'L2', 'Hogueira'];
 
-// rótulo do grupo mostrado no relatório de utilização — pra P1-P9, reflete o
-// papel ATUAL atribuído no menu "Papéis das Panelas" (não fica preso no padrão
-// de fábrica); P10/L1/L2/Hogueira usam o rótulo fixo de sempre.
+// rótulo do grupo mostrado no relatório de utilização — reflete o papel ATUAL
+// atribuído no menu "Papéis das Panelas" (todas as panelas P1-P11 são
+// editáveis); L1/L2/Hogueira usam o rótulo fixo de sempre.
 function rotuloGrupoPanela(eq) {
   const papel = PARAMS.papeisPanelas ? PARAMS.papeisPanelas[eq] : undefined;
   if (papel) {
@@ -1468,8 +1491,8 @@ function rotuloGrupoPanela(eq) {
 const ANIM_POS = {
   P4: [140, 130], P3: [140, 240], P2: [140, 350], P1: [140, 460],
   P7: [340, 150], P6: [340, 270], P5: [340, 400],
-  P10: [540, 60],
-  L2: [600, 150], Hogueira: [520, 270], L1: [600, 400],
+  P10: [540, 60], P11: [670, 60],
+  L2: [600, 150], Hogueira: [600, 270], L1: [600, 400],
   P8: [540, 540], P9: [670, 540],
 };
 const ANIM_FORMA = { L1: 'barra', L2: 'barra' }; // demais equipamentos = círculo (panelas/hogueira)
@@ -1775,8 +1798,11 @@ function buildStageInputs(dictEtapas, pathPrefix) {
   return html;
 }
 
-function detailsBlock(title, innerHtml, open) {
-  return `<details ${open ? 'open' : ''}><summary>${title}</summary><div class="details-body">${innerHtml}</div></details>`;
+function detailsBlock(title, innerHtml, open, blockId) {
+  const btnPadrao = blockId
+    ? `<button class="btn-definir-padrao" data-block-id="${blockId}" type="button" title="Salva os valores atuais desse painel como o novo padrão — o botão Reset passa a voltar pra eles">Definir como padrão</button>`
+    : '';
+  return `<details ${open ? 'open' : ''}><summary>${title}</summary><div class="details-body" data-block-id="${blockId || ''}">${btnPadrao}${innerHtml}</div></details>`;
 }
 
 // editor de rotas: pra cada "origem" (chave de dictRotas), mostra um checkbox por
@@ -1856,7 +1882,12 @@ const OPCOES_PAPEL_PANELA = [
   { valor: 'final', rotulo: 'Final' },
   { valor: 'finalPuro', rotulo: 'Final só Puro' },
   { valor: 'finalCalcio', rotulo: 'Final só Cálcio' },
+  { valor: 'finalFracionamento', rotulo: 'Final + Fracionamento' },
+  { valor: 'finalFracionamentoPuro', rotulo: 'Final + Fracionamento (só Puro)' },
+  { valor: 'finalFracionamentoCalcio', rotulo: 'Final + Fracionamento (só Cálcio)' },
+  { valor: 'fracionamentoCalcio', rotulo: 'Fracionamento Cálcio' },
   { valor: 'sbsn', rotulo: 'Sb/Sn' },
+  { valor: 'desativada', rotulo: 'Desativada' },
 ];
 
 function scalarFieldSelect(label, path, opcoes) {
@@ -1875,6 +1906,28 @@ function setByPath(obj, path, value) {
   const last = parts.pop();
   const target = parts.reduce((o, k) => o[k], obj);
   target[last] = value;
+}
+
+// "Definir como padrão" — guarda, por caminho de parâmetro (ex: "papeisPanelas.P5"),
+// o valor atual escolhido pelo usuário, sobrescrevendo o padrão de fábrica pra
+// sempre. Persiste no navegador (localStorage), sobrevive a reloads da página.
+const CHAVE_CUSTOM_DEFAULTS = 'dallon_custom_defaults';
+function obterCustomDefaults() {
+  try {
+    return JSON.parse(localStorage.getItem(CHAVE_CUSTOM_DEFAULTS) || '{}');
+  } catch { return {}; }
+}
+function salvarCustomDefaults(dict) {
+  try { localStorage.setItem(CHAVE_CUSTOM_DEFAULTS, JSON.stringify(dict)); } catch { /* localStorage indisponível */ }
+}
+// defaultParams() de fábrica + qualquer "padrão customizado" salvo por cima
+function defaultParamsComCustom() {
+  const base = defaultParams();
+  const custom = obterCustomDefaults();
+  Object.keys(custom).forEach(path => {
+    try { setByPath(base, path, custom[path]); } catch { /* caminho não existe mais (ex: versão antiga salva) — ignora */ }
+  });
+  return base;
 }
 
 function textoSomaProgramacao() {
@@ -1916,7 +1969,7 @@ function renderParamForm() {
     ${scalarField('Panelas iniciais cheias no início do mês', 'panelasIniciaisCheias', 0.25,
       'Quantas panelas iniciais (P1-P4) já estavam cheias às 00:00 do dia 1. Valor inteiro (ex: 2) = essa quantidade de panelas pula direto pro processo químico, sem esperar ponte nem carregamento. Valor quebrado (ex: 0,5) = uma panela adicional parcialmente cheia, que precisa de menos tempo pra terminar o carregamento do 1º lote que usá-la. Máximo 4 (uma pra cada panela inicial).',
       0, 4)}
-  `, true);
+  `, true, 'estrutural');
 
   const ajudaLingotamento = 'Pontos de referência usados pra interpolar o tempo de lingotamento pelo peso real do lote (quanto mais pesado, mais tempo). "Lote grande" e "lote pequeno" são as duas âncoras calibradas — qualquer peso intermediário (ou fora da faixa) é calculado por interpolação/extrapolação linear entre esses dois pontos.';
   html += detailsBlock('Tempo de lingotamento (por saída)', `
@@ -1925,17 +1978,18 @@ function renderParamForm() {
     ${scalarFieldHoras('L1 — lote grande (~115t)', 'saidaTempoRef.ref115.L1', ajudaLingotamento)}
     ${scalarFieldHoras('L1 — lote pequeno (~50t)', 'saidaTempoRef.ref50.L1', ajudaLingotamento)}
     ${scalarFieldHoras('L2 — lote grande (~115t)', 'saidaTempoRef.ref115.L2', ajudaLingotamento)}
-    ${scalarFieldHoras('L2 — lote pequeno (~50t)', 'saidaTempoRef.ref50.L2', ajudaLingotamento)}
-  `, false);
+  `, false, 'lingotamento');
 
   html += detailsBlock('Probabilidades', `
     ${scalarFieldPercentual('Proporção Cálcio', 'probCalcio')}
     ${scalarFieldPercentual('Cálcio sai por L', 'probCalcioSaidaL')}
-    ${scalarFieldPercentual('Fracionamento Puro→P10', 'probFracionamentoPuro')}
-    ${scalarFieldPercentual('Fracionamento Cálcio→P10', 'probFracionamentoCalcio')}
+    ${scalarFieldPercentual('Fracionamento Puro', 'probFracionamentoPuro',
+      'Chance de um lote Puro desviar uma fração (que sempre vira Cálcio) pra alguma panela com papel "Fracionamento Cálcio" disponível — pode ser P10, P11 ou qualquer outra que você configurar assim, não é fixo em P10.')}
+    ${scalarFieldPercentual('Fracionamento Cálcio', 'probFracionamentoCalcio',
+      'Mesma lógica, mas pra lotes de Cálcio. Vale só pra panelas com papel "Final + Fracionamento" (ou suas variantes); não afeta panelas com outros papéis.')}
     ${scalarFieldPercentual('Precisa desestanhação', 'probDesestanhacao')}
     ${scalarFieldPercentual('Pula etapa de lança', 'probPulaLanca')}
-  `, false);
+  `, false, 'probabilidades');
 
   html += detailsBlock('Pesos (kg)', `
     ${scalarField('Peso por lote Puro/Cálcio', 'kgLotePuroCalcio', 500)}
@@ -1944,47 +1998,58 @@ function renderParamForm() {
     ${scalarField('Retirado P7 fracionado — Cálcio', 'kgRetiradoP7FracionadoCalcio', 500)}
     ${scalarField('Sb/Sn — peso médio', 'sbsnKgMedia', 500)}
     ${scalarField('Sb/Sn — desvio', 'sbsnKgDesvio', 100)}
-  `, false);
+  `, false, 'pesos');
 
   html += detailsBlock('Tempos — Comum (1ª limpeza até Transferência)',
     buildStageInputs(PARAMS.processos.comum.inicial, 'processos.comum.inicial') +
-    buildStageInputs(PARAMS.processos.comum.transferencia1, 'processos.comum.transferencia1'), false);
+    buildStageInputs(PARAMS.processos.comum.transferencia1, 'processos.comum.transferencia1'), false, 'tempos-comum');
 
   html += detailsBlock('Tempos — Transferência Intermediária → Final',
     `<div class="ajuda-manut">Só é usada quando alguma panela estiver com o papel "Intermediária" (menu "Papéis das Panelas"). Sem nenhuma Intermediária configurada, esse tempo não entra no cálculo.</div>` +
-    buildStageInputs(PARAMS.processos.comum.transferenciaIntermediaria, 'processos.comum.transferenciaIntermediaria'), false);
+    buildStageInputs(PARAMS.processos.comum.transferenciaIntermediaria, 'processos.comum.transferenciaIntermediaria'), false, 'transf-intermediaria');
 
   html += detailsBlock('Panela Final Puro/Ca (2ª Desantimoniação até Lingotamento — caso for Puro)',
     buildStageInputs(PARAMS.processos.comum.finalComum, 'processos.comum.finalComum') +
-    buildStageInputs(PARAMS.processos.Puro.finalDivergente, 'processos.Puro.finalDivergente'), false);
+    buildStageInputs(PARAMS.processos.Puro.finalDivergente, 'processos.Puro.finalDivergente'), false, 'final-puro');
 
   html += detailsBlock('Panela Final — Cálcio (2ª Transferência até Lingotamento — Cálcio)',
-    buildStageInputs(PARAMS.processos.Calcio.finalDivergente, 'processos.Calcio.finalDivergente'), false);
+    buildStageInputs(PARAMS.processos.Calcio.finalDivergente, 'processos.Calcio.finalDivergente'), false, 'final-calcio');
 
-  html += detailsBlock('Tempos — Sb/Sn', buildStageInputs(PARAMS.sbsnEtapas, 'sbsnEtapas'), false);
+  html += detailsBlock('Tempos — Sb/Sn', buildStageInputs(PARAMS.sbsnEtapas, 'sbsnEtapas'), false, 'tempos-sbsn');
 
   html += detailsBlock('Papéis das Panelas',
     `<div class="ajuda-manut">Define a função de cada panela. "Inicial" faz as etapas de 1ª limpeza até decuprização.
-    "Intermediária" recebe de uma Inicial, faz TODA a química final (o que "Final" faz normalmente) e transfere pra uma
-    panela "Final", que aí só lingota. "Final" faz a química completa + lingotamento — a menos que receba de uma
-    Intermediária, aí só lingota. "Final só Puro"/"Final só Cálcio" restringem a panela a uma única liga. Se nenhuma
-    panela estiver marcada "Intermediária", o fluxo é exatamente o de sempre (Inicial → Final direto, sem escala).</div>` +
-    ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9'].map(pn => scalarFieldSelect(pn, `papeisPanelas.${pn}`, OPCOES_PAPEL_PANELA)).join('') +
-    `<div class="field-row"><label>P10</label><span style="color:var(--text-muted); font-family:var(--mono); font-size:12px;">Fracionamento (fixo)</span></div>`,
-    false);
+    "Intermediária" recebe de uma Inicial, faz só a parte COMUM da química final (até a 2ª desantimoniação, igual pras
+    duas ligas) e transfere pra uma panela "Final", que faz o resto (química que diverge por liga + lingotamento).
+    "Final" faz a química completa + lingotamento — a menos que receba de uma Intermediária, aí só faz a parte final que
+    diverge por liga + lingotamento. "Final só Puro"/"Final só Cálcio" restringem a panela a uma única liga (rejeita a
+    outra na hora de rotear). <b>"Final + Fracionamento"</b>: faz o processo final normal (química completa +
+    lingotamento) pra Puro ou Cálcio, mas parte dos lotes (conforme a % de "Fracionamento Puro/Cálcio→P10" no menu
+    Probabilidades) desviam uma fração — que sempre vira Cálcio — pra uma panela "Fracionamento Cálcio" disponível;
+    o restante do lote continua e lingota normal, na liga original. Sem fracionamento nesse lote, ele só lingota
+    inteiro. <b>"Final + Fracionamento (só Puro)"</b>/<b>"(só Cálcio)"</b>: mesma coisa, mas só aceitam lotes daquela
+    liga como lote principal (rejeitam a outra na hora de rotear) — ex: uma panela "só Puro" sempre faz Puro, e às
+    vezes fraciona uma parte pra virar Cálcio em outra panela, mas nunca recebe um lote de Cálcio inteiro pra processar
+    ela mesma. <b>"Fracionamento Cálcio"</b>: panela pequena que recebe a fração desviada, faz a química (limpeza final
+    + Agregar) e lingota como Cálcio — qualquer variante de "Final + Fracionamento" disponível pode mandar pra qualquer
+    panela "Fracionamento Cálcio" disponível, sem rota fixa entre pares específicos.
+    <b>"Desativada"</b>: tira a panela da simulação por completo (não recebe lote nenhum, de nenhum tipo). Se nenhuma
+    panela estiver marcada "Intermediária" ou híbrida, o fluxo comum é exatamente o de sempre (Inicial → Final direto).</div>` +
+    ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9', 'P10', 'P11'].map(pn => scalarFieldSelect(pn, `papeisPanelas.${pn}`, OPCOES_PAPEL_PANELA)).join(''),
+    false, 'papeis-panelas');
 
   html += detailsBlock('Rotas — Panela inicial/intermediária → Próxima panela',
-    buildRotaCheckboxes(PARAMS.rotas.iniciaisParaFinais, ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9'], 'iniciaisParaFinais'), false);
+    buildRotaCheckboxes(PARAMS.rotas.iniciaisParaFinais, ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9', 'P10', 'P11'], 'iniciaisParaFinais'), false, 'rotas-iniciais');
 
-  html += detailsBlock('Rotas — Panela final / P10 / Sb-Sn → Saída física',
-    buildRotaCheckboxes(PARAMS.rotas.finaisParaSaidas, ['L1', 'L2', 'Hogueira'], 'finaisParaSaidas'), false);
+  html += detailsBlock('Rotas — Panela final / Fracionamento / Sb-Sn → Saída física',
+    buildRotaCheckboxes(PARAMS.rotas.finaisParaSaidas, ['L1', 'L2', 'Hogueira'], 'finaisParaSaidas'), false, 'rotas-saidas');
 
   html += detailsBlock('Rotas — Cliente → Saída permitida',
-    buildRotaCheckboxes(PARAMS.rotas.clientesParaSaidas, ['Hogueira', 'L1', 'L2'], 'clientesParaSaidas'), false);
+    buildRotaCheckboxes(PARAMS.rotas.clientesParaSaidas, ['Hogueira', 'L1', 'L2'], 'clientesParaSaidas'), false, 'rotas-clientes');
 
   html += detailsBlock('Manutenção — Panelas indisponíveis no mês (dias)',
     `<div class="ajuda-manut">Deixa o equipamento ocupado desde 00:00 do dia 1 pelo número de dias informado — qualquer lote que precisar dele espera na fila normal até acabar. 0 = disponível o mês inteiro.</div>` +
-    buildManutencaoFields(PARAMS.manutencoes), false);
+    buildManutencaoFields(PARAMS.manutencoes), false, 'manutencao-equip');
 
   html += detailsBlock('Manutenção dos Fornos',
     `${scalarField('Forno 1 — dias em manutenção', 'manutencaoFornos.diasForno1', 1,
@@ -1995,7 +2060,7 @@ function renderParamForm() {
       0, 31)}
     ${scalarFieldPercentual('Proporção normal de cada forno', 'manutencaoFornos.proporcaoForno')}
     ${scalarFieldPercentual('Proporção Pb terceiro quando 1 forno para', 'manutencaoFornos.proporcaoTerceiroManutencao')}
-    <div class="ajuda-manut" id="ajuda-fornos-texto">${textoAjudaFornos()}</div>`, false);
+    <div class="ajuda-manut" id="ajuda-fornos-texto">${textoAjudaFornos()}</div>`, false, 'manutencao-fornos');
 
   html += detailsBlock('Programação',
     `${scalarFieldCheckbox('Ativar programação por meta', 'programacao.ativa',
@@ -2012,7 +2077,7 @@ function renderParamForm() {
     <div class="ajuda-manut" id="programacao-soma-texto">${textoSomaProgramacao()}</div>
     <div class="ajuda-manut">Exemplo: 70% Puro / 20% Cálcio / 10% Sb/Sn — a cada lote, o simulador produz sempre a liga que está mais
     "atrasada" em relação à sua meta acumulada. Quando uma liga marcada "Produção Livre" já cobriu o que a meta reservou, ela
-    continua sendo produzida à parte, sem tirar espaço das outras.</div>`, false);
+    continua sendo produzida à parte, sem tirar espaço das outras.</div>`, false, 'programacao');
 
   el.innerHTML = html;
 
@@ -2075,10 +2140,25 @@ function renderParamForm() {
       }
     });
   });
+
+  el.querySelectorAll('.btn-definir-padrao').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const bodyEl = btn.closest('.details-body');
+      const paths = new Set();
+      bodyEl.querySelectorAll('[data-path]').forEach(inp => paths.add(inp.dataset.path));
+      const custom = obterCustomDefaults();
+      paths.forEach(path => { custom[path] = getByPath(PARAMS, path); });
+      salvarCustomDefaults(custom);
+      const textoOriginal = btn.textContent;
+      btn.textContent = 'Definido ✓';
+      btn.classList.add('confirmado');
+      setTimeout(() => { btn.textContent = textoOriginal; btn.classList.remove('confirmado'); }, 1800);
+    });
+  });
 }
 
 function resetarParametros() {
-  PARAMS = defaultParams();
+  PARAMS = defaultParamsComCustom();
   renderParamForm();
   document.getElementById('status-line').textContent = 'Parâmetros restaurados ao padrão validado.';
   document.getElementById('status-line').className = 'status-line';
