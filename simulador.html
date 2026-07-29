@@ -687,10 +687,19 @@ function defaultParams() {
     // tempo de espera entre decuprização e desestanhação) — mesma lógica do
     // "Pula etapa de lança" pro Puro/Cálcio, mas específica pra Sb/Sn
     probPulaDesestanhacaoSbsn: 0,
+    // decide em que liga a fração de um "Final + Fracionamento" vira — independente
+    // da meta de Programação (que serve pra outra coisa: controlar o mix geral de
+    // despacho, não o tipo da fração). 0.5 = metade Cálcio, metade Puro.
+    fracaoProporcaoCalcio: 0.5,
     probCalcio: 64 / 164,
     probCalcioSaidaL: 0.119,
     probFracionamentoPuro: 0.198,
     probFracionamentoCalcio: 0.30,
+    // por padrão (calibrado com dado real), só lotes de Cálcio com saída "L"
+    // podem fracionar — ligue isso se você configurou uma panela
+    // "Fracionamento Puro/Cálcio" que também sai por Hogueira e quer que lotes com
+    // essa saída também possam fracionar
+    fracionamentoPermiteHogueira: false,
 
     kgLotePuroCalcio: 115000,
     kgRetiradoP10: 48000,
@@ -851,7 +860,7 @@ function tempoSaidaInterpolado(saidaNome, kgTotal, params) {
 // true pra qualquer variante do papel "Final + Fracionamento" (genérico ou
 // restrito a uma liga específica)
 function ehPapelFracionamento(papel) {
-  return papel === 'finalFracionamento' || papel === 'finalFracionamentoPuro' || papel === 'finalFracionamentoCalcio';
+  return papel === 'finalFracionamento' || papel === 'finalPuroFracionamento' || papel === 'finalCalcioFracionamento';
 }
 
 function finaisCompativeis(candidatas, saidaCliente, rotas, papeis, tipoKey) {
@@ -861,8 +870,13 @@ function finaisCompativeis(candidatas, saidaCliente, rotas, papeis, tipoKey) {
     const papel = papeis[nome];
     if (papel === 'desativada') return false; // panela desativada nunca é destino válido
     if (!tipoKey) return true;
-    if (papel === 'finalPuro' || papel === 'finalFracionamentoPuro') return tipoKey === 'Puro';
-    if (papel === 'finalCalcio' || papel === 'finalFracionamentoCalcio') return tipoKey === 'Calcio';
+    // "(Só Puro)"/"(Só Cálcio)" das variantes de fracionamento NÃO restringem o lote
+    // principal — o "(Só X)" ali é sobre em que liga a FRAÇÃO vira, não o principal
+    // "(fração vira X)" das variantes genéricas de fracionamento NÃO restringem o
+    // lote principal; já "só Puro + Fracionamento"/"só Cálcio + Fracionamento"
+    // restringem sim (igual "Final só Puro"/"Final só Cálcio", só que também fracionam)
+    if (papel === 'finalPuro' || papel === 'finalPuroFracionamento') return tipoKey === 'Puro';
+    if (papel === 'finalCalcio' || papel === 'finalCalcioFracionamento') return tipoKey === 'Calcio';
     return true;
   };
   return candidatas.filter(c => {
@@ -901,7 +915,7 @@ class Simulation {
       const papel = papeis[nome] || 'inicial';
       if (papel === 'inicial') this.resources.iniciais[nome] = new Resource(nome);
       else if (papel === 'intermediaria') this.resources.intermediarias[nome] = new Resource(nome);
-      else if (['final', 'finalPuro', 'finalCalcio', 'finalFracionamento', 'finalFracionamentoPuro', 'finalFracionamentoCalcio'].includes(papel)) this.resources.finais[nome] = new Resource(nome);
+      else if (['final', 'finalPuro', 'finalCalcio', 'finalFracionamento', 'finalPuroFracionamento', 'finalCalcioFracionamento'].includes(papel)) this.resources.finais[nome] = new Resource(nome);
       else if (papel === 'sbsn') this.resources.sbsn[nome] = new Resource(nome);
       else if (papel === 'fracionamentoCalcio') this.resources.fracionamentoCalcio[nome] = new Resource(nome);
       // 'desativada' -> não entra em pool nenhuma, fica de fora da simulação
@@ -961,6 +975,16 @@ class Simulation {
     if (pr.puroLivre) return this.deficitProgramacao('Calcio') > 0 ? 'Calcio' : 'Puro';
     if (pr.calcioLivre) return this.deficitProgramacao('Puro') > 0 ? 'Puro' : 'Calcio';
     return this.deficitProgramacao('Puro') >= this.deficitProgramacao('Calcio') ? 'Puro' : 'Calcio';
+  }
+
+  // em que liga a FRAÇÃO desviada num fracionamento vira — sorteio direto pela %
+  // dedicada "fracaoProporcaoCalcio", independente da meta de Programação (que
+  // controla outra coisa: o mix geral de despacho dos lotes principais). Se
+  // ligado ao déficit da Programação, a meta configurada ali pode já estar sendo
+  // superada pela produção real dos lotes principais, enviesando sempre pra um
+  // lado só — por isso um critério próprio e simples.
+  decidirTipoFracaoPorDeficit() {
+    return Math.random() < this.params.fracaoProporcaoCalcio ? 'Calcio' : 'Puro';
   }
 
   tentarDispacharPuroCalcio() {
@@ -1049,7 +1073,34 @@ class Simulation {
   marcarLingotando(equip, lote) { this.log(equip, 'Lingotamento', lote); }
 
   async disputarQualquer(resourcesMap, names) {
-    return await disputeAny(this.env, resourcesMap, names);
+    // rodízio: gira a ordem de tentativa a cada disputa, pra não sempre preferir
+    // o primeiro nome da lista quando vários candidatos estão livres ao mesmo
+    // tempo — sem isso, o primeiro da lista "ganha" quase sempre, deixando os
+    // outros sub-utilizados mesmo com volume suficiente pra usar todos
+    let nomesRotacionados = names;
+    if (names.length > 1) {
+      this.rodizioGeral = (this.rodizioGeral || 0) + 1;
+      const offset = this.rodizioGeral % names.length;
+      nomesRotacionados = names.slice(offset).concat(names.slice(0, offset));
+    }
+    return await disputeAny(this.env, resourcesMap, nomesRotacionados);
+  }
+
+  // checagem NÃO-bloqueante: retorna o nome do primeiro recurso livre agora
+  // (sem entrar na fila), ou null se todos estiverem ocupados nesse instante
+  // checagem NÃO-bloqueante: retorna o nome do primeiro recurso livre agora
+  // (sem entrar na fila), ou null se todos estiverem ocupados nesse instante.
+  // Em rodízio: cada chamada começa a checar por um candidato diferente (não
+  // sempre o primeiro da lista), pra distribuir melhor entre opções livres —
+  // senão a primeira da lista sempre "ganha" quando várias estão disponíveis.
+  algumLivre(resourcesMap, names) {
+    if (!names.length) return null;
+    this.rodizioFrac = (this.rodizioFrac || 0) + 1;
+    for (let i = 0; i < names.length; i++) {
+      const nome = names[(this.rodizioFrac + i) % names.length];
+      if (resourcesMap[nome] && !resourcesMap[nome].busy) return nome;
+    }
+    return null;
   }
 
   sortearEtapasAPular() {
@@ -1103,15 +1154,32 @@ class Simulation {
     return { saidaNome, espera: t1 - t0 };
   }
 
+  // dispara uma fração completa (transferência + química + lingotamento) sem
+  // bloquear quem chamou — a panela de origem já reivindicou a "panFrac" antes
+  // de chamar isso, então aqui só toca o processo até o fim
+  async dispararFracaoCalcio(panFrac, panOrigem, tipoFrac, saidaCliente, chegadaLoteMae, nomeLoteMae) {
+    this.contadorP10++;
+    const identFrac = { lote: `${nomeLoteMae}-FRAC-${this.contadorP10}`, tipo: tipoFrac, saidaCliente };
+    const inicioTransfFrac = this.env.now;
+    await this.rodarEtapasFixas(panFrac, this.params.calcio50.transferenciaP10, identFrac);
+    await this.continuarFracionamentoCalcio(panFrac, panOrigem, { tipoFrac, saidaCliente }, identFrac, chegadaLoteMae, 0, inicioTransfFrac);
+  }
+
   async continuarFracionamentoCalcio(panFrac, panOrigem, demanda, identFrac, chegadaLoteMae, esperaFrac, inicioTransfFrac) {
-    await this.rodarEtapasFixas(panFrac, this.params.calcio50.depoisTransferenciaP10, identFrac);
+    if (demanda.tipoFrac !== 'Puro') {
+      // fração vira Cálcio: química completa (limpeza final + Agregar)
+      await this.rodarEtapasFixas(panFrac, this.params.calcio50.depoisTransferenciaP10, identFrac);
+    }
+    // fração vira Puro: pula direto pro lingotamento (só fez a "2ª transferência"
+    // antes, comum aos dois casos) — reaproveita os mesmos tempos e peso do
+    // Cálcio pequeno, só sem a etapa de agregar cálcio (não faz sentido pro Puro)
     this.marcarLingotando(panFrac, identFrac);
     const { saidaNome } = await this.processarSaida(panFrac, identFrac, this.params.kgRetiradoP10, demanda.saidaCliente, 'Aguardando saída (fracionamento)');
     this.liberar(panFrac);
     this.resources.fracionamentoCalcio[panFrac].release(this.env);
-    this.registrarProducaoTipo(demanda.tipo, this.params.kgRetiradoP10 / 1000);
+    this.registrarProducaoTipo(demanda.tipoFrac, this.params.kgRetiradoP10 / 1000);
     this.resultados.push({
-      lote: identFrac.lote, tipo: demanda.tipo, saidaCliente: demanda.saidaCliente,
+      lote: identFrac.lote, tipo: demanda.tipoFrac, saidaCliente: demanda.saidaCliente,
       kg: this.params.kgRetiradoP10, toneladas: this.params.kgRetiradoP10 / 1000,
       panelaFinal: panOrigem, panelaP10: panFrac, saidaReal: saidaNome,
       chegada: chegadaLoteMae, inicioCarregamentoH: inicioTransfFrac, fim: this.env.now,
@@ -1137,10 +1205,14 @@ class Simulation {
 
     const nomesIniciais = Object.keys(this.resources.iniciais);
     // fracionamento mira em QUALQUER panela com papel "Final + Fracionamento"
-    // (genérico ou restrito à liga do próprio lote) alcançável
-    const aceitaFracionamentoDoTipo = (papel) => ehPapelFracionamento(papel)
-      && (papel !== 'finalFracionamentoPuro' || tipoKey === 'Puro')
-      && (papel !== 'finalFracionamentoCalcio' || tipoKey === 'Calcio');
+    // (qualquer variante aceita Puro ou Cálcio como lote principal — o "(Só X)"
+    // é sobre em que liga a FRAÇÃO vira, não sobre o que a panela aceita)
+    const aceitaFracionamentoDoTipo = (papel) => {
+      if (!ehPapelFracionamento(papel)) return false;
+      if (papel === 'finalPuroFracionamento') return tipoKey === 'Puro';
+      if (papel === 'finalCalcioFracionamento') return tipoKey === 'Calcio';
+      return true;
+    };
     let candidatosIniciais = lote.fracionamento
       ? nomesIniciais.filter(pp => this.alcancaAlgumQueSatisfaz(pp, aceitaFracionamentoDoTipo))
       : iniciaisCompativeis(lote.saidaCliente, p.rotas, nomesIniciais, papeis, tipoKey);
@@ -1261,28 +1333,29 @@ class Simulation {
       panFinal = panProximo;
     }
 
-    let demanda = null, kgLotePrincipal = lote.kg;
-    if (ehPapelFracionamento(papeis[panFinal]) && lote.fracionamento) {
-      demanda = lote.fracionamento; kgLotePrincipal = lote.kg;
-    } else if (ehPapelFracionamento(papeis[panFinal]) && this.demandaP10.length > 0) {
-      demanda = this.demandaP10.shift();
-      kgLotePrincipal = tipoKey === 'Puro' ? p.kgRetiradoP7FracionadoPuro : p.kgRetiradoP7FracionadoCalcio;
-    }
-
-    if (demanda) {
+    let kgLotePrincipal = lote.kg;
+    // "Final + Fracionamento" (qualquer variante): SEMPRE tenta encher todas as
+    // panelas "Fracionamento Puro/Cálcio" que estiverem livres nesse instante —
+    // não depende mais de sorteio de %. Cada uma que aceitar tira um peso fixo
+    // (kgRetiradoP10) do lote principal; o que sobra lingota ali mesmo, com
+    // tempo proporcional ao peso reduzido (a mesma interpolação de sempre).
+    let numFracoes = 0;
+    if (ehPapelFracionamento(papeis[panFinal])) {
       const nomesFrac = Object.keys(this.resources.fracionamentoCalcio);
-      t0 = this.env.now;
-      const { name: panFrac } = await this.disputarQualquer(this.resources.fracionamentoCalcio, nomesFrac);
-      t1 = this.env.now;
-      this.bloqueio(t0, t1, 'Aguardando panela de fracionamento', panFrac, lote, panFinal, panFrac, p.kgRetiradoP10);
-      this.contadorP10++;
-      const identFrac = { lote: `${lote.lote}-FRAC-${this.contadorP10}`, tipo: demanda.tipo, saidaCliente: demanda.saidaCliente };
-      const inicioTransfFrac = this.env.now;
-      this.log(panFinal, 'Transferência fracionada', lote);
-      await this.rodarEtapasFixas(panFrac, p.calcio50.transferenciaP10, identFrac);
-      this.continuarFracionamentoCalcio(panFrac, panFinal, demanda, identFrac, chegada, t1 - t0, inicioTransfFrac);
-      if (tipoKey === 'Calcio') {
-        await this.rodarEtapasFixas(panFinal, p.calcioP7PosFracionamento, lote);
+      for (const panFrac of nomesFrac) {
+        if (this.resources.fracionamentoCalcio[panFrac].busy) continue;
+        if (kgLotePrincipal < p.kgRetiradoP10) break; // não sobraria nem pra essa fração
+        this.resources.fracionamentoCalcio[panFrac].busy = true; // reivindica na hora, sem fila
+        kgLotePrincipal -= p.kgRetiradoP10;
+        numFracoes++;
+        const tipoFrac = this.decidirTipoFracaoPorDeficit();
+        this.dispararFracaoCalcio(panFrac, panFinal, tipoFrac, lote.saidaCliente, chegada, lote.lote);
+      }
+      if (numFracoes > 0) {
+        this.log(panFinal, 'Transferência fracionada', lote);
+        if (tipoKey === 'Calcio') {
+          await this.rodarEtapasFixas(panFinal, p.calcioP7PosFracionamento, lote);
+        }
       }
     }
 
@@ -1299,8 +1372,8 @@ class Simulation {
       chegada, inicioCarregamentoH: inicioCarregamento, fim,
       tempoTotalH: fim - inicioCarregamento, esperaPanelaInicialH, esperaPanelaFinalH, esperaSaidaH,
     });
+    this.registrarProducaoTipo(tipoKey, kgLotePrincipal / 1000);
     if (this.progAtiva) {
-      this.registrarProducaoTipo(tipoKey, kgLotePrincipal / 1000);
       this.tentarDispacharSbsn(); // pode ter ficado "pausado" esperando a meta — reavalia
     }
   }
@@ -1339,8 +1412,8 @@ class Simulation {
       chegada, inicioCarregamentoH: inicioCarregamento, fim,
       tempoTotalH: fim - inicioCarregamento, esperaSaidaH,
     });
+    this.registrarProducaoTipo('Sb/Sn', lote.kg / 1000);
     if (this.progAtiva) {
-      this.registrarProducaoTipo('Sb/Sn', lote.kg / 1000);
       this.tentarDispacharSbsn();
     }
   }
@@ -1368,8 +1441,8 @@ function gerarLotePuroCalcio(p, numero, tipoForcado) {
     lote: `${tipo.slice(0, 3).toUpperCase()}-${numero}`, tipo, saidaCliente: saida,
     rota: tipo === 'Calcio' ? 'CALCIO_130' : 'PURO_130', kg: p.kgLotePuroCalcio,
   };
-  if (saida === 'L' && Math.random() < probFrac) {
-    item.fracionamento = { tipo: 'Calcio', saidaCliente: 'L' };
+  if ((saida === 'L' || p.fracionamentoPermiteHogueira) && Math.random() < probFrac) {
+    item.fracionamento = { saidaCliente: saida }; // o "tipo" da fração é decidido depois, conforme o papel da panela que recebe
   }
   return item;
 }
@@ -1896,9 +1969,9 @@ const OPCOES_PAPEL_PANELA = [
   { valor: 'finalPuro', rotulo: 'Final só Puro' },
   { valor: 'finalCalcio', rotulo: 'Final só Cálcio' },
   { valor: 'finalFracionamento', rotulo: 'Final + Fracionamento' },
-  { valor: 'finalFracionamentoPuro', rotulo: 'Final + Fracionamento (só Puro)' },
-  { valor: 'finalFracionamentoCalcio', rotulo: 'Final + Fracionamento (só Cálcio)' },
-  { valor: 'fracionamentoCalcio', rotulo: 'Fracionamento Cálcio' },
+  { valor: 'finalPuroFracionamento', rotulo: 'Final só Puro + Fracionamento' },
+  { valor: 'finalCalcioFracionamento', rotulo: 'Final só Cálcio + Fracionamento' },
+  { valor: 'fracionamentoCalcio', rotulo: 'Fracionamento Puro/Cálcio' },
   { valor: 'sbsn', rotulo: 'Sb/Sn' },
   { valor: 'desativada', rotulo: 'Desativada' },
 ];
@@ -1997,9 +2070,11 @@ function renderParamForm() {
     ${scalarFieldPercentual('Proporção Cálcio', 'probCalcio')}
     ${scalarFieldPercentual('Cálcio sai por L', 'probCalcioSaidaL')}
     ${scalarFieldPercentual('Fracionamento Puro', 'probFracionamentoPuro',
-      'Chance de um lote Puro desviar uma fração (que sempre vira Cálcio) pra alguma panela com papel "Fracionamento Cálcio" disponível — pode ser P10, P11 ou qualquer outra que você configurar assim, não é fixo em P10.')}
+      'Chance de um lote Puro desviar uma fração (que sempre vira Cálcio) pra alguma panela com papel "Fracionamento Puro/Cálcio" disponível — pode ser P10, P11 ou qualquer outra que você configurar assim, não é fixo em P10.')}
     ${scalarFieldPercentual('Fracionamento Cálcio', 'probFracionamentoCalcio',
       'Mesma lógica, mas pra lotes de Cálcio. Vale só pra panelas com papel "Final + Fracionamento" (ou suas variantes); não afeta panelas com outros papéis.')}
+    ${scalarFieldCheckbox('Fracionamento também vale pra saída Hogueira', 'fracionamentoPermiteHogueira',
+      'Por padrão (calibrado com dado real), só lotes de Cálcio com saída "L" fracionam — os de saída "H" (Hogueira) nunca fracionam, mesmo que a panela "Fracionamento Puro/Cálcio" esteja configurada pra também sair por Hogueira. Marque essa opção se quiser que lotes de saída Hogueira também possam fracionar (a fração sai pela mesma saída do lote principal).')}
     ${scalarFieldPercentual('Precisa desestanhação', 'probDesestanhacao')}
     ${scalarFieldPercentual('Pula etapa de lança', 'probPulaLanca')}
     ${scalarFieldPercentual('Pula desestanhação (Sb/Sn)', 'probPulaDesestanhacaoSbsn',
@@ -2039,17 +2114,24 @@ function renderParamForm() {
     "Final" faz a química completa + lingotamento — a menos que receba de uma Intermediária, aí só faz a parte final que
     diverge por liga + lingotamento. "Final só Puro"/"Final só Cálcio" restringem a panela a uma única liga (rejeita a
     outra na hora de rotear). <b>"Final + Fracionamento"</b>: faz o processo final normal (química completa +
-    lingotamento) pra Puro ou Cálcio, mas parte dos lotes (conforme a % de "Fracionamento Puro/Cálcio→P10" no menu
-    Probabilidades) desviam uma fração — que sempre vira Cálcio — pra uma panela "Fracionamento Cálcio" disponível;
-    o restante do lote continua e lingota normal, na liga original. Sem fracionamento nesse lote, ele só lingota
-    inteiro. <b>"Final + Fracionamento (só Puro)"</b>/<b>"(só Cálcio)"</b>: mesma coisa, mas só aceitam lotes daquela
-    liga como lote principal (rejeitam a outra na hora de rotear) — ex: uma panela "só Puro" sempre faz Puro, e às
-    vezes fraciona uma parte pra virar Cálcio em outra panela, mas nunca recebe um lote de Cálcio inteiro pra processar
-    ela mesma. <b>"Fracionamento Cálcio"</b>: panela pequena que recebe a fração desviada, faz a química (limpeza final
-    + Agregar) e lingota como Cálcio — qualquer variante de "Final + Fracionamento" disponível pode mandar pra qualquer
-    panela "Fracionamento Cálcio" disponível, sem rota fixa entre pares específicos.
+    lingotamento) pra Puro ou Cálcio, mas parte dos lotes (conforme a % de "Fracionamento Puro/Cálcio" no menu
+    Probabilidades) desviam uma fração pra uma panela "Fracionamento Puro/Cálcio" disponível. A liga que a fração vira
+    (Puro ou Cálcio) é sorteada pela % "Proporção Cálcio nas frações" logo abaixo — independente da meta de
+    Programação (que controla outra coisa: o mix geral de despacho dos lotes principais, não o tipo da fração). O
+    restante do lote continua e lingota normal, na liga original — sem fracionamento, ele só lingota inteiro.
+    <b>"Final só Puro + Fracionamento"</b>: só aceita Puro como lote principal (rejeita Cálcio, igual "Final só Puro")
+    — e além disso fraciona (mesmo sorteio de liga da fração). <b>"Final só Cálcio + Fracionamento"</b>: o espelho —
+    só aceita Cálcio como principal, e fraciona do mesmo jeito. Quando a fração vira Cálcio, faz a química completa
+    (2ª transferência + limpeza final + Agregar); quando vira Puro, faz só 2ª transferência + lingotamento (sem
+    limpeza final nem Agregar, que não fazem sentido pro Puro — reaproveita os mesmos tempos e peso do Cálcio pequeno).
+    <b>"Fracionamento Puro/Cálcio"</b>: panela pequena que recebe a fração desviada — aceita tanto fração de Puro
+    quanto de Cálcio (a química rodada depende do que foi sorteado, não do nome dela) — qualquer variante de
+    "Final + Fracionamento" disponível pode mandar pra qualquer panela "Fracionamento Puro/Cálcio" disponível, sem
+    rota fixa entre pares específicos.
     <b>"Desativada"</b>: tira a panela da simulação por completo (não recebe lote nenhum, de nenhum tipo). Se nenhuma
     panela estiver marcada "Intermediária" ou híbrida, o fluxo comum é exatamente o de sempre (Inicial → Final direto).</div>` +
+    scalarFieldPercentual('Proporção Cálcio nas frações', 'fracaoProporcaoCalcio',
+      'Chance de uma fração desviada (por qualquer panela "Final + Fracionamento") virar Cálcio — o restante das frações vira Puro. 50% = metade e metade. Isso é independente da meta de Programação.') +
     ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9', 'P10', 'P11'].map(pn => scalarFieldSelect(pn, `papeisPanelas.${pn}`, OPCOES_PAPEL_PANELA)).join(''),
     false, 'papeis-panelas');
 
@@ -2085,7 +2167,7 @@ function renderParamForm() {
       'Quando marcado, Puro não fica limitado à meta % — produz o quanto conseguir, além do que a meta reservaria (usa o orçamento de "Lotes sintéticos" inteiro pra essa liga, de cima da meta).')}
     ${scalarFieldPercentual('Cálcio', 'programacao.calcio')}
     ${scalarFieldCheckbox('Cálcio — Produção Livre', 'programacao.calcioLivre',
-      'Mesma lógica do Puro, mas pro Cálcio.')}
+      'Mesma lógica do Puro (não fica limitado à meta %). ALÉM disso, também muda como o fracionamento funciona: em vez de depender do sorteio de % em "Fracionamento Puro/Cálcio", qualquer panela "Final + Fracionamento" passa a mandar SEMPRE que alguma panela "Fracionamento Puro/Cálcio" estiver livre naquele instante (demanda livre) — só lingota tudo na panela de origem quando todas as "Fracionamento Puro/Cálcio" estiverem ocupadas. Só vale pra quando o resultado seria mesmo Cálcio (não afeta variantes que viram Puro).')}
     ${scalarFieldPercentual('Sb/Sn', 'programacao.sbsn')}
     ${scalarFieldCheckbox('Sb/Sn — Produção Livre', 'programacao.sbsnLivre',
       'Mesma lógica, mas pro Sb/Sn — usa o orçamento de "Lotes Sb/Sn" inteiro além da meta. Faz sentido ligar aqui, já que Sb/Sn usa panelas próprias (P8/P9), sem disputar recurso com Puro/Cálcio.')}
