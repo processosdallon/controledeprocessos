@@ -1153,7 +1153,8 @@ class Simulation {
   // de chamar isso, então aqui só toca o processo até o fim
   async dispararFracaoCalcio(panFrac, panOrigem, tipoFrac, saidaCliente, chegadaLoteMae, nomeLoteMae) {
     this.contadorP10++;
-    const identFrac = { lote: `${nomeLoteMae}-FRAC-${this.contadorP10}`, tipo: tipoFrac, saidaCliente };
+    const sufixoLiga = tipoFrac === 'Puro' ? 'PUR' : 'CÁL';
+    const identFrac = { lote: `${nomeLoteMae}-FRAC-${this.contadorP10}-${sufixoLiga}`, tipo: tipoFrac, saidaCliente };
     const inicioTransfFrac = this.env.now;
     await this.rodarEtapasFixas(panFrac, this.params.calcio50.transferenciaP10, identFrac);
     await this.continuarFracionamentoCalcio(panFrac, panOrigem, { tipoFrac, saidaCliente }, identFrac, chegadaLoteMae, 0, inicioTransfFrac);
