@@ -693,13 +693,6 @@ function defaultParams() {
     fracaoProporcaoCalcio: 0.5,
     probCalcio: 64 / 164,
     probCalcioSaidaL: 0.119,
-    probFracionamentoPuro: 0.198,
-    probFracionamentoCalcio: 0.30,
-    // por padrão (calibrado com dado real), só lotes de Cálcio com saída "L"
-    // podem fracionar — ligue isso se você configurou uma panela
-    // "Fracionamento Puro/Cálcio" que também sai por Hogueira e quer que lotes com
-    // essa saída também possam fracionar
-    fracionamentoPermiteHogueira: false,
 
     kgLotePuroCalcio: 115000,
     kgRetiradoP10: 48000,
@@ -918,7 +911,7 @@ class Simulation {
       else if (papel === 'intermediaria') this.resources.intermediarias[nome] = new Resource(nome);
       else if (['final', 'finalPuro', 'finalCalcio', 'finalFracionamento', 'finalPuroFracionamento', 'finalCalcioFracionamento'].includes(papel)) this.resources.finais[nome] = new Resource(nome);
       else if (papel === 'sbsn') this.resources.sbsn[nome] = new Resource(nome);
-      else if (papel === 'fracionamentoCalcio') this.resources.fracionamentoCalcio[nome] = new Resource(nome);
+      else if (['fracionamentoCalcio', 'fracionamentoSoCalcio', 'fracionamentoSoPuro'].includes(papel)) this.resources.fracionamentoCalcio[nome] = new Resource(nome);
       // 'desativada' -> não entra em pool nenhuma, fica de fora da simulação
     });
 
@@ -1331,7 +1324,10 @@ class Simulation {
         this.resources.fracionamentoCalcio[panFrac].busy = true; // reivindica na hora, sem fila
         kgLotePrincipal -= p.kgRetiradoP10;
         numFracoes++;
-        const tipoFrac = this.decidirTipoFracaoPorDeficit();
+        const papelFrac = papeis[panFrac];
+        const tipoFrac = papelFrac === 'fracionamentoSoCalcio' ? 'Calcio'
+          : papelFrac === 'fracionamentoSoPuro' ? 'Puro'
+          : this.decidirTipoFracaoPorDeficit();
         // a saída da fração é decidida pela liga que ela REALMENTE vira, não
         // herdada do lote principal (que pode ser de outra liga) — mesma regra
         // de sempre: Puro sempre sai por L, Cálcio sorteia L/H por probCalcioSaidaL
@@ -1421,17 +1417,11 @@ class Simulation {
 
 function gerarLotePuroCalcio(p, numero, tipoForcado) {
   const tipo = tipoForcado || (Math.random() < p.probCalcio ? 'Calcio' : 'Puro');
-  let saida, probFrac;
-  if (tipo === 'Puro') { saida = 'L'; probFrac = p.probFracionamentoPuro; }
-  else { saida = Math.random() < p.probCalcioSaidaL ? 'L' : 'H'; probFrac = p.probFracionamentoCalcio; }
-  const item = {
+  const saida = tipo === 'Puro' ? 'L' : (Math.random() < p.probCalcioSaidaL ? 'L' : 'H');
+  return {
     lote: `${tipo.slice(0, 3).toUpperCase()}-${numero}`, tipo, saidaCliente: saida,
     rota: tipo === 'Calcio' ? 'CALCIO_130' : 'PURO_130', kg: p.kgLotePuroCalcio,
   };
-  if ((saida === 'L' || p.fracionamentoPermiteHogueira) && Math.random() < probFrac) {
-    item.fracionamento = { saidaCliente: saida }; // o "tipo" da fração é decidido depois, conforme o papel da panela que recebe
-  }
-  return item;
 }
 
 function gerarLoteSbsn(p, numero) {
@@ -1959,6 +1949,8 @@ const OPCOES_PAPEL_PANELA = [
   { valor: 'finalPuroFracionamento', rotulo: 'Final só Puro + Fracionamento' },
   { valor: 'finalCalcioFracionamento', rotulo: 'Final só Cálcio + Fracionamento' },
   { valor: 'fracionamentoCalcio', rotulo: 'Fracionamento Puro/Cálcio' },
+  { valor: 'fracionamentoSoCalcio', rotulo: 'Fracionamento Só Cálcio' },
+  { valor: 'fracionamentoSoPuro', rotulo: 'Fracionamento Só Puro' },
   { valor: 'sbsn', rotulo: 'Sb/Sn' },
   { valor: 'desativada', rotulo: 'Desativada' },
 ];
@@ -2056,12 +2048,6 @@ function renderParamForm() {
   html += detailsBlock('Probabilidades', `
     ${scalarFieldPercentual('Proporção Cálcio', 'probCalcio')}
     ${scalarFieldPercentual('Cálcio sai por L', 'probCalcioSaidaL')}
-    ${scalarFieldPercentual('Fracionamento Puro', 'probFracionamentoPuro',
-      'Chance de um lote Puro desviar uma fração (que sempre vira Cálcio) pra alguma panela com papel "Fracionamento Puro/Cálcio" disponível — pode ser P10, P11 ou qualquer outra que você configurar assim, não é fixo em P10.')}
-    ${scalarFieldPercentual('Fracionamento Cálcio', 'probFracionamentoCalcio',
-      'Mesma lógica, mas pra lotes de Cálcio. Vale só pra panelas com papel "Final + Fracionamento" (ou suas variantes); não afeta panelas com outros papéis.')}
-    ${scalarFieldCheckbox('Fracionamento também vale pra saída Hogueira', 'fracionamentoPermiteHogueira',
-      'Por padrão (calibrado com dado real), só lotes de Cálcio com saída "L" fracionam — os de saída "H" (Hogueira) nunca fracionam, mesmo que a panela "Fracionamento Puro/Cálcio" esteja configurada pra também sair por Hogueira. Marque essa opção se quiser que lotes de saída Hogueira também possam fracionar (a fração sai pela mesma saída do lote principal).')}
     ${scalarFieldPercentual('Precisa desestanhação', 'probDesestanhacao')}
     ${scalarFieldPercentual('Pula etapa de lança', 'probPulaLanca')}
     ${scalarFieldPercentual('Pula desestanhação (Sb/Sn)', 'probPulaDesestanhacaoSbsn',
@@ -2101,24 +2087,26 @@ function renderParamForm() {
     "Final" faz a química completa + lingotamento — a menos que receba de uma Intermediária, aí só faz a parte final que
     diverge por liga + lingotamento. "Final só Puro"/"Final só Cálcio" restringem a panela a uma única liga (rejeita a
     outra na hora de rotear). <b>"Final + Fracionamento"</b>: faz o processo final normal (química completa +
-    lingotamento) pra Puro ou Cálcio, mas parte dos lotes (conforme a % de "Fracionamento Puro/Cálcio" no menu
-    Probabilidades) desviam uma fração pra uma panela "Fracionamento Puro/Cálcio" disponível. A liga que a fração vira
-    (Puro ou Cálcio) é sorteada pela % "Proporção Cálcio nas frações" logo abaixo — independente da meta de
-    Programação (que controla outra coisa: o mix geral de despacho dos lotes principais, não o tipo da fração). O
+    lingotamento) pra Puro ou Cálcio, mas sempre (não depende de sorteio) tenta desviar uma fração pra alguma panela
+    "Fracionamento Puro/Cálcio" (ou variante restrita) disponível. Quando o destino é a genérica "Fracionamento
+    Puro/Cálcio", a liga da fração é sorteada pela % "Proporção Cálcio nas frações" logo abaixo — independente da meta
+    de Programação (que controla outra coisa: o mix geral de despacho dos lotes principais, não o tipo da fração). O
     restante do lote continua e lingota normal, na liga original — sem fracionamento, ele só lingota inteiro.
     <b>"Final só Puro + Fracionamento"</b>: só aceita Puro como lote principal (rejeita Cálcio, igual "Final só Puro")
-    — e além disso fraciona (mesmo sorteio de liga da fração). <b>"Final só Cálcio + Fracionamento"</b>: o espelho —
+    — e além disso fraciona (mesma lógica de destino). <b>"Final só Cálcio + Fracionamento"</b>: o espelho —
     só aceita Cálcio como principal, e fraciona do mesmo jeito. Quando a fração vira Cálcio, faz a química completa
     (2ª transferência + limpeza final + Agregar); quando vira Puro, faz só 2ª transferência + lingotamento (sem
     limpeza final nem Agregar, que não fazem sentido pro Puro — reaproveita os mesmos tempos e peso do Cálcio pequeno).
     <b>"Fracionamento Puro/Cálcio"</b>: panela pequena que recebe a fração desviada — aceita tanto fração de Puro
-    quanto de Cálcio (a química rodada depende do que foi sorteado, não do nome dela) — qualquer variante de
-    "Final + Fracionamento" disponível pode mandar pra qualquer panela "Fracionamento Puro/Cálcio" disponível, sem
-    rota fixa entre pares específicos.
+    quanto de Cálcio (decidido pela % "Proporção Cálcio nas frações"). <b>"Fracionamento Só Cálcio"</b>/
+    <b>"Fracionamento Só Puro"</b>: mesma coisa, mas essa panela específica só abre lotes daquela liga, não importa o
+    que seria sorteado — útil se você quer garantir que uma panela pequena específica sempre produza uma liga fixa.
+    Qualquer variante de "Final + Fracionamento" disponível pode mandar pra qualquer panela de fracionamento
+    disponível (das três), sem rota fixa entre pares específicos.
     <b>"Desativada"</b>: tira a panela da simulação por completo (não recebe lote nenhum, de nenhum tipo). Se nenhuma
     panela estiver marcada "Intermediária" ou híbrida, o fluxo comum é exatamente o de sempre (Inicial → Final direto).</div>` +
     scalarFieldPercentual('Proporção Cálcio nas frações', 'fracaoProporcaoCalcio',
-      'Chance de uma fração desviada (por qualquer panela "Final + Fracionamento") virar Cálcio — o restante das frações vira Puro. 50% = metade e metade. Isso é independente da meta de Programação.') +
+      'Chance de uma fração desviada (por qualquer panela "Final + Fracionamento") virar Cálcio quando o destino é a panela genérica "Fracionamento Puro/Cálcio" — o restante das frações vira Puro. Não vale pras variantes restritas ("Só Cálcio"/"Só Puro"), que sempre abrem a liga do próprio nome. 50% = metade e metade. Isso é independente da meta de Programação.') +
     ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9', 'P10', 'P11'].map(pn => scalarFieldSelect(pn, `papeisPanelas.${pn}`, OPCOES_PAPEL_PANELA)).join(''),
     false, 'papeis-panelas');
 
@@ -2154,7 +2142,7 @@ function renderParamForm() {
       'Quando marcado, Puro não fica limitado à meta % — produz o quanto conseguir, além do que a meta reservaria (usa o orçamento de "Lotes sintéticos" inteiro pra essa liga, de cima da meta).')}
     ${scalarFieldPercentual('Cálcio', 'programacao.calcio')}
     ${scalarFieldCheckbox('Cálcio — Produção Livre', 'programacao.calcioLivre',
-      'Mesma lógica do Puro (não fica limitado à meta %). ALÉM disso, também muda como o fracionamento funciona: em vez de depender do sorteio de % em "Fracionamento Puro/Cálcio", qualquer panela "Final + Fracionamento" passa a mandar SEMPRE que alguma panela "Fracionamento Puro/Cálcio" estiver livre naquele instante (demanda livre) — só lingota tudo na panela de origem quando todas as "Fracionamento Puro/Cálcio" estiverem ocupadas. Só vale pra quando o resultado seria mesmo Cálcio (não afeta variantes que viram Puro).')}
+      'Mesma lógica do Puro, mas pro Cálcio (não fica limitado à meta %). Não tem relação com fracionamento — isso é decidido à parte, em "Papéis das Panelas".')}
     ${scalarFieldPercentual('Sb/Sn', 'programacao.sbsn')}
     ${scalarFieldCheckbox('Sb/Sn — Produção Livre', 'programacao.sbsnLivre',
       'Mesma lógica, mas pro Sb/Sn — usa o orçamento de "Lotes Sb/Sn" inteiro além da meta. Faz sentido ligar aqui, já que Sb/Sn usa panelas próprias (P8/P9), sem disputar recurso com Puro/Cálcio.')}
