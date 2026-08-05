@@ -482,7 +482,10 @@ tr:hover td{ background: rgba(217,96,28,0.05); }
       <div class="eyebrow">Dallon · Refino de Ligas de Chumbo</div>
       <h1>Simulador de Capacidade — Refino</h1>
     </div>
-    <button class="btn btn-secondary" id="btn-reset-topo" title="Restaura todos os parâmetros (tempos, probabilidades, pesos) ao padrão validado">↺ Reset</button>
+    <div style="display:flex; gap:8px;">
+      <button class="btn btn-secondary" id="btn-reset-topo" title="Restaura todos os parâmetros (tempos, probabilidades, pesos) ao padrão validado — mas MANTÉM qualquer customização salva com 'Definir como padrão'">↺ Reset</button>
+      <button class="btn btn-secondary" id="btn-limpar-customizacoes" title="Apaga TODAS as customizações salvas com 'Definir como padrão' (em qualquer painel) e volta 100% ao padrão de fábrica do código">🗑 Limpar personalizações salvas</button>
+    </div>
   </div>
   <p>Modelo de eventos discretos calibrado contra dados reais de produção (Cronoanálise e Controle de Paradas, maio-julho/2026). Ajuste qualquer tempo de processo ou probabilidade na coluna ao lado e rode uma nova simulação — o relatório de gargalos é gerado automaticamente.</p>
 </header>
@@ -837,7 +840,7 @@ function defaultParams() {
       finaisParaSaidas: {
         P1: [], P2: [], P3: [], P4: [],
         P5: ["L1", "Hogueira"], P6: ["Hogueira"], P7: ["L2"],
-        P10: ["L2", "Hogueira"], P11: ["L2", "Hogueira"], P8: ["L1", "Hogueira"], P9: ["L1", "Hogueira"],
+        P10: ["L2"], P11: ["L2"], P8: ["L1", "Hogueira"], P9: ["L1", "Hogueira"],
       },
       clientesParaSaidas: { H: ["Hogueira"], L: ["L1", "L2"] },
     },
@@ -1511,10 +1514,11 @@ class Simulation {
         const tipoFrac = papelFrac === 'fracionamentoSoCalcio' ? 'Calcio'
           : papelFrac === 'fracionamentoSoPuro' ? 'Puro'
           : this.decidirTipoFracaoPorDeficit();
-        // a saída da fração é decidida pela liga que ela REALMENTE vira, não
-        // herdada do lote principal (que pode ser de outra liga) — mesma regra
-        // de sempre: Puro sempre sai por L, Cálcio sorteia L/H por probCalcioSaidaL
-        const saidaClienteFrac = tipoFrac === 'Puro' ? 'L' : (Math.random() < p.probCalcioSaidaL ? 'L' : 'H');
+        // fração sai sempre por L (Puro ou Cálcio) — panelas de Fracionamento
+        // (ex: P10, P11) não alcançam Hogueira, então não faz sentido sortear
+        // "H" aqui (travaria o lote pra sempre). O sorteio "Cálcio sai por L"
+        // (probCalcioSaidaL) só vale pro lote-mãe (via P6), não pra fração.
+        const saidaClienteFrac = 'L';
         this.dispararFracaoCalcio(panFrac, panFinal, tipoFrac, saidaClienteFrac, chegada, lote.lote);
       }
       if (numFracoes > 0) {
@@ -1616,10 +1620,10 @@ class Simulation {
 function gerarLotePuroCalcio(p, numero, tipoForcado) {
   const tipo = tipoForcado || (Math.random() < p.probCalcio ? 'Calcio' : 'Puro');
   // lote-mãe de Cálcio sai sempre por Hogueira: P6 (única panela Final que
-  // termina Cálcio hoje) só alcança Hogueira. A parcela de Cálcio que precisa
-  // de saída "L" é servida pela fração desviada pra P10 (que alcança L2) —
-  // ver probCalcioSaidaL em dispararFracaoCalcio, que continua valendo só
-  // pra fração, não pro lote-mãe.
+  // termina Cálcio hoje) só alcança Hogueira. A fração de Cálcio desviada pra
+  // P10/P11 sai sempre por L (essas panelas só alcançam L2) — probCalcioSaidaL
+  // hoje não é usado em lugar nenhum (nem lote-mãe nem fração); fica guardado
+  // pra caso alguma panela de Fracionamento volte a alcançar Hogueira no futuro.
   const saida = tipo === 'Puro' ? 'L' : 'H';
   return {
     lote: `${tipo.slice(0, 3).toUpperCase()}-${numero}`, tipo, saidaCliente: saida,
@@ -2597,8 +2601,8 @@ function renderParamForm() {
 
   html += detailsBlock('Probabilidades', `
     ${scalarFieldPercentual('Proporção Cálcio', 'probCalcio')}
-    ${scalarFieldPercentual('Cálcio sai por L (só na fração, via P10)', 'probCalcioSaidaL',
-      'Só vale pra fração de Cálcio desviada pra uma panela de Fracionamento (ex: P10) — o lote-mãe de Cálcio sai sempre por Hogueira, já que hoje só a panela Final Cálcio (ex: P6) o processa, e ela só alcança Hogueira.')}
+    ${scalarFieldPercentual('Cálcio sai por L (não usado agora — nenhuma panela de Fracionamento alcança Hogueira)', 'probCalcioSaidaL',
+      'Hoje não afeta nada: o lote-mãe de Cálcio sai sempre por Hogueira (via P6) e a fração sai sempre por L (via P10/P11, que só alcançam L2). Fica guardado pra caso alguma panela de Fracionamento volte a alcançar Hogueira — nesse caso, esse % decidiria a saída da fração.')}
     ${scalarFieldPercentual('Precisa desestanhação', 'probDesestanhacao')}
     ${scalarFieldPercentual('Pula etapa de lança', 'probPulaLanca')}
     ${scalarFieldPercentual('Pula desestanhação (Sb/Sn)', 'probPulaDesestanhacaoSbsn',
@@ -2757,6 +2761,13 @@ function resetarParametros() {
 }
 document.getElementById('btn-reset').addEventListener('click', resetarParametros);
 document.getElementById('btn-reset-topo').addEventListener('click', resetarParametros);
+document.getElementById('btn-limpar-customizacoes').addEventListener('click', () => {
+  if (!confirm('Isso apaga TODAS as customizações salvas com "Definir como padrão" (papéis, rotas, tempos, pesos — em qualquer painel) e volta 100% ao padrão de fábrica do código. Não dá pra desfazer. Continuar?')) return;
+  try { localStorage.removeItem(CHAVE_CUSTOM_DEFAULTS); } catch { /* localStorage indisponível */ }
+  resetarParametros();
+  document.getElementById('status-line').textContent = 'Personalizações salvas apagadas — voltou 100% ao padrão de fábrica do código.';
+  document.getElementById('status-line').className = 'status-line';
+});
 
 // ============================================================================
 // EXECUÇÃO
@@ -2877,8 +2888,7 @@ document.getElementById('btn-run').addEventListener('click', async () => {
       const tempoFinalAnim = sim.eventos.length ? Math.max(...sim.eventos.map(e => e.tempo)) : tempoTotal;
       animacaoDados = { eventos: sim.eventos.slice(), bloqueios: sim.bloqueios.slice(), tempoFinal: tempoFinalAnim };
       lotesDetalhados = dfMes.slice().sort((a, b) => a.chegada - b.chegada);
-    }
-  }
+    }  }
 
   const tempoExec = ((performance.now() - t0) / 1000).toFixed(1);
   const mediaUtil = mediaUtilizacoes(utilizacoes);
@@ -2887,10 +2897,14 @@ document.getElementById('btn-run').addEventListener('click', async () => {
   const mediaLivrePct = mediaUtilizacoes(livrePcts);
   const mediaSetupPct = mediaUtilizacoes(setupPcts);
   const mediaBloq = mediaBloqueios(bloqueiosAgg);
+  // gargalos da MESMA réplica usada na animação (r=0) — números batendo com o
+  // que se vê reproduzindo a animação, em vez de uma média que não corresponde
+  // a nenhuma réplica específica
+  const bloqR0 = animacaoDados ? agregarBloqueios(animacaoDados.bloqueios) : [];
 
   renderResultados({
     producaoTotal, producaoPorTipo, lotesPorTipo, lotesPorTipo130, lotesPorTipo50, lotesMaePorTipo, lotesDetalhados,
-    mediaUtil, mediaManutPct, mediaManutDias, mediaLivrePct, mediaSetupPct, mediaBloq, nReplicas,
+    mediaUtil, mediaManutPct, mediaManutDias, mediaLivrePct, mediaSetupPct, mediaBloq, bloqR0, nReplicas,
     totalAvisosRotaImpossivel,
   });
   renderAnimacao(animacaoDados);
@@ -2966,7 +2980,7 @@ function gerarSugestoes(mediaUtil, mediaBloq, params) {
   return sugestoes;
 }
 
-function renderResultados({ producaoTotal, producaoPorTipo, lotesPorTipo, lotesPorTipo130, lotesPorTipo50, lotesMaePorTipo, lotesDetalhados, mediaUtil, mediaManutPct, mediaManutDias, mediaLivrePct, mediaSetupPct, mediaBloq, nReplicas, totalAvisosRotaImpossivel }) {
+function renderResultados({ producaoTotal, producaoPorTipo, lotesPorTipo, lotesPorTipo130, lotesPorTipo50, lotesMaePorTipo, lotesDetalhados, mediaUtil, mediaManutPct, mediaManutDias, mediaLivrePct, mediaSetupPct, mediaBloq, bloqR0, nReplicas, totalAvisosRotaImpossivel }) {
   const el = document.getElementById('results');
   const mediaTotal = mean(producaoTotal);
   const desvioTotal = stdev(producaoTotal);
@@ -3083,15 +3097,16 @@ function renderResultados({ producaoTotal, producaoPorTipo, lotesPorTipo, lotesP
   });
   html += `</div>`;
 
-  // ---- gargalos ----
-  const bloqAcionaveis = mediaBloq.filter(b => !MOTIVOS_INFORMATIVOS.has(b.motivo) && b.horasMedia > 0.5);
-  html += `<div class="section-title">Gargalos acionáveis (média por réplica)</div>`;
+  // ---- gargalos (da mesma réplica usada na animação — reproduz e os números
+  // do relatório e da animação vão bater) ----
+  const bloqAcionaveis = (bloqR0 || []).filter(b => !MOTIVOS_INFORMATIVOS.has(b.motivo) && b.horas > 0.5);
+  html += `<div class="section-title">Gargalos acionáveis (réplica usada na animação)</div>`;
   if (bloqAcionaveis.length === 0) {
     html += `<div class="empty-state">Sem esperas relevantes registradas nessa rodada.</div>`;
   } else {
     html += `<table><thead><tr><th>Motivo</th><th>Equipamento</th><th>Ocorrências</th><th>Horas acumuladas</th></tr></thead><tbody>`;
     bloqAcionaveis.slice(0, 12).forEach(b => {
-      html += `<tr><td>${NOMES_MOTIVO[b.motivo] || b.motivo}</td><td>${b.equipamento}</td><td>${b.ocorrenciasMedia.toFixed(1)}</td><td>${b.horasMedia.toFixed(1)}h</td></tr>`;
+      html += `<tr><td>${NOMES_MOTIVO[b.motivo] || b.motivo}</td><td>${b.equipamento}</td><td>${b.ocorrencias}</td><td>${b.horas.toFixed(1)}h</td></tr>`;
     });
     html += `</tbody></table>`;
   }
