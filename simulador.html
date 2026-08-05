@@ -392,6 +392,85 @@ tr:hover td{ background: rgba(217,96,28,0.05); }
 .chat-input-row textarea:focus{ outline:none; border-color:var(--molten); }
 .chat-input-row .btn{ padding:0 18px; font-size:12px; align-self:stretch; }
 .chat-contexto-nota{ font-size:10.5px; color:var(--text-muted); padding:0 16px 10px; }
+
+/* ---------- Diagrama de layout (config clicável, tipo Arena) ---------- */
+.layout-svg-wrap{
+  background:var(--panel-2); border:1px solid var(--border); border-radius:8px;
+  padding:10px;
+  max-width: 620px;
+  margin: 0 auto;
+}
+.layout-svg{ width:100%; height:auto; display:block; }
+.layout-node{ cursor:pointer; }
+.layout-node .layout-shape{ stroke: var(--border); stroke-width:1.2; transition: filter 0.15s ease, stroke 0.15s ease; }
+.layout-node:hover .layout-shape{ stroke: var(--molten-bright); filter: brightness(1.15); }
+.layout-eqname{ font-family:var(--display); font-weight:700; font-size:13px; fill:var(--text); pointer-events:none; }
+.layout-papel{ font-family:var(--mono); font-size:8px; fill:#fff; stroke:rgba(0,0,0,0.6); stroke-width:0.5px; paint-order:stroke; pointer-events:none; }
+.layout-hint{ font-family:var(--mono); font-size:9px; fill:var(--text-muted); pointer-events:none; }
+.layout-legend{
+  display:flex; flex-wrap:wrap; gap:8px 16px; margin-top:12px;
+  font-size:11.5px; color:var(--text-muted);
+}
+.layout-legend span{ display:flex; align-items:center; gap:5px; }
+.layout-legend i{ display:inline-block; width:10px; height:10px; border-radius:2px; flex:none; }
+.layout-tip{ font-size:12.5px; color:var(--text-muted); margin-bottom:12px; }
+
+/* ---------- Modal de configuração da panela ---------- */
+.modal-overlay{
+  position:fixed; inset:0; background:rgba(0,0,0,0.6);
+  display:flex; align-items:center; justify-content:center;
+  z-index:1000; padding:20px;
+}
+.modal-box{
+  background:var(--panel); border:1px solid var(--border); border-radius:10px;
+  width:100%; max-width:480px; max-height:88vh; overflow-y:auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+.modal-header{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:16px 18px; border-bottom:1px solid var(--border);
+  position:sticky; top:0; background:var(--panel);
+}
+.modal-header h3{ margin:0; font-family:var(--display); font-size:17px; }
+.modal-close{
+  background:none; border:none; color:var(--text-muted); font-size:18px;
+  cursor:pointer; line-height:1; padding:2px 6px; border-radius:4px;
+}
+.modal-close:hover{ color:var(--text); background: rgba(255,255,255,0.06); }
+.modal-body{ padding:16px 18px; }
+.modal-secao{ margin-bottom:18px; }
+.modal-secao-titulo{
+  font-family:var(--display); font-size:11.5px; text-transform:uppercase;
+  letter-spacing:0.08em; color:var(--text-muted); margin-bottom:8px;
+}
+.modal-ajuda{ font-size:12px; color:var(--text-muted); margin-top:8px; line-height:1.5; }
+.rota-check-vert{
+  display:flex; flex-direction:column; gap:6px;
+}
+.rota-check-vert label{ display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer; }
+.modal-ajuda-suspensa{ margin-top:8px; }
+.modal-ajuda-suspensa summary{
+  cursor:pointer; font-size:12px; color:var(--molten-bright);
+  list-style:none; user-select:none;
+}
+.modal-ajuda-suspensa summary::-webkit-details-marker{ display:none; }
+.modal-ajuda-suspensa summary::before{ content:'▸ '; }
+.modal-ajuda-suspensa[open] summary::before{ content:'▾ '; }
+.modal-ajuda-suspensa .modal-ajuda{ margin-top:6px; }
+.modal-body table{ margin-top:8px; }
+.modal-body th, .modal-body td{ font-size:12px; padding:6px 8px; }
+.relatorio-lotes{ margin-top:16px; }
+.relatorio-lotes summary{
+  cursor:pointer; font-family:var(--display); font-size:13px; color:var(--text);
+  padding:10px 0; list-style:none; user-select:none;
+}
+.relatorio-lotes summary::-webkit-details-marker{ display:none; }
+.relatorio-lotes summary::before{ content:'▸ '; color:var(--molten-bright); }
+.relatorio-lotes[open] summary::before{ content:'▾ '; }
+.relatorio-lotes-scroll{ max-height:480px; overflow-y:auto; border:1px solid var(--border); border-radius:8px; }
+.relatorio-lotes-scroll table{ margin:0; }
+.relatorio-lotes-scroll th{ position:sticky; top:0; background:var(--panel-2); z-index:1; }
+.relatorio-lotes-scroll td, .relatorio-lotes-scroll th{ font-size:11.5px; padding:6px 8px; white-space:nowrap; }
 </style>
 
 </head>
@@ -418,6 +497,10 @@ tr:hover td{ background: rgba(217,96,28,0.05); }
   </aside>
 
   <main>
+    <div class="section-title">Layout do processo (clique numa panela pra configurar)</div>
+    <div class="layout-tip">Clique em qualquer panela ou linha de saída pra editar papel, rotas e manutenção — sem precisar rodar a simulação primeiro. As linhas do diagrama refletem as rotas configuradas agora.</div>
+    <div id="layout-diagram-container"></div>
+
     <div class="run-bar">
       <div class="field-row">
         <label class="mini-label">Réplicas
@@ -454,6 +537,16 @@ tr:hover td{ background: rgba(217,96,28,0.05); }
       <div>Rode uma simulação pra poder conversar com a IA sobre os resultados.</div>
     </div>
   </main>
+</div>
+
+<div class="modal-overlay" id="modal-panela-overlay" style="display:none">
+  <div class="modal-box" id="modal-panela-box">
+    <div class="modal-header">
+      <h3 id="modal-panela-titulo"></h3>
+      <button class="modal-close" id="modal-panela-close" type="button">✕</button>
+    </div>
+    <div class="modal-body" id="modal-panela-body"></div>
+  </div>
 </div>
 
 <script>
@@ -694,22 +787,39 @@ function defaultParams() {
     probCalcio: 64 / 164,
     probCalcioSaidaL: 0.119,
 
-    kgLotePuroCalcio: 115000,
+    kgLotePuroCalcio: 125000,
     kgRetiradoP10: 48000,
-    kgRetiradoP7FracionadoPuro: 63000,
-    kgRetiradoP7FracionadoCalcio: 57000,
     sbsnKgMedia: 50856,
     sbsnKgDesvio: 3264,
+
+    // peso de chumbo dos Fornos carregado em cada panela quando ela está com o
+    // papel "Inicial" — editável clicando na panela no diagrama de Layout.
+    // Default: ~130t pras panelas grandes (P1-P7), ~50t pras pequenas (P8-P11)
+    capacidadesIniciais: {
+      P1: 130000, P2: 130000, P3: 130000, P4: 130000, P5: 130000, P6: 130000, P7: 130000,
+      P8: 50000, P9: 50000, P10: 50000, P11: 50000,
+    },
+    // fração do peso carregado numa panela Inicial que efetivamente chega na
+    // panela Final depois da transferência — o resto é perda de processo.
+    // Compartilhado entre todas as panelas Iniciais. Ex: carregar 130t com
+    // rendimento de 88% transfere 114,4t pra panela final; a diferença até a
+    // "Capacidade lingotamento" configurada na panela Final é chumbo terceiro.
+    rendimentoInicialFinal: 0.88,
 
     nLotesSinteticos: 400,
     nLotesSbsn: 100,
 
-    // pontos de referência (calibrados na Cronoanálise) usados pra interpolar o tempo
-    // de lingotamento por peso do lote — ref115 = lote grande (~115.000kg, rótulo
-    // histórico "130t"), ref50 = lote pequeno (~50.000kg)
-    saidaTempoRef: {
-      ref115: { Hogueira: hms("9:13:54"), L1: hms("8:40:11"), L2: hms("9:24:53") },
-      ref50: { Hogueira: hms("6:19:48"), L1: hms("4:44:22"), L2: hms("4:21:25") },
+    // taxa de lingotamento/hogueamento por saída, em kg/h — tempo de qualquer
+    // lote nessa saída = peso do lote (kg) / essa taxa. Valor de partida
+    // calculado como a média entre o ritmo implícito nos lotes grandes
+    // (~115t) e pequenos (~50t) da Cronoanálise original (que usava 2 pontos
+    // calibrados em vez de uma taxa só) — ajuste aqui pra refletir o que você
+    // observar na prática. Editável clicando na saída (L1/L2/Hogueira) no
+    // diagrama de Layout.
+    saidaKgPorHora: {
+      Hogueira: 10200,
+      L1: 11900,
+      L2: 11850,
     },
 
     // topologia física da planta — quais equipamentos podem receber lotes de quais
@@ -718,13 +828,16 @@ function defaultParams() {
       // agora vale pra QUALQUER panela com saída (Inicial ou Intermediária), não só
       // P1-P4 — panelas com papel Final/Sb-Sn ficam com lista vazia (são terminais)
       iniciaisParaFinais: {
-        P1: ["P5"], P2: ["P5", "P6"], P3: ["P6", "P7"], P4: ["P7"],
-        P5: [], P6: [], P7: [], P8: [], P9: [], P10: [], P11: [],
+        P1: ["P5"], P2: ["P5", "P7"], P3: ["P5", "P7"], P4: ["P7"],
+        // P5 e P7 são híbridas: pra Puro elas lingotam ali mesmo (a lista abaixo
+        // fica sem efeito); pra Cálcio agem como Intermediária e repassam pra P6
+        // (a "Final só Cálcio" real), que termina a química (incl. Agregar) e lingota
+        P5: ["P6"], P6: [], P7: ["P6", "P10"], P8: [], P9: [], P10: [], P11: [],
       },
       finaisParaSaidas: {
         P1: [], P2: [], P3: [], P4: [],
-        P5: ["L1", "Hogueira"], P6: ["L1", "L2", "Hogueira"], P7: ["L2"],
-        P10: ["L2"], P11: ["L2"], P8: ["L1", "Hogueira"], P9: ["L1", "Hogueira"],
+        P5: ["L1", "Hogueira"], P6: ["Hogueira"], P7: ["L2"],
+        P10: ["L2", "Hogueira"], P11: ["L2", "Hogueira"], P8: ["L1", "Hogueira"], P9: ["L1", "Hogueira"],
       },
       clientesParaSaidas: { H: ["Hogueira"], L: ["L1", "L2"] },
     },
@@ -734,7 +847,7 @@ function defaultParams() {
     // Editável no menu "Papéis das Panelas".
     papeisPanelas: {
       P1: 'inicial', P2: 'inicial', P3: 'inicial', P4: 'inicial',
-      P5: 'final', P6: 'final', P7: 'finalFracionamento',
+      P5: 'finalPuroOuIntermediariaCalcio', P6: 'finalCalcio', P7: 'finalPuroFracionamentoOuIntermediariaCalcio',
       P8: 'sbsn', P9: 'sbsn',
       P10: 'fracionamentoCalcio', P11: 'desativada',
     },
@@ -843,18 +956,34 @@ function defaultParams() {
   };
 }
 
-const PESO_REF_130T = 115000, PESO_REF_50T = 50000;
-
-function tempoSaidaInterpolado(saidaNome, kgTotal, params) {
-  const t130 = params.saidaTempoRef.ref115[saidaNome], t50 = params.saidaTempoRef.ref50[saidaNome];
-  const inclinacao = (t130 - t50) / (PESO_REF_130T - PESO_REF_50T);
-  return Math.max(t50 + inclinacao * (kgTotal - PESO_REF_50T), 0);
+// tempo de lingotamento/hogueamento = peso do lote (kg) / taxa da saída (kg/h)
+function tempoSaidaPorTaxa(saidaNome, kgTotal, params) {
+  const taxa = params.saidaKgPorHora[saidaNome];
+  return taxa > 0 ? kgTotal / taxa : 0;
 }
 
-// true pra qualquer variante do papel "Final + Fracionamento" (genérico ou
-// restrito a uma liga específica)
+// true pra qualquer variante do papel "Final + Fracionamento" (genérico, restrito
+// a uma liga específica, ou o híbrido "Final Puro + Fracionamento (Cálcio vira
+// Intermediária)" — esse último só fraciona no ramo Puro, que é quando ele
+// realmente lingota; no ramo Cálcio ele age como Intermediária e nem chega
+// a ser `panFinal`, então essa função nem é consultada pra esse lote)
 function ehPapelFracionamento(papel) {
-  return papel === 'finalFracionamento' || papel === 'finalPuroFracionamento' || papel === 'finalCalcioFracionamento';
+  return papel === 'finalFracionamento' || papel === 'finalPuroFracionamento' || papel === 'finalCalcioFracionamento'
+    || papel === 'finalPuroFracionamentoOuIntermediariaCalcio';
+}
+
+// true se, PARA ESSE LOTE (dado o tipoKey/liga), a panela deve agir como
+// Intermediária (só faz a química comum e repassa, nunca lingota ela mesma).
+// Além do papel fixo "Intermediária", os híbridos "Final Puro (...)" agem como
+// Intermediária especificamente quando o lote é Cálcio — pra Puro, agem como
+// Final normal (lingotam elas mesmas, e a variante com Fracionamento também
+// fraciona nesse ramo).
+function ehIntermediariaEfetiva(papel, tipoKey) {
+  if (papel === 'intermediaria') return true;
+  if (papel === 'finalPuroOuIntermediariaCalcio' || papel === 'finalPuroFracionamentoOuIntermediariaCalcio') {
+    return tipoKey === 'Calcio';
+  }
+  return false;
 }
 
 function finaisCompativeis(candidatas, saidaCliente, rotas, papeis, tipoKey) {
@@ -862,8 +991,6 @@ function finaisCompativeis(candidatas, saidaCliente, rotas, papeis, tipoKey) {
   const compativelTipo = (nome) => {
     if (!papeis) return true;
     const papel = papeis[nome];
-    if (papel === 'desativada') return false; // panela desativada nunca é destino válido
-    if (!tipoKey) return true;
     // "(Só Puro)"/"(Só Cálcio)" das variantes de fracionamento NÃO restringem o lote
     // principal — o "(Só X)" ali é sobre em que liga a FRAÇÃO vira, não o principal
     // "(fração vira X)" das variantes genéricas de fracionamento NÃO restringem o
@@ -871,12 +998,25 @@ function finaisCompativeis(candidatas, saidaCliente, rotas, papeis, tipoKey) {
     // restringem sim (igual "Final só Puro"/"Final só Cálcio", só que também fracionam)
     if (papel === 'finalPuro' || papel === 'finalPuroFracionamento') return tipoKey === 'Puro';
     if (papel === 'finalCalcio' || papel === 'finalCalcioFracionamento') return tipoKey === 'Calcio';
-    return true;
+    // os híbridos só lingotam (como "final" de fato) no ramo Puro — no ramo
+    // Cálcio eles são tratados como Intermediária mais acima, então nunca
+    // deveriam "ganhar" aqui como final de Cálcio
+    if (papel === 'finalPuroOuIntermediariaCalcio' || papel === 'finalPuroFracionamentoOuIntermediariaCalcio') return tipoKey === 'Puro';
+    if (papel === 'final' || papel === 'finalFracionamento') return true;
+    // LISTA FECHADA: qualquer outro papel (fracionamento*, sbsn, inicial,
+    // intermediária, desativada) NUNCA é um destino Final válido — sem isso,
+    // se alguém marcar por engano uma panela dessas em "Pode transferir para",
+    // o motor tenta usar um recurso que não existe (this.resources.finais[nome]
+    // é undefined) e o lote crasha silenciosamente (some da produção sem erro
+    // visível). Ver também o aviso de "rota impossível" em disputarQualquer,
+    // que cobre o caso de zero candidatos — este aqui cobre candidato inválido.
+    return false;
   };
   return candidatas.filter(c => {
-    // panela intermediária não lingota — o que importa é se ela alcança, por meio
-    // das finais que alimenta, uma saída compatível (2 saltos: intermediária → final → saída)
-    if (papeis && papeis[c] === 'intermediaria') {
+    // panela intermediária (ou híbrido agindo como intermediária pra essa liga)
+    // não lingota — o que importa é se ela alcança, por meio das finais que
+    // alimenta, uma saída compatível (2 saltos: intermediária → final → saída)
+    if (papeis && ehIntermediariaEfetiva(papeis[c], tipoKey)) {
       return (rotas.iniciaisParaFinais[c] || []).some(dest => compativelTipo(dest) && (rotas.finaisParaSaidas[dest] || []).some(s => permitidos.includes(s)));
     }
     return compativelTipo(c) && (rotas.finaisParaSaidas[c] || []).some(s => permitidos.includes(s));
@@ -889,6 +1029,12 @@ function iniciaisCompativeis(saidaCliente, rotas, nomesIniciais, papeis, tipoKey
 // ============================================================================
 // SIMULAÇÃO
 // ============================================================================
+
+// duração do mês simulado, em horas — usado tanto pra filtrar o relatório
+// mensal (dfMes) quanto pra impedir que um lote novo ABRA depois da virada
+// (ver o guard em processarLotePuroCalcio). A MARGEM (em runReplication) serve
+// só pra deixar quem já começou terminar, nunca pra abrir lote novo.
+const TEMPO_MES_H = 30 * 24;
 
 class Simulation {
   constructor(params) {
@@ -909,7 +1055,8 @@ class Simulation {
       const papel = papeis[nome] || 'inicial';
       if (papel === 'inicial') this.resources.iniciais[nome] = new Resource(nome);
       else if (papel === 'intermediaria') this.resources.intermediarias[nome] = new Resource(nome);
-      else if (['final', 'finalPuro', 'finalCalcio', 'finalFracionamento', 'finalPuroFracionamento', 'finalCalcioFracionamento'].includes(papel)) this.resources.finais[nome] = new Resource(nome);
+      else if (['final', 'finalPuro', 'finalCalcio', 'finalFracionamento', 'finalPuroFracionamento', 'finalCalcioFracionamento',
+        'finalPuroOuIntermediariaCalcio', 'finalPuroFracionamentoOuIntermediariaCalcio'].includes(papel)) this.resources.finais[nome] = new Resource(nome);
       else if (papel === 'sbsn') this.resources.sbsn[nome] = new Resource(nome);
       else if (['fracionamentoCalcio', 'fracionamentoSoCalcio', 'fracionamentoSoPuro'].includes(papel)) this.resources.fracionamentoCalcio[nome] = new Resource(nome);
       // 'desativada' -> não entra em pool nenhuma, fica de fora da simulação
@@ -1067,6 +1214,14 @@ class Simulation {
   marcarLingotando(equip, lote) { this.log(equip, 'Lingotamento', lote); }
 
   async disputarQualquer(resourcesMap, names) {
+    if (names.length === 0) {
+      // rota mal configurada: a origem não alcança NENHUM destino/saída compatível
+      // pra esse lote — sem esse aviso, isso trava o lote pra sempre e ainda
+      // corrompe a utilização do equipamento que ficou esperando (permanece
+      // "ocupado" o resto da simulação, sem nenhum erro visível)
+      this.avisosRotaImpossivel = (this.avisosRotaImpossivel || 0) + 1;
+      console.warn('disputarQualquer: lista de candidatos vazia — rota mal configurada, lote travado pra sempre.');
+    }
     // rodízio: gira a ordem de tentativa a cada disputa, pra não sempre preferir
     // o primeiro nome da lista quando vários candidatos estão livres ao mesmo
     // tempo — sem isso, o primeiro da lista "ganha" quase sempre, deixando os
@@ -1141,7 +1296,7 @@ class Simulation {
     const t1 = this.env.now;
     this.bloqueio(t0, t1, motivoEspera, saidaNome, lote, equipOrigem, saidaNome, kgTotal);
     this.log(saidaNome, 'Lingotamento/Saída', lote);
-    const dur = tempoSaidaInterpolado(saidaNome, kgTotal, this.params);
+    const dur = tempoSaidaPorTaxa(saidaNome, kgTotal, this.params);
     await this.env.timeout(dur);
     this.liberar(saidaNome);
     this.resources.saidas[saidaNome].release(this.env);
@@ -1153,8 +1308,7 @@ class Simulation {
   // de chamar isso, então aqui só toca o processo até o fim
   async dispararFracaoCalcio(panFrac, panOrigem, tipoFrac, saidaCliente, chegadaLoteMae, nomeLoteMae) {
     this.contadorP10++;
-    const sufixoLiga = tipoFrac === 'Puro' ? 'PUR' : 'CÁL';
-    const identFrac = { lote: `${nomeLoteMae}-FRAC-${this.contadorP10}-${sufixoLiga}`, tipo: tipoFrac, saidaCliente };
+    const identFrac = { lote: `${nomeLoteMae}-FRAC-${this.contadorP10}`, tipo: tipoFrac, saidaCliente };
     const inicioTransfFrac = this.env.now;
     await this.rodarEtapasFixas(panFrac, this.params.calcio50.transferenciaP10, identFrac);
     await this.continuarFracionamentoCalcio(panFrac, panOrigem, { tipoFrac, saidaCliente }, identFrac, chegadaLoteMae, 0, inicioTransfFrac);
@@ -1173,11 +1327,14 @@ class Simulation {
     this.liberar(panFrac);
     this.resources.fracionamentoCalcio[panFrac].release(this.env);
     this.registrarProducaoTipo(demanda.tipoFrac, this.params.kgRetiradoP10 / 1000);
+    const fimFrac = this.env.now;
     this.resultados.push({
       lote: identFrac.lote, tipo: demanda.tipoFrac, saidaCliente: demanda.saidaCliente,
       kg: this.params.kgRetiradoP10, toneladas: this.params.kgRetiradoP10 / 1000,
       panelaFinal: panOrigem, panelaP10: panFrac, saidaReal: saidaNome,
-      chegada: chegadaLoteMae, inicioCarregamentoH: inicioTransfFrac, fim: this.env.now,
+      caminho: `${panOrigem} (fração) → ${panFrac} → ${saidaNome}`,
+      chegada: chegadaLoteMae, inicioCarregamentoH: inicioTransfFrac, fim: fimFrac,
+      tempoOcupacaoFinalH: fimFrac - inicioTransfFrac,
     });
   }
 
@@ -1198,6 +1355,14 @@ class Simulation {
     let t0 = this.env.now;
     let { name: panInicial } = await this.disputarQualquer(this.resources.iniciais, candidatosIniciais);
     let t1 = this.env.now;
+    // não abre lote novo depois da virada do mês (720h) — o excedente de
+    // demanda sintética que não coube dentro do mês simplesmente não acontece;
+    // a MARGEM (em runReplication) serve só pra deixar quem já começou
+    // terminar, nunca pra abrir carregamento novo
+    if (this.env.now > TEMPO_MES_H) {
+      this.resources.iniciais[panInicial].release(this.env);
+      return;
+    }
     const esperaPanelaInicialH = t1 - t0;
     this.bloqueio(t0, t1, 'Aguardando panela inicial', panInicial, lote, null, panInicial, lote.kg);
 
@@ -1213,6 +1378,7 @@ class Simulation {
     }
 
     let inicioCarregamento;
+    let duracaoCarregamentoH = 0;
     if (creditoUsado >= 1) {
       // panela já estava 100% cheia: pula a fila da ponte e o carregamento inteiro
       inicioCarregamento = this.env.now;
@@ -1222,12 +1388,17 @@ class Simulation {
       const tokPonte = this.resources.ponteInicial.request(this.env);
       await tokPonte.promise;
       t1 = this.env.now;
+      if (this.env.now > TEMPO_MES_H) {
+        this.resources.ponteInicial.release(this.env);
+        this.resources.iniciais[panInicial].release(this.env);
+        return;
+      }
       this.bloqueio(t0, t1, 'Aguardando ponte de carregamento (P1-P4)', 'Ponte inicial (P1-P4)', lote, null, panInicial, undefined);
       inicioCarregamento = this.env.now;
       const fatorFornos = this.fatorCargaFornos(inicioCarregamento);
-      const duracaoCarregamento = p.carregamentoInicialH * (1 - creditoUsado) / fatorFornos;
+      duracaoCarregamentoH = p.carregamentoInicialH * (1 - creditoUsado) / fatorFornos;
       this.log(panInicial, creditoUsado > 0 ? 'Carregando (panela parcialmente cheia no início do mês)' : 'Carregando', lote);
-      await this.env.timeout(duracaoCarregamento);
+      await this.env.timeout(duracaoCarregamentoH);
       this.resources.ponteInicial.release(this.env);
     }
 
@@ -1243,7 +1414,7 @@ class Simulation {
     // uma Intermediária (faz a química completa e depois repassa pra uma Final,
     // que só lingota)
     let candidatosProximo = (p.rotas.iniciaisParaFinais[panInicial] || []).filter(dest => {
-        if (papeis[dest] === 'intermediaria') {
+        if (ehIntermediariaEfetiva(papeis[dest], tipoKey)) {
           return (p.rotas.iniciaisParaFinais[dest] || []).some(d2 => finaisCompativeis([d2], lote.saidaCliente, p.rotas, papeis, tipoKey).length > 0);
         }
         return finaisCompativeis([dest], lote.saidaCliente, p.rotas, papeis, tipoKey).length > 0;
@@ -1253,15 +1424,17 @@ class Simulation {
     const { name: panProximo } = await this.disputarQualquer(poolProximo, candidatosProximo);
     t1 = this.env.now;
     let esperaPanelaFinalH = t1 - t0;
-    const ehIntermediaria = papeis[panProximo] === 'intermediaria';
+    const inicioOcupacaoPanProximo = t1; // pra medir depois quanto tempo essa panela ficou ocupada com ESTE lote
+    const ehIntermediaria = ehIntermediariaEfetiva(papeis[panProximo], tipoKey);
     this.bloqueio(t0, t1, ehIntermediaria ? 'Aguardando panela intermediária' : 'Aguardando panela final', panProximo, lote, panInicial, panProximo, lote.kg);
 
     await this.rodarEtapasEstocasticas(panInicial, desdeDecup, lote, pular);
     this.liberar(panInicial);
     this.resources.iniciais[panInicial].release(this.env);
+    const tempoOcupacaoInicialH = this.env.now - inicioCarregamento;
     if (this.progAtiva) this.tentarDispacharPuroCalcio();
 
-    let panFinal;
+    let panFinal, panelaIntermediaria = null, tempoOcupacaoIntermediariaH = 0, inicioOcupacaoFinal;
     if (ehIntermediaria) {
       // panela intermediária: só faz a parte COMUM da química final, até a 2ª
       // desantimoniação (igual pra Puro e Cálcio) — a parte que diverge por
@@ -1278,11 +1451,14 @@ class Simulation {
       const { name: panFinalReal } = await this.disputarQualquer(this.resources.finais, candidatosFinaisReais);
       t1 = this.env.now;
       esperaPanelaFinalH += (t1 - t0);
+      inicioOcupacaoFinal = t1; // é aqui que a panela final de verdade passa a ficar ocupada com este lote
       this.bloqueio(t0, t1, 'Aguardando panela final', panFinalReal, lote, panProximo, panFinalReal, lote.kg);
 
       await this.rodarEtapasEstocasticas(panProximo, p.processos.comum.transferenciaIntermediaria, lote, new Set());
       this.liberar(panProximo);
-      this.resources.intermediarias[panProximo].release(this.env);
+      this.getResourceByName(panProximo).release(this.env);
+      panelaIntermediaria = panProximo;
+      tempoOcupacaoIntermediariaH = this.env.now - inicioOcupacaoPanProximo;
 
       if (this.ultimaLigaFinal[panFinalReal] === 'Calcio' && tipoKey === 'Puro') {
         this.log(panFinalReal, 'Desestanhação extra (troca de liga)', lote);
@@ -1308,6 +1484,7 @@ class Simulation {
       await this.rodarEtapasEstocasticas(panProximo, p.processos[tipoKey].finalDivergente, lote, new Set());
 
       panFinal = panProximo;
+      inicioOcupacaoFinal = inicioOcupacaoPanProximo;
     }
 
     let kgLotePrincipal = lote.kg;
@@ -1318,7 +1495,12 @@ class Simulation {
     // tempo proporcional ao peso reduzido (a mesma interpolação de sempre).
     let numFracoes = 0;
     if (ehPapelFracionamento(papeis[panFinal])) {
-      const nomesFrac = Object.keys(this.resources.fracionamentoCalcio);
+      // agora respeita a configuração de "Pode transferir para" dessa panela —
+      // só fraciona pras panelas de Fracionamento explicitamente marcadas ali
+      // (antes valia pra QUALQUER panela de Fracionamento do sistema, sem
+      // controle nenhum)
+      const nomesFrac = (p.rotas.iniciaisParaFinais[panFinal] || [])
+        .filter(d => this.resources.fracionamentoCalcio[d]);
       for (const panFrac of nomesFrac) {
         if (this.resources.fracionamentoCalcio[panFrac].busy) continue;
         if (kgLotePrincipal < p.kgRetiradoP10) break; // não sobraria nem pra essa fração
@@ -1346,15 +1528,18 @@ class Simulation {
     this.marcarLingotando(panFinal, lote);
     const { saidaNome, espera: esperaSaidaH } = await this.processarSaida(panFinal, lote, kgLotePrincipal, lote.saidaCliente, 'Aguardando saída');
     this.liberar(panFinal);
-    this.resources.finais[panFinal].release(this.env);
+    this.getResourceByName(panFinal).release(this.env);
 
     const fim = this.env.now;
+    const tempoOcupacaoFinalH = fim - inicioOcupacaoFinal;
+    const caminho = [panInicial, panelaIntermediaria, panFinal, saidaNome].filter(Boolean).join(' → ');
     this.resultados.push({
       lote: lote.lote, tipo: tipoKey, saidaCliente: lote.saidaCliente,
       kg: kgLotePrincipal, toneladas: kgLotePrincipal / 1000,
-      panelaInicial: panInicial, panelaFinal: panFinal, saidaReal: saidaNome,
+      panelaInicial: panInicial, panelaIntermediaria, panelaFinal: panFinal, saidaReal: saidaNome, caminho,
       chegada, inicioCarregamentoH: inicioCarregamento, fim,
       tempoTotalH: fim - inicioCarregamento, esperaPanelaInicialH, esperaPanelaFinalH, esperaSaidaH,
+      duracaoCarregamentoH, tempoOcupacaoInicialH, tempoOcupacaoIntermediariaH, tempoOcupacaoFinalH,
     });
     this.registrarProducaoTipo(tipoKey, kgLotePrincipal / 1000);
     if (this.progAtiva) {
@@ -1368,12 +1553,23 @@ class Simulation {
     let t0 = this.env.now;
     const { name: pan } = await this.disputarQualquer(this.resources.sbsn, Object.keys(this.resources.sbsn));
     let t1 = this.env.now;
+    // não abre lote novo depois da virada do mês (720h) — mesma regra do
+    // fluxo Puro/Cálcio, ver processarLotePuroCalcio
+    if (this.env.now > TEMPO_MES_H) {
+      this.resources.sbsn[pan].release(this.env);
+      return;
+    }
     this.bloqueio(t0, t1, 'Aguardando panela Sb/Sn', pan, lote, null, pan, lote.kg);
 
     t0 = this.env.now;
     const tokPonte = this.resources.ponteSbsn.request(this.env);
     await tokPonte.promise;
     t1 = this.env.now;
+    if (this.env.now > TEMPO_MES_H) {
+      this.resources.ponteSbsn.release(this.env);
+      this.resources.sbsn[pan].release(this.env);
+      return;
+    }
     this.bloqueio(t0, t1, 'Aguardando ponte Sb/Sn (P8/P9)', 'Ponte Sb/Sn (P8/P9)', lote, null, pan, undefined);
     // setup da panela antes de iniciar o carregamento do novo lote
     this.log(pan, 'Setup para novo carregamento Sb/Sn', lote);
@@ -1392,9 +1588,10 @@ class Simulation {
     this.resultados.push({
       lote: lote.lote, tipo: 'Sb/Sn', saidaCliente: lote.saidaCliente,
       kg: lote.kg, toneladas: lote.kg / 1000,
-      panelaSbsn: pan, saidaReal: saidaNome,
+      panelaSbsn: pan, saidaReal: saidaNome, caminho: `${pan} → ${saidaNome}`,
       chegada, inicioCarregamentoH: inicioCarregamento, fim,
       tempoTotalH: fim - inicioCarregamento, esperaSaidaH,
+      tempoOcupacaoFinalH: fim - inicioCarregamento,
     });
     this.registrarProducaoTipo('Sb/Sn', lote.kg / 1000);
     if (this.progAtiva) {
@@ -1418,7 +1615,12 @@ class Simulation {
 
 function gerarLotePuroCalcio(p, numero, tipoForcado) {
   const tipo = tipoForcado || (Math.random() < p.probCalcio ? 'Calcio' : 'Puro');
-  const saida = tipo === 'Puro' ? 'L' : (Math.random() < p.probCalcioSaidaL ? 'L' : 'H');
+  // lote-mãe de Cálcio sai sempre por Hogueira: P6 (única panela Final que
+  // termina Cálcio hoje) só alcança Hogueira. A parcela de Cálcio que precisa
+  // de saída "L" é servida pela fração desviada pra P10 (que alcança L2) —
+  // ver probCalcioSaidaL em dispararFracaoCalcio, que continua valendo só
+  // pra fração, não pro lote-mãe.
+  const saida = tipo === 'Puro' ? 'L' : 'H';
   return {
     lote: `${tipo.slice(0, 3).toUpperCase()}-${numero}`, tipo, saidaCliente: saida,
     rota: tipo === 'Calcio' ? 'CALCIO_130' : 'PURO_130', kg: p.kgLotePuroCalcio,
@@ -1447,9 +1649,9 @@ async function runReplication(params) {
     sim.despacharTodos(lotesSbsn);
   }
 
-  const TEMPO_MES = 30 * 24, MARGEM = 200;
-  await sim.env.runUntil(TEMPO_MES + MARGEM);
-  const dfMes = sim.resultados.filter(r => r.inicioCarregamentoH <= TEMPO_MES);
+  const MARGEM = 200;
+  await sim.env.runUntil(TEMPO_MES_H + MARGEM);
+  const dfMes = sim.resultados.filter(r => r.inicioCarregamentoH <= TEMPO_MES_H);
   const tempoTotal = dfMes.length ? Math.max(...dfMes.map(r => r.fim)) : 1;
   return { sim, dfMes, tempoTotal };
 }
@@ -1725,6 +1927,11 @@ function renderFrameAnim(idx) {
     estadoEl.textContent = encurtarTextoAnim(dado.estado, 15);
     loteEl.textContent = dado.lote ? encurtarTextoAnim(dado.lote, 13) : '';
     let tituloTexto = `${eq}: ${dado.estado}${dado.lote ? ' — ' + dado.lote : ''}`;
+    const papelEq = PARAMS.papeisPanelas ? PARAMS.papeisPanelas[eq] : undefined;
+    if (papelEq) {
+      const opcaoPapel = OPCOES_PAPEL_PANELA.find(o => o.valor === papelEq);
+      if (opcaoPapel) tituloTexto = `${eq} (${opcaoPapel.rotulo}): ${dado.estado}${dado.lote ? ' — ' + dado.lote : ''}`;
+    }
 
     const filaEl = document.getElementById(`anim-fila-${eq}`);
     const filaTextoEl = document.getElementById(`anim-fila-texto-${eq}`);
@@ -1949,6 +2156,8 @@ const OPCOES_PAPEL_PANELA = [
   { valor: 'finalFracionamento', rotulo: 'Final + Fracionamento' },
   { valor: 'finalPuroFracionamento', rotulo: 'Final só Puro + Fracionamento' },
   { valor: 'finalCalcioFracionamento', rotulo: 'Final só Cálcio + Fracionamento' },
+  { valor: 'finalPuroOuIntermediariaCalcio', rotulo: 'Final Puro (Cálcio vira Intermediária)' },
+  { valor: 'finalPuroFracionamentoOuIntermediariaCalcio', rotulo: 'Final Puro + Fracionamento (Cálcio vira Intermediária)' },
   { valor: 'fracionamentoCalcio', rotulo: 'Fracionamento Puro/Cálcio' },
   { valor: 'fracionamentoSoCalcio', rotulo: 'Fracionamento Só Cálcio' },
   { valor: 'fracionamentoSoPuro', rotulo: 'Fracionamento Só Puro' },
@@ -2023,6 +2232,355 @@ function textoAjudaFornos() {
     É esse cálculo que o simulador reproduz automaticamente com base nos dias de manutenção que você preencher.`;
 }
 
+// ============================================================================
+// DIAGRAMA DE LAYOUT — configuração clicável por panela (tipo Arena), sempre
+// visível (não depende de ter rodado uma simulação)
+// ============================================================================
+
+// panelas com papel configurável (P1-P11) — os outros nós do diagrama (L1,
+// L2, Hogueira) são só saídas físicas, sem papel/rota própria
+const NOMES_PANELAS_COM_PAPEL = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9', 'P10', 'P11'];
+
+// cor de preenchimento do nó no diagrama de layout, por papel — paleta
+// própria (diferente da animação, que usa cor por ESTADO do lote no instante)
+const COR_PAPEL_LAYOUT = {
+  inicial: '#3f6b8a',
+  intermediaria: '#5b8aa6',
+  final: '#9b6bce', finalPuro: '#9b6bce', finalCalcio: '#9b6bce',
+  finalFracionamento: '#c2618f', finalPuroFracionamento: '#c2618f', finalCalcioFracionamento: '#c2618f',
+  finalPuroOuIntermediariaCalcio: '#7a8bc9', finalPuroFracionamentoOuIntermediariaCalcio: '#7a8bc9',
+  fracionamentoCalcio: '#8a5a3c', fracionamentoSoCalcio: '#8a5a3c', fracionamentoSoPuro: '#8a5a3c',
+  sbsn: '#e0813f',
+  desativada: '#2a2d30',
+};
+const COR_SAIDA_FISICA_LAYOUT = '#4a4f53'; // L1/L2/Hogueira — nó de saída, não panela
+
+// rótulo curto pro texto dentro do nó (o rótulo completo de OPCOES_PAPEL_PANELA
+// fica reservado pro <select> dentro do modal, onde tem espaço)
+const ROTULO_CURTO_PAPEL = {
+  inicial: 'Inicial', intermediaria: 'Intermediária', final: 'Final',
+  finalPuro: 'Final Puro', finalCalcio: 'Final Cálcio',
+  finalFracionamento: 'Final+Frac.', finalPuroFracionamento: 'F.Puro+Frac.', finalCalcioFracionamento: 'F.Cálcio+Frac.',
+  finalPuroOuIntermediariaCalcio: 'Puro/Interm.Ca', finalPuroFracionamentoOuIntermediariaCalcio: 'Puro+Frac/Interm.Ca',
+  fracionamentoCalcio: 'Fracion. P/Ca', fracionamentoSoCalcio: 'Fracion. Cálcio', fracionamentoSoPuro: 'Fracion. Puro',
+  sbsn: 'Sb/Sn', desativada: 'Desativada',
+};
+
+function svgDiagramaLayout() {
+  const papeis = PARAMS.papeisPanelas;
+  const rotas = PARAMS.rotas;
+
+  // as linhas refletem as rotas CONFIGURADAS agora (não um layout fixo) —
+  // o diagrama muda visualmente conforme o usuário edita rotas no modal.
+  // "Pode transferir para" (iniciaisParaFinais) guarda dois tipos de destino:
+  // panela Final/Intermediária (linha cinza sólida, rota normal) ou panela de
+  // Fracionamento (linha rosa pontilhada — é pra onde o fracionamento pode ir,
+  // configurável desde que a origem tenha papel "Final + Fracionamento").
+  let linhas = '';
+  NOMES_PANELAS_COM_PAPEL.forEach(origem => {
+    (rotas.iniciaisParaFinais[origem] || []).forEach(destino => {
+      if (!ANIM_POS[origem] || !ANIM_POS[destino]) return;
+      const [x1, y1] = ANIM_POS[origem], [x2, y2] = ANIM_POS[destino];
+      const ehFracionamento = PAPEIS_FRACIONAMENTO.has(papeis[destino]);
+      linhas += ehFracionamento
+        ? `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#c2618f" stroke-width="1.4" stroke-dasharray="2,4" opacity="0.6"/>`
+        : `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#818e79" stroke-width="1.4" opacity="0.55"/>`;
+    });
+    (rotas.finaisParaSaidas[origem] || []).forEach(destino => {
+      if (!ANIM_POS[origem] || !ANIM_POS[destino]) return;
+      const [x1, y1] = ANIM_POS[origem], [x2, y2] = ANIM_POS[destino];
+      linhas += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#818e79" stroke-width="1.4" stroke-dasharray="6,5" opacity="0.55"/>`;
+    });
+  });
+
+  let nodes = '';
+  Object.keys(ANIM_POS).forEach(eq => {
+    const [x, y] = ANIM_POS[eq];
+    const isBarra = ANIM_FORMA[eq] === 'barra';
+    const papel = papeis[eq];
+    const desativada = papel === 'desativada';
+    const cor = papel ? (COR_PAPEL_LAYOUT[papel] || '#3a3f43') : COR_SAIDA_FISICA_LAYOUT;
+    const opacidade = desativada ? '0.45' : '1';
+    const tracoExtra = desativada ? ' stroke-dasharray="4,3"' : '';
+    const shape = isBarra
+      ? `<rect class="layout-shape" x="${x - 50}" y="${y - 25}" width="100" height="50" rx="8" fill="${cor}" opacity="${opacidade}"${tracoExtra}/>`
+      : `<circle class="layout-shape" cx="${x}" cy="${y}" r="36" fill="${cor}" opacity="${opacidade}"${tracoExtra}/>`;
+    const rotuloPapel = papel ? (ROTULO_CURTO_PAPEL[papel] || papel) : 'Saída física';
+    nodes += `
+      <g class="layout-node" onclick="abrirModalPanela('${eq}')">
+        <title>${eq}: ${rotuloPapel} (clique pra editar)</title>
+        ${shape}
+        <text x="${x}" y="${y - (isBarra ? 34 : 46)}" class="layout-eqname" text-anchor="middle">${eq}</text>
+        <text x="${x}" y="${y + 4}" class="layout-papel" text-anchor="middle">${encurtarTextoAnim(rotuloPapel, 15)}</text>
+      </g>`;
+  });
+  return `<svg viewBox="0 0 760 610" class="layout-svg" xmlns="http://www.w3.org/2000/svg">${linhas}${nodes}</svg>`;
+}
+
+// remove entradas inválidas de "Pode transferir para" que ficaram órfãs depois
+// de uma troca de papel (ex: você marcou uma panela como destino e depois
+// mudou o papel dela, ou o papel do destino, de um jeito que não faz mais
+// sentido) — sem isso, a entrada some da UI (o checkbox não aparece mais
+// porque a opção foi filtrada) mas continua lá nos dados, e ainda crasha o
+// lote em silêncio quando sorteado como destino
+function limparRotasInvalidas() {
+  NOMES_PANELAS_COM_PAPEL.forEach(origem => {
+    const validos = new Set(nomesDestinoValidoParaTransferir(origem));
+    const atual = PARAMS.rotas.iniciaisParaFinais[origem] || [];
+    const limpo = atual.filter(d => validos.has(d));
+    if (limpo.length !== atual.length) PARAMS.rotas.iniciaisParaFinais[origem] = limpo;
+  });
+}
+
+function renderLayoutDiagram() {
+  limparRotasInvalidas();
+  const cont = document.getElementById('layout-diagram-container');
+  if (!cont) return;
+  cont.innerHTML = `
+    <div class="layout-svg-wrap">${svgDiagramaLayout()}</div>
+    <div class="layout-legend">
+      <span><i style="background:${COR_PAPEL_LAYOUT.inicial}"></i> Inicial</span>
+      <span><i style="background:${COR_PAPEL_LAYOUT.intermediaria}"></i> Intermediária</span>
+      <span><i style="background:${COR_PAPEL_LAYOUT.final}"></i> Final (qualquer variante)</span>
+      <span><i style="background:${COR_PAPEL_LAYOUT.finalFracionamento}"></i> Final + Fracionamento</span>
+      <span><i style="background:${COR_PAPEL_LAYOUT.fracionamentoCalcio}"></i> Fracionamento (qualquer variante)</span>
+      <span><i style="background:${COR_PAPEL_LAYOUT.sbsn}"></i> Sb/Sn</span>
+      <span><i style="background:${COR_PAPEL_LAYOUT.desativada}"></i> Desativada</span>
+      <span><i style="background:${COR_SAIDA_FISICA_LAYOUT}"></i> Saída física (L1/L2/Hogueira)</span>
+      <span><i style="background:#818e79"></i> — Pode transferir para (rota configurada)</span>
+      <span><i style="background:#818e79; opacity:0.6;"></i> ┄ Saída física alcançada (rota configurada)</span>
+      <span><i style="background:#c2618f;"></i> ┄ Fracionamento (configurável em "Pode transferir para")</span>
+    </div>
+    <div class="layout-tip">Só faz efeito se a panela de origem tiver papel "Final + Fracionamento" (ou híbrido). Sem nenhuma panela de Fracionamento marcada em "Pode transferir para", essa panela nunca fraciona.</div>`;
+}
+
+// checkboxes de rota pra UMA panela específica (usado no modal) — mesma lógica
+// de buildRotaCheckboxes, mas já filtrada pra uma origem só (o modal já sabe qual)
+function buildRotaCheckboxesSingle(origem, dictRotas, opcoes, pathPrefix) {
+  const atuais = dictRotas[origem] || [];
+  const opcoesFiltradas = opcoes.filter(o => o !== origem);
+  let html = '<div class="rota-check-vert">';
+  opcoesFiltradas.forEach(destino => {
+    const marcado = atuais.includes(destino);
+    html += `<label>
+      <input type="checkbox" ${marcado ? 'checked' : ''} data-tipo="rota-bool" data-path="rotas.${pathPrefix}.${origem}" data-valor="${destino}">
+      ${destino}
+    </label>`;
+  });
+  html += '</div>';
+  return html;
+}
+
+const AJUDA_PAPEL_PANELA = `Define a função desta panela. <b>Inicial</b>: 1ª limpeza até decuprização.
+<b>Intermediária</b>: recebe de uma Inicial, faz só a parte COMUM da química final (até a 2ª desantimoniação,
+igual pras duas ligas) e transfere pra uma panela Final, que faz o resto. <b>Final</b>: química completa +
+lingotamento — a menos que receba de uma Intermediária, aí só faz a parte que diverge por liga + lingotamento.
+<b>Final só Puro/só Cálcio</b>: restringe a uma única liga (rejeita a outra no roteamento). <b>Final +
+Fracionamento</b> (e variantes por liga): faz o processo final normal, e sempre tenta desviar 48t pra QUALQUER
+panela de Fracionamento marcada em "Pode transferir para" dela (a mesma lista usada pra roteamento normal —
+sem marcar nenhuma, essa panela nunca fraciona) — o resto lingota normal, com peso/tempo reduzidos. <b>Fracionamento
+Puro/Cálcio</b>: panela pequena (48t fixas) que recebe a fração — aceita Puro ou Cálcio pela % "Proporção
+Cálcio nas frações" (painel lateral). <b>Fracionamento Só Cálcio/Só Puro</b>: mesma coisa, mas só abre a liga
+do próprio nome. <b>Sb/Sn</b>: processa lotes de antimônio/estanho. <b>Final Puro (Cálcio vira
+Intermediária)</b> (e a variante com Fracionamento): panela híbrida — pra um lote <b>Puro</b>, age como
+"Final" normal (faz a química divergente e lingota ela mesma; a variante com Fracionamento também tenta
+desviar 48t pras panelas de Fracionamento marcadas em "Pode transferir para", igual "Final + Fracionamento");
+pra um lote <b>Cálcio</b>, vira automaticamente uma "Intermediária" (só faz a parte comum e repassa pra uma
+das panelas Final/Intermediária listadas em "Pode transferir para" — que precisa ser compatível com Cálcio,
+ex: "Final só Cálcio"). A mesma lista de "Pode transferir para" serve pros três usos (Cálcio-Intermediária,
+Fracionamento) — o motor separa cada destino pelo papel dele. <b>Desativada</b>: tira a panela da simulação
+por completo (não recebe lote nenhum).`;
+
+// peso típico que ESSA panela lingota, dado o papel atual — usado tanto pra
+// mostrar "Capacidade pós fracionamento" quanto pra estimar o tempo na saída
+function pesoTipicoPanela(nome) {
+  const papel = PARAMS.papeisPanelas[nome];
+  if (!papel) return null;
+  if (papel === 'final' || papel === 'finalPuro' || papel === 'finalCalcio' || papel === 'finalPuroOuIntermediariaCalcio') {
+    return { kg: PARAMS.kgLotePuroCalcio, rotulo: 'lote principal' };
+  }
+  if (ehPapelFracionamento(papel)) {
+    return { kg: Math.max(PARAMS.kgLotePuroCalcio - PARAMS.kgRetiradoP10, 0), rotulo: 'lote principal, após desviar a fração' };
+  }
+  if (papel === 'fracionamentoCalcio' || papel === 'fracionamentoSoCalcio' || papel === 'fracionamentoSoPuro') {
+    return { kg: PARAMS.kgRetiradoP10, rotulo: 'fração recebida (fixa)' };
+  }
+  if (papel === 'sbsn') {
+    return { kg: PARAMS.sbsnKgMedia, rotulo: 'peso médio Sb/Sn' };
+  }
+  return null; // inicial, intermediária, desativada — não lingota direto
+}
+
+function formatarKg(kg) {
+  return `${Math.round(kg).toLocaleString('pt-BR')} kg (~${(kg / 1000).toFixed(1)}t)`;
+}
+
+// seção "Pesos" do modal — muda de campo conforme o papel atual da panela
+function buildPesosPanelaHtml(nome) {
+  const papel = PARAMS.papeisPanelas[nome];
+  if (papel === 'inicial') {
+    const kgCarregado = PARAMS.capacidadesIniciais[nome] || 0;
+    const rendimento = PARAMS.rendimentoInicialFinal;
+    const kgTransferido = kgCarregado * rendimento;
+    const kgTerceiro = Math.max(PARAMS.kgLotePuroCalcio - kgTransferido, 0);
+    return `<div class="modal-secao">
+      <div class="modal-secao-titulo">Pesos</div>
+      ${scalarField('Capacidade (peso carregado)', `capacidadesIniciais.${nome}`, 1000,
+        'Peso de chumbo dos Fornos carregado nesta panela por lote.', 0)}
+      ${scalarFieldPercentual('Rendimento até a panela final', 'rendimentoInicialFinal',
+        'Fração do peso carregado aqui que efetivamente chega na panela final depois da transferência — o resto é perda de processo. Compartilhado entre todas as panelas Iniciais.')}
+      <div class="modal-ajuda">Transfere <b>${formatarKg(kgTransferido)}</b> pra panela final (${(rendimento * 100).toFixed(0)}% de rendimento). A diferença até a "Capacidade lingotamento" configurada na panela Final (${formatarKg(PARAMS.kgLotePuroCalcio)}) é completada com chumbo terceiro: <b>${formatarKg(kgTerceiro)}</b> por lote.</div>
+    </div>`;
+  }
+  if (papel === 'final' || papel === 'finalPuro' || papel === 'finalCalcio' || papel === 'finalPuroOuIntermediariaCalcio') {
+    return `<div class="modal-secao">
+      <div class="modal-secao-titulo">Pesos</div>
+      ${scalarField('Capacidade lingotamento (peso do lote)', 'kgLotePuroCalcio', 500,
+        'Peso do lote Puro/Cálcio antes de lingotar. Esse valor é compartilhado por todas as panelas com papel Final — mudar aqui afeta as outras também.', 0)}
+    </div>`;
+  }
+  if (ehPapelFracionamento(papel)) {
+    const posFrac = Math.max(PARAMS.kgLotePuroCalcio - PARAMS.kgRetiradoP10, 0);
+    return `<div class="modal-secao">
+      <div class="modal-secao-titulo">Pesos</div>
+      ${scalarField('Capacidade lingotamento (peso do lote, antes de fracionar)', 'kgLotePuroCalcio', 500,
+        'Peso do lote Puro/Cálcio antes de desviar a fração. Compartilhado com todas as panelas com papel Final — mudar aqui afeta as outras também.', 0)}
+      ${scalarField('Peso retirado por fração', 'kgRetiradoP10', 500,
+        'Quanto é desviado pra uma panela de Fracionamento a cada vez que essa panela termina a química. Compartilhado com todas as panelas "Final + Fracionamento" e todas as de "Fracionamento".', 0)}
+      <div class="modal-ajuda"><b>Capacidade pós fracionamento</b> (o que sobra pra lingotar aqui mesmo, depois de desviar a fração): ${formatarKg(posFrac)}</div>
+    </div>`;
+  }
+  if (papel === 'fracionamentoCalcio' || papel === 'fracionamentoSoCalcio' || papel === 'fracionamentoSoPuro') {
+    return `<div class="modal-secao">
+      <div class="modal-secao-titulo">Pesos</div>
+      ${scalarField('Peso recebido (fração fixa)', 'kgRetiradoP10', 500,
+        'Toda panela de Fracionamento recebe sempre esse peso fixo — é o mesmo valor "retirado" configurado na panela Final de origem (compartilhado).', 0)}
+    </div>`;
+  }
+  if (papel === 'sbsn') {
+    return `<div class="modal-secao">
+      <div class="modal-secao-titulo">Pesos</div>
+      ${scalarField('Peso médio (kg)', 'sbsnKgMedia', 500)}
+      ${scalarField('Desvio (kg)', 'sbsnKgDesvio', 100)}
+    </div>`;
+  }
+  return ''; // inicial, intermediária, desativada — sem peso próprio configurável aqui
+}
+
+// seção "Tempo de lingotamento/hogueamento" do modal de uma saída física
+// (L1/L2/Hogueira) — taxa única (kg/h) + tabela com o tempo estimado pra cada
+// panela que aponta pra essa saída, no peso típico de cada uma
+function buildTempoSaidaHtml(nome) {
+  let linhas = '';
+  NOMES_PANELAS_COM_PAPEL.forEach(pn => {
+    const destinos = PARAMS.rotas.finaisParaSaidas[pn] || [];
+    if (!destinos.includes(nome)) return;
+    const peso = pesoTipicoPanela(pn);
+    if (!peso) return;
+    const horas = tempoSaidaPorTaxa(nome, peso.kg, PARAMS);
+    const rotuloPapel = ROTULO_CURTO_PAPEL[PARAMS.papeisPanelas[pn]] || PARAMS.papeisPanelas[pn];
+    linhas += `<tr><td>${pn}</td><td>${rotuloPapel}</td><td>${formatarKg(peso.kg)}</td><td>${horasParaHHMM(horas)}</td></tr>`;
+  });
+  const tabela = linhas
+    ? `<table><thead><tr><th>Panela</th><th>Papel</th><th>Peso típico</th><th>Tempo estimado</th></tr></thead><tbody>${linhas}</tbody></table>`
+    : `<div class="modal-ajuda">Nenhuma panela aponta pra essa saída ainda — configure "Saída física alcançada" na panela desejada.</div>`;
+  return `<div class="modal-secao">
+    <div class="modal-secao-titulo">Tempo de lingotamento/hogueamento</div>
+    ${scalarField('Taxa (kg/h)', `saidaKgPorHora.${nome}`, 100,
+      'Tempo de qualquer lote nessa saída = peso do lote (kg) dividido por essa taxa. Ajuste pra refletir o ritmo real observado nessa linha.', 1)}
+    <div class="modal-ajuda">Tempo estimado pra cada panela que aponta pra essa saída, no peso típico dela:</div>
+    ${tabela}
+  </div>`;
+}
+
+const PAPEIS_DESTINO_VALIDO_TRANSFERIR = new Set([
+  'intermediaria', 'final', 'finalPuro', 'finalCalcio', 'finalFracionamento',
+  'finalPuroFracionamento', 'finalCalcioFracionamento',
+  'finalPuroOuIntermediariaCalcio', 'finalPuroFracionamentoOuIntermediariaCalcio',
+]);
+const PAPEIS_FRACIONAMENTO = new Set(['fracionamentoCalcio', 'fracionamentoSoCalcio', 'fracionamentoSoPuro']);
+// só panelas com papel Final (qualquer variante) ou Intermediária podem ser um
+// destino válido em "Pode transferir para" pra rota Inicial/Intermediária →
+// Final — Sb-Sn/inicial/desativada NUNCA são (ver compativelTipo em
+// finaisCompativeis). ALÉM disso, se a PRÓPRIA origem puder fracionar ("Final +
+// Fracionamento" ou variante/híbrido), panelas de Fracionamento também entram
+// na lista — é a mesma lista que decide pra onde o fracionamento pode ir (ver
+// o loop de fracionamento no motor, que agora respeita essa configuração em
+// vez de valer pra qualquer panela de Fracionamento do sistema).
+function nomesDestinoValidoParaTransferir(nomeOrigem) {
+  const papelOrigem = nomeOrigem ? PARAMS.papeisPanelas[nomeOrigem] : null;
+  const podeFracionar = ehPapelFracionamento(papelOrigem);
+  return NOMES_PANELAS_COM_PAPEL.filter(n => {
+    const papel = PARAMS.papeisPanelas[n];
+    return PAPEIS_DESTINO_VALIDO_TRANSFERIR.has(papel) || (podeFracionar && PAPEIS_FRACIONAMENTO.has(papel));
+  });
+}
+
+function abrirModalPanela(nome) {
+  limparRotasInvalidas();
+  const overlay = document.getElementById('modal-panela-overlay');
+  const titulo = document.getElementById('modal-panela-titulo');
+  const body = document.getElementById('modal-panela-body');
+  if (!overlay || !titulo || !body) return;
+
+  const temPapel = PARAMS.papeisPanelas.hasOwnProperty(nome);
+  titulo.textContent = temPapel ? `Panela ${nome}` : `Saída física — ${nome}`;
+
+  let html = '';
+  if (temPapel) {
+    html += `<div class="modal-secao">
+      <div class="modal-secao-titulo">Papel</div>
+      ${scalarFieldSelect('Papel desta panela', `papeisPanelas.${nome}`, OPCOES_PAPEL_PANELA)}
+      <details class="modal-ajuda-suspensa"><summary>O que cada papel faz</summary>
+        <div class="modal-ajuda">${AJUDA_PAPEL_PANELA}</div>
+      </details>
+    </div>`;
+
+    html += `<div class="modal-secao">
+      <div class="modal-secao-titulo">Pode transferir para (próxima panela / fracionamento)</div>
+      ${buildRotaCheckboxesSingle(nome, PARAMS.rotas.iniciaisParaFinais, nomesDestinoValidoParaTransferir(nome), 'iniciaisParaFinais')}
+      <div class="modal-ajuda">${ehPapelFracionamento(PARAMS.papeisPanelas[nome])
+        ? 'Pra papel "Final + Fracionamento" (ou híbrido), essa lista serve pra duas coisas: panelas Final/Intermediária aqui valem se o papel também for Cálcio-vira-Intermediária; panelas de Fracionamento aqui (ex: P10) são pra onde o fracionamento pode ir — sem marcar nenhuma, essa panela nunca fraciona, mesmo tendo o papel certo.'
+        : 'Só importa se esta panela estiver com papel "Inicial" ou "Intermediária" — nas demais, essa lista é ignorada pela simulação. Só panelas com papel Final (qualquer variante) ou Intermediária aparecem aqui.'}</div>
+    </div>`;
+
+    html += `<div class="modal-secao">
+      <div class="modal-secao-titulo">Saída física alcançada (rota final → lingotamento)</div>
+      ${buildRotaCheckboxesSingle(nome, PARAMS.rotas.finaisParaSaidas, ['L1', 'L2', 'Hogueira'], 'finaisParaSaidas')}
+      <div class="modal-ajuda">Só importa se esta panela receber lote como final/fracionamento/Sb-Sn. <b>Atenção:</b> se um lote precisar de uma saída que a panela não alcança aqui, ele trava pra sempre na simulação (fica "cheio e parado" sem erro visível).</div>
+    </div>`;
+
+    html += buildPesosPanelaHtml(nome);
+  } else {
+    html += buildTempoSaidaHtml(nome);
+  }
+
+  html += `<div class="modal-secao">
+    <div class="modal-secao-titulo">Manutenção</div>
+    ${scalarField('Dias indisponível no mês', `manutencoes.${nome}`, 1,
+      'Deixa o equipamento ocupado desde 00:00 do dia 1 pelo número de dias informado — qualquer lote que precisar dele espera na fila normal até acabar. 0 = disponível o mês inteiro.', 0, 40)}
+  </div>`;
+
+  body.innerHTML = html;
+  // qualquer mudança (papel, rota, peso, taxa, manutenção) atualiza o diagrama
+  // E reabre o modal pra recalcular valores derivados (ex: capacidade pós
+  // fracionamento, tabela de tempo por panela)
+  attachParamListeners(body, () => { renderLayoutDiagram(); abrirModalPanela(nome); });
+  overlay.style.display = 'flex';
+}
+
+function fecharModalPanela() {
+  const overlay = document.getElementById('modal-panela-overlay');
+  if (overlay) overlay.style.display = 'none';
+}
+document.getElementById('modal-panela-close').addEventListener('click', fecharModalPanela);
+document.getElementById('modal-panela-overlay').addEventListener('click', (e) => {
+  if (e.target.id === 'modal-panela-overlay') fecharModalPanela();
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') fecharModalPanela();
+});
+
 function renderParamForm() {
   const el = document.getElementById('param-form');
   let html = '';
@@ -2037,39 +2595,22 @@ function renderParamForm() {
       0, 4)}
   `, true, 'estrutural');
 
-  const ajudaLingotamento = 'Pontos de referência usados pra interpolar o tempo de lingotamento pelo peso real do lote (quanto mais pesado, mais tempo). "Lote grande" e "lote pequeno" são as duas âncoras calibradas — qualquer peso intermediário (ou fora da faixa) é calculado por interpolação/extrapolação linear entre esses dois pontos.';
-  html += detailsBlock('Tempo de lingotamento (por saída)', `
-    ${scalarFieldHoras('Hogueira — lote grande (~115t)', 'saidaTempoRef.ref115.Hogueira', ajudaLingotamento)}
-    ${scalarFieldHoras('Hogueira — lote pequeno (~50t)', 'saidaTempoRef.ref50.Hogueira', ajudaLingotamento)}
-    ${scalarFieldHoras('L1 — lote grande (~115t)', 'saidaTempoRef.ref115.L1', ajudaLingotamento)}
-    ${scalarFieldHoras('L1 — lote pequeno (~50t)', 'saidaTempoRef.ref50.L1', ajudaLingotamento)}
-    ${scalarFieldHoras('L2 — lote grande (~115t)', 'saidaTempoRef.ref115.L2', ajudaLingotamento)}
-  `, false, 'lingotamento');
-
   html += detailsBlock('Probabilidades', `
     ${scalarFieldPercentual('Proporção Cálcio', 'probCalcio')}
-    ${scalarFieldPercentual('Cálcio sai por L', 'probCalcioSaidaL')}
+    ${scalarFieldPercentual('Cálcio sai por L (só na fração, via P10)', 'probCalcioSaidaL',
+      'Só vale pra fração de Cálcio desviada pra uma panela de Fracionamento (ex: P10) — o lote-mãe de Cálcio sai sempre por Hogueira, já que hoje só a panela Final Cálcio (ex: P6) o processa, e ela só alcança Hogueira.')}
     ${scalarFieldPercentual('Precisa desestanhação', 'probDesestanhacao')}
     ${scalarFieldPercentual('Pula etapa de lança', 'probPulaLanca')}
     ${scalarFieldPercentual('Pula desestanhação (Sb/Sn)', 'probPulaDesestanhacaoSbsn',
       'Chance de um lote Sb/Sn pular a etapa de desestanhação — e, com isso, também pular o tempo de espera "Entre decuprização e desestanhação Sb/Sn" (já que não precisa esperar pra fazer uma etapa que não vai acontecer). Reduz o tempo total do lote quando isso ocorre.')}
   `, false, 'probabilidades');
 
-  html += detailsBlock('Pesos (kg)', `
-    ${scalarField('Peso por lote Puro/Cálcio', 'kgLotePuroCalcio', 500)}
-    ${scalarField('Retirado Panela 10 (fração)', 'kgRetiradoP10', 500)}
-    ${scalarField('Retirado P7 fracionado — Puro', 'kgRetiradoP7FracionadoPuro', 500)}
-    ${scalarField('Retirado P7 fracionado — Cálcio', 'kgRetiradoP7FracionadoCalcio', 500)}
-    ${scalarField('Sb/Sn — peso médio', 'sbsnKgMedia', 500)}
-    ${scalarField('Sb/Sn — desvio', 'sbsnKgDesvio', 100)}
-  `, false, 'pesos');
-
   html += detailsBlock('Tempos — Comum (1ª limpeza até Transferência)',
     buildStageInputs(PARAMS.processos.comum.inicial, 'processos.comum.inicial') +
     buildStageInputs(PARAMS.processos.comum.transferencia1, 'processos.comum.transferencia1'), false, 'tempos-comum');
 
   html += detailsBlock('Tempos — Transferência Intermediária → Final',
-    `<div class="ajuda-manut">Só é usada quando alguma panela estiver com o papel "Intermediária" (menu "Papéis das Panelas"). Sem nenhuma Intermediária configurada, esse tempo não entra no cálculo.</div>` +
+    `<div class="ajuda-manut">Só é usada quando alguma panela estiver com o papel "Intermediária" (clique na panela no diagrama de Layout, no topo da página, pra configurar). Sem nenhuma Intermediária configurada, esse tempo não entra no cálculo.</div>` +
     buildStageInputs(PARAMS.processos.comum.transferenciaIntermediaria, 'processos.comum.transferenciaIntermediaria'), false, 'transf-intermediaria');
 
   html += detailsBlock('Panela Final Puro/Ca (2ª Desantimoniação até Lingotamento — caso for Puro)',
@@ -2081,48 +2622,16 @@ function renderParamForm() {
 
   html += detailsBlock('Tempos — Sb/Sn', buildStageInputs(PARAMS.sbsnEtapas, 'sbsnEtapas'), false, 'tempos-sbsn');
 
-  html += detailsBlock('Papéis das Panelas',
-    `<div class="ajuda-manut">Define a função de cada panela. "Inicial" faz as etapas de 1ª limpeza até decuprização.
-    "Intermediária" recebe de uma Inicial, faz só a parte COMUM da química final (até a 2ª desantimoniação, igual pras
-    duas ligas) e transfere pra uma panela "Final", que faz o resto (química que diverge por liga + lingotamento).
-    "Final" faz a química completa + lingotamento — a menos que receba de uma Intermediária, aí só faz a parte final que
-    diverge por liga + lingotamento. "Final só Puro"/"Final só Cálcio" restringem a panela a uma única liga (rejeita a
-    outra na hora de rotear). <b>"Final + Fracionamento"</b>: faz o processo final normal (química completa +
-    lingotamento) pra Puro ou Cálcio, mas sempre (não depende de sorteio) tenta desviar uma fração pra alguma panela
-    "Fracionamento Puro/Cálcio" (ou variante restrita) disponível. Quando o destino é a genérica "Fracionamento
-    Puro/Cálcio", a liga da fração é sorteada pela % "Proporção Cálcio nas frações" logo abaixo — independente da meta
-    de Programação (que controla outra coisa: o mix geral de despacho dos lotes principais, não o tipo da fração). O
-    restante do lote continua e lingota normal, na liga original — sem fracionamento, ele só lingota inteiro.
-    <b>"Final só Puro + Fracionamento"</b>: só aceita Puro como lote principal (rejeita Cálcio, igual "Final só Puro")
-    — e além disso fraciona (mesma lógica de destino). <b>"Final só Cálcio + Fracionamento"</b>: o espelho —
-    só aceita Cálcio como principal, e fraciona do mesmo jeito. Quando a fração vira Cálcio, faz a química completa
-    (2ª transferência + limpeza final + Agregar); quando vira Puro, faz só 2ª transferência + lingotamento (sem
-    limpeza final nem Agregar, que não fazem sentido pro Puro — reaproveita os mesmos tempos e peso do Cálcio pequeno).
-    <b>"Fracionamento Puro/Cálcio"</b>: panela pequena que recebe a fração desviada — aceita tanto fração de Puro
-    quanto de Cálcio (decidido pela % "Proporção Cálcio nas frações"). <b>"Fracionamento Só Cálcio"</b>/
-    <b>"Fracionamento Só Puro"</b>: mesma coisa, mas essa panela específica só abre lotes daquela liga, não importa o
-    que seria sorteado — útil se você quer garantir que uma panela pequena específica sempre produza uma liga fixa.
-    Qualquer variante de "Final + Fracionamento" disponível pode mandar pra qualquer panela de fracionamento
-    disponível (das três), sem rota fixa entre pares específicos.
-    <b>"Desativada"</b>: tira a panela da simulação por completo (não recebe lote nenhum, de nenhum tipo). Se nenhuma
-    panela estiver marcada "Intermediária" ou híbrida, o fluxo comum é exatamente o de sempre (Inicial → Final direto).</div>` +
+  html += detailsBlock('Fracionamento',
+    `<div class="ajuda-manut">Papel de cada panela, rotas ("pra onde transfere") e manutenção de equipamento agora
+    são configurados clicando na própria panela no diagrama de Layout, no topo da página. Só a proporção da liga
+    da fração (abaixo) fica aqui, por ser um parâmetro geral — não de uma panela específica.</div>` +
     scalarFieldPercentual('Proporção Cálcio nas frações', 'fracaoProporcaoCalcio',
-      'Chance de uma fração desviada (por qualquer panela "Final + Fracionamento") virar Cálcio quando o destino é a panela genérica "Fracionamento Puro/Cálcio" — o restante das frações vira Puro. Não vale pras variantes restritas ("Só Cálcio"/"Só Puro"), que sempre abrem a liga do próprio nome. 50% = metade e metade. Isso é independente da meta de Programação.') +
-    ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9', 'P10', 'P11'].map(pn => scalarFieldSelect(pn, `papeisPanelas.${pn}`, OPCOES_PAPEL_PANELA)).join(''),
-    false, 'papeis-panelas');
-
-  html += detailsBlock('Rotas — Panela inicial/intermediária → Próxima panela',
-    buildRotaCheckboxes(PARAMS.rotas.iniciaisParaFinais, ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9', 'P10', 'P11'], 'iniciaisParaFinais'), false, 'rotas-iniciais');
-
-  html += detailsBlock('Rotas — Panela final / Fracionamento / Sb-Sn → Saída física',
-    buildRotaCheckboxes(PARAMS.rotas.finaisParaSaidas, ['L1', 'L2', 'Hogueira'], 'finaisParaSaidas'), false, 'rotas-saidas');
+      'Chance de uma fração desviada (por qualquer panela "Final + Fracionamento") virar Cálcio quando o destino é a panela genérica "Fracionamento Puro/Cálcio" — o restante das frações vira Puro. Não vale pras variantes restritas ("Só Cálcio"/"Só Puro"), que sempre abrem a liga do próprio nome. 50% = metade e metade. Isso é independente da meta de Programação.'),
+    false, 'fracionamento-geral');
 
   html += detailsBlock('Rotas — Cliente → Saída permitida',
     buildRotaCheckboxes(PARAMS.rotas.clientesParaSaidas, ['Hogueira', 'L1', 'L2'], 'clientesParaSaidas'), false, 'rotas-clientes');
-
-  html += detailsBlock('Manutenção — Panelas indisponíveis no mês (dias)',
-    `<div class="ajuda-manut">Deixa o equipamento ocupado desde 00:00 do dia 1 pelo número de dias informado — qualquer lote que precisar dele espera na fila normal até acabar. 0 = disponível o mês inteiro.</div>` +
-    buildManutencaoFields(PARAMS.manutencoes), false, 'manutencao-equip');
 
   html += detailsBlock('Manutenção dos Fornos',
     `${scalarField('Forno 1 — dias em manutenção', 'manutencaoFornos.diasForno1', 1,
@@ -2143,7 +2652,7 @@ function renderParamForm() {
       'Quando marcado, Puro não fica limitado à meta % — produz o quanto conseguir, além do que a meta reservaria (usa o orçamento de "Lotes sintéticos" inteiro pra essa liga, de cima da meta).')}
     ${scalarFieldPercentual('Cálcio', 'programacao.calcio')}
     ${scalarFieldCheckbox('Cálcio — Produção Livre', 'programacao.calcioLivre',
-      'Mesma lógica do Puro, mas pro Cálcio (não fica limitado à meta %). Não tem relação com fracionamento — isso é decidido à parte, em "Papéis das Panelas".')}
+      'Mesma lógica do Puro, mas pro Cálcio (não fica limitado à meta %). Não tem relação com fracionamento — isso é decidido à parte, no papel de cada panela (clique na panela no diagrama de Layout).')}
     ${scalarFieldPercentual('Sb/Sn', 'programacao.sbsn')}
     ${scalarFieldCheckbox('Sb/Sn — Produção Livre', 'programacao.sbsnLivre',
       'Mesma lógica, mas pro Sb/Sn — usa o orçamento de "Lotes Sb/Sn" inteiro além da meta. Faz sentido ligar aqui, já que Sb/Sn usa panelas próprias (P8/P9), sem disputar recurso com Puro/Cálcio.')}
@@ -2154,7 +2663,15 @@ function renderParamForm() {
 
   el.innerHTML = html;
 
-  el.querySelectorAll('input[data-path], select[data-path]').forEach(input => {
+  attachParamListeners(el);
+}
+
+// liga os inputs/selects com data-path a PARAMS (usado tanto no painel lateral
+// quanto no modal de configuração da panela). onDepoisMudar (opcional) roda
+// depois de QUALQUER mudança aplicada — usado pelo modal pra atualizar o
+// diagrama de layout (cor/rótulo/linhas) sem precisar reabrir o modal.
+function attachParamListeners(rootEl, onDepoisMudar) {
+  rootEl.querySelectorAll('input[data-path], select[data-path]').forEach(input => {
     input.addEventListener('change', () => {
       const tipo = input.dataset.tipo || 'numero';
       if (tipo === 'horas') {
@@ -2211,10 +2728,11 @@ function renderParamForm() {
       } else {
         setByPath(PARAMS, input.dataset.path, parseFloat(input.value));
       }
+      if (onDepoisMudar) onDepoisMudar(input);
     });
   });
 
-  el.querySelectorAll('.btn-definir-padrao').forEach(btn => {
+  rootEl.querySelectorAll('.btn-definir-padrao').forEach(btn => {
     btn.addEventListener('click', () => {
       const bodyEl = btn.closest('.details-body');
       const paths = new Set();
@@ -2233,6 +2751,7 @@ function renderParamForm() {
 function resetarParametros() {
   PARAMS = defaultParamsComCustom();
   renderParamForm();
+  renderLayoutDiagram();
   document.getElementById('status-line').textContent = 'Parâmetros restaurados ao padrão validado.';
   document.getElementById('status-line').className = 'status-line';
 }
@@ -2295,6 +2814,17 @@ document.getElementById('btn-run').addEventListener('click', async () => {
   const t0 = performance.now();
   const producaoTotal = [];
   const producaoPorTipo = { Puro: [], Calcio: [], 'Sb/Sn': [] };
+  // contagem de LOTES (não toneladas) — "130t" = lote principal (mãe), mesmo
+  // que tenha saído reduzido por fracionamento; "50t" = fração desviada pra
+  // uma panela de Fracionamento (tem panelaP10 no registro)
+  const lotesPorTipo = { Puro: [], Calcio: [], 'Sb/Sn': [] };
+  const lotesPorTipo130 = { Puro: [], Calcio: [] };
+  const lotesPorTipo50 = { Puro: [], Calcio: [] };
+  // contagem de lotes-MÃE de verdade (1 carregamento na Inicial cada) — inclui
+  // os que fracionaram (cujo peso reduzido cai no balde "50t" acima, mas ainda
+  // representam 1 carregamento). Usado pra "Chumbo dos Fornos", que precisa do
+  // número real de carregamentos, não da contagem por faixa de peso.
+  const lotesMaePorTipo = { Puro: [], Calcio: [] };
   const utilizacoes = [];
   const manutPcts = [];
   const manutDiasArr = [];
@@ -2302,13 +2832,40 @@ document.getElementById('btn-run').addEventListener('click', async () => {
   const setupPcts = [];
   const bloqueiosAgg = [];
   let animacaoDados = null;
+  let lotesDetalhados = null; // só da 1ª réplica — pro relatório por lote
+  let totalAvisosRotaImpossivel = 0;
+
+  // limiar de peso pra separar "lote grande" (130t) de "lote pequeno" (50t) —
+  // no meio do caminho entre o peso de um lote principal cheio (kgLotePuroCalcio)
+  // e o de um lote principal JÁ REDUZIDO por ter cedido uma fração (kgLotePuroCalcio
+  // - kgRetiradoP10). Classificar pelo PESO REAL (não por "é o registro da fração
+  // em si") é o que importa aqui — um lote principal fracionado pesa menos
+  // (ex: 67t em vez de 115t) e precisa cair no grupo "50t" também, senão a soma
+  // (contagem × peso nominal) não bate com a produção real.
+  const limiarPesoGrande = PARAMS.kgLotePuroCalcio - PARAMS.kgRetiradoP10 / 2;
 
   for (let r = 0; r < nReplicas; r++) {
     const { sim, dfMes, tempoTotal } = await runReplication(PARAMS);
+    totalAvisosRotaImpossivel += (sim.avisosRotaImpossivel || 0);
     const porTipo = { Puro: 0, Calcio: 0, 'Sb/Sn': 0 };
-    dfMes.forEach(l => { porTipo[l.tipo] += l.toneladas; });
+    const porTipoCount = { Puro: 0, Calcio: 0, 'Sb/Sn': 0 };
+    const porTipoCount130 = { Puro: 0, Calcio: 0 };
+    const porTipoCount50 = { Puro: 0, Calcio: 0 };
+    const porTipoCountMae = { Puro: 0, Calcio: 0 };
+    dfMes.forEach(l => {
+      porTipo[l.tipo] += l.toneladas;
+      porTipoCount[l.tipo] += 1;
+      if (l.tipo === 'Puro' || l.tipo === 'Calcio') {
+        if (l.kg >= limiarPesoGrande) porTipoCount130[l.tipo] += 1; else porTipoCount50[l.tipo] += 1;
+        if (!l.panelaP10) porTipoCountMae[l.tipo] += 1; // registro de fração tem panelaP10; lote-mãe não
+      }
+    });
     producaoTotal.push(porTipo.Puro + porTipo.Calcio + porTipo['Sb/Sn']);
     for (const k in porTipo) producaoPorTipo[k].push(porTipo[k]);
+    for (const k in porTipoCount) lotesPorTipo[k].push(porTipoCount[k]);
+    for (const k in porTipoCount130) lotesPorTipo130[k].push(porTipoCount130[k]);
+    for (const k in porTipoCount50) lotesPorTipo50[k].push(porTipoCount50[k]);
+    for (const k in porTipoCountMae) lotesMaePorTipo[k].push(porTipoCountMae[k]);
     const resUtil = calcularUtilizacao(sim.eventos, tempoTotal);
     utilizacoes.push(resUtil.uso);
     manutPcts.push(resUtil.manutPct);
@@ -2319,6 +2876,7 @@ document.getElementById('btn-run').addEventListener('click', async () => {
     if (r === 0) {
       const tempoFinalAnim = sim.eventos.length ? Math.max(...sim.eventos.map(e => e.tempo)) : tempoTotal;
       animacaoDados = { eventos: sim.eventos.slice(), bloqueios: sim.bloqueios.slice(), tempoFinal: tempoFinalAnim };
+      lotesDetalhados = dfMes.slice().sort((a, b) => a.chegada - b.chegada);
     }
   }
 
@@ -2331,7 +2889,9 @@ document.getElementById('btn-run').addEventListener('click', async () => {
   const mediaBloq = mediaBloqueios(bloqueiosAgg);
 
   renderResultados({
-    producaoTotal, producaoPorTipo, mediaUtil, mediaManutPct, mediaManutDias, mediaLivrePct, mediaSetupPct, mediaBloq, nReplicas,
+    producaoTotal, producaoPorTipo, lotesPorTipo, lotesPorTipo130, lotesPorTipo50, lotesMaePorTipo, lotesDetalhados,
+    mediaUtil, mediaManutPct, mediaManutDias, mediaLivrePct, mediaSetupPct, mediaBloq, nReplicas,
+    totalAvisosRotaImpossivel,
   });
   renderAnimacao(animacaoDados);
   atualizarContextoChat({ producaoTotal, producaoPorTipo, mediaUtil, mediaBloq, nReplicas });
@@ -2406,7 +2966,7 @@ function gerarSugestoes(mediaUtil, mediaBloq, params) {
   return sugestoes;
 }
 
-function renderResultados({ producaoTotal, producaoPorTipo, mediaUtil, mediaManutPct, mediaManutDias, mediaLivrePct, mediaSetupPct, mediaBloq, nReplicas }) {
+function renderResultados({ producaoTotal, producaoPorTipo, lotesPorTipo, lotesPorTipo130, lotesPorTipo50, lotesMaePorTipo, lotesDetalhados, mediaUtil, mediaManutPct, mediaManutDias, mediaLivrePct, mediaSetupPct, mediaBloq, nReplicas, totalAvisosRotaImpossivel }) {
   const el = document.getElementById('results');
   const mediaTotal = mean(producaoTotal);
   const desvioTotal = stdev(producaoTotal);
@@ -2415,17 +2975,81 @@ function renderResultados({ producaoTotal, producaoPorTipo, mediaUtil, mediaManu
 
   let html = '';
 
+  if (totalAvisosRotaImpossivel > 0) {
+    html += `<div class="suggestion" style="border-color:var(--red); background:rgba(220,80,80,0.12);">
+      ⚠️ Detectada${totalAvisosRotaImpossivel > 1 ? 's' : ''} ${totalAvisosRotaImpossivel} rota${totalAvisosRotaImpossivel > 1 ? 's' : ''} impossíve${totalAvisosRotaImpossivel > 1 ? 'is' : 'l'}: algum lote precisou de uma saída física (L1/L2/Hogueira) que a panela de origem não alcança em "Saída física alcançada" — isso trava o lote pra sempre e deixa a panela "ocupada" (sem liberar) pro resto da simulação, inflando a utilização dela artificialmente. Clique na panela suspeita no diagrama de Layout e confirme se "Saída física alcançada" cobre todas as saídas que ela pode precisar.
+    </div>`;
+  }
+
+  // ---- chumbo dos Fornos vs chumbo Terceiro — a partir dos números REAIS
+  // simulados (quantos lotes-mãe de fato aconteceram × capacidade × rendimento),
+  // não de uma fração fixa calculada a partir da capacidade/meta de lingotamento.
+  // Isso importa porque nem todo lote-mãe termina com o mesmo peso real (alguns
+  // cedem fração) — usar "o que produziu" em vez de "a meta de produção" evita
+  // que esse efeito distorça a proporção. Sb/Sn é 100% terceiro, já que não
+  // passa pelas panelas Iniciais/Fornos.
+  const nomesIniciais = NOMES_PANELAS_COM_PAPEL.filter(n => PARAMS.papeisPanelas[n] === 'inicial');
+  const capacidadeMediaInicial = nomesIniciais.length > 0
+    ? nomesIniciais.reduce((acc, n) => acc + (PARAMS.capacidadesIniciais[n] || 0), 0) / nomesIniciais.length
+    : null;
+  const producaoPuroCalcio = mean(producaoPorTipo.Puro) + mean(producaoPorTipo.Calcio);
+  const producaoSbsn = mean(producaoPorTipo['Sb/Sn']);
+  // número REAL de lotes-mãe (só os "130t" — cada um passou por exatamente 1
+  // carregamento numa Inicial; as frações "50t" não somam outro carregamento,
+  // vêm do mesmo lote-mãe que já foi contado)
+  const nLotesMaePuroCalcio = mean(lotesMaePorTipo.Puro) + mean(lotesMaePorTipo.Calcio);
+  let htmlFornosTerceiro = '';
+  if (capacidadeMediaInicial !== null) {
+    const kgTransferidoPorLote = capacidadeMediaInicial * PARAMS.rendimentoInicialFinal;
+    const totalFornos = Math.min(nLotesMaePuroCalcio * kgTransferidoPorLote / 1000, producaoPuroCalcio);
+    const terceiroPuroCalcio = Math.max(producaoPuroCalcio - totalFornos, 0); // "completar panela"
+    const totalTerceiro = terceiroPuroCalcio + producaoSbsn; // Sb/Sn usa só chumbo terceiro
+    const totalGeral = totalFornos + totalTerceiro;
+    const pctFornos = totalGeral > 0 ? (totalFornos / totalGeral * 100) : 0;
+    const pctTerceiroDaProducao = totalGeral > 0 ? (totalTerceiro / totalGeral * 100) : 0;
+    const pctTerceiroSbsn = totalTerceiro > 0 ? (producaoSbsn / totalTerceiro * 100) : 0;
+    const pctTerceiroCompletarPanela = totalTerceiro > 0 ? (terceiroPuroCalcio / totalTerceiro * 100) : 0;
+    htmlFornosTerceiro = `
+      <div class="card"><div class="label">Chumbo dos Fornos</div><div class="value">${totalFornos.toFixed(0)} t</div><div class="sub">${pctFornos.toFixed(0)}% da produção</div></div>
+      <div class="card">
+        <div class="label">Chumbo Terceiro</div>
+        <div class="value">${totalTerceiro.toFixed(0)} t</div>
+        <div class="sub">${totalTerceiro.toFixed(0)}t da produção (${pctTerceiroDaProducao.toFixed(0)}%)</div>
+        <div class="sub">${producaoSbsn.toFixed(0)}t usado no Sb/Sn (${pctTerceiroSbsn.toFixed(0)}%)</div>
+        <div class="sub">${terceiroPuroCalcio.toFixed(0)}t para completar panela (${pctTerceiroCompletarPanela.toFixed(0)}%)</div>
+      </div>`;
+  } else {
+    htmlFornosTerceiro = `
+      <div class="card"><div class="label">Chumbo dos Fornos / Terceiro</div><div class="value">—</div><div class="sub">Nenhuma panela com papel "Inicial" configurada agora</div></div>`;
+  }
+
   // ---- cards de produção ----
+  const nLotesPuro = mean(lotesPorTipo.Puro), nLotesCalcio = mean(lotesPorTipo.Calcio), nLotesSbsn = mean(lotesPorTipo['Sb/Sn']);
+  const nLotesPuro130 = mean(lotesPorTipo130.Puro), nLotesPuro50 = mean(lotesPorTipo50.Puro);
+  const nLotesCalcio130 = mean(lotesPorTipo130.Calcio), nLotesCalcio50 = mean(lotesPorTipo50.Calcio);
   html += `<div class="cards">
     <div class="card">
       <div class="label">Produção total / mês</div>
       <div class="value">${mediaTotal.toFixed(0)} t</div>
       <div class="sub">±${desvioTotal.toFixed(0)}t · faixa ${minTotal.toFixed(0)}-${maxTotal.toFixed(0)}t (${nReplicas} réplicas)</div>
+      <div class="sub">${nLotesPuro.toFixed(0)} lotes Puro, ${nLotesCalcio.toFixed(0)} lotes Cálcio, ${nLotesSbsn.toFixed(0)} lotes Sb/Sn</div>
     </div>
-    <div class="card"><div class="label">Puro</div><div class="value">${mean(producaoPorTipo.Puro).toFixed(0)} t</div></div>
-    <div class="card"><div class="label">Cálcio</div><div class="value">${mean(producaoPorTipo.Calcio).toFixed(0)} t</div></div>
-    <div class="card"><div class="label">Sb/Sn</div><div class="value">${mean(producaoPorTipo['Sb/Sn']).toFixed(0)} t</div></div>
+    <div class="card">
+      <div class="label">Puro</div><div class="value">${mean(producaoPorTipo.Puro).toFixed(0)} t</div>
+      <div class="sub">${nLotesPuro.toFixed(0)} lotes (${nLotesPuro130.toFixed(0)} lotes 130t, ${nLotesPuro50.toFixed(0)} lotes 50t)</div>
+    </div>
+    <div class="card">
+      <div class="label">Cálcio</div><div class="value">${mean(producaoPorTipo.Calcio).toFixed(0)} t</div>
+      <div class="sub">${nLotesCalcio.toFixed(0)} lotes (${nLotesCalcio130.toFixed(0)} lotes 130t, ${nLotesCalcio50.toFixed(0)} lotes 50t)</div>
+    </div>
+    <div class="card">
+      <div class="label">Sb/Sn</div><div class="value">${mean(producaoPorTipo['Sb/Sn']).toFixed(0)} t</div>
+      <div class="sub">${nLotesSbsn.toFixed(0)} lotes</div>
+    </div>
   </div>`;
+
+  // ---- chumbo dos Fornos vs Terceiro — seção própria, separada da produção ----
+  html += `<div class="section-title">Origem do chumbo</div><div class="cards">${htmlFornosTerceiro}</div>`;
 
   // ---- painel de status (schematic) ----
   html += `<div class="section-title">Utilização dos equipamentos</div><div class="board">`;
@@ -2483,7 +3107,39 @@ function renderResultados({ producaoTotal, producaoPorTipo, mediaUtil, mediaManu
     html += `<div class="suggestion ${cls}">${s.texto}</div>`;
   });
 
+  // ---- relatório detalhado por lote (1ª réplica, pra não misturar lotes de
+  // réplicas diferentes) ----
+  html += buildRelatorioLotesHtml(lotesDetalhados);
+
   el.innerHTML = html;
+}
+
+function buildRelatorioLotesHtml(lotes) {
+  if (!lotes || lotes.length === 0) return '';
+  const fmtH = (h) => (h === undefined || h === null) ? '—' : horasParaHHMM(h);
+  const linhas = lotes.map(l => `<tr>
+    <td>${l.lote}</td>
+    <td>${l.tipo}</td>
+    <td>${(l.toneladas).toFixed(1)}t</td>
+    <td>${fmtH(l.duracaoCarregamentoH)}</td>
+    <td>${fmtH(l.tempoOcupacaoInicialH)}</td>
+    <td>${l.panelaIntermediaria ? fmtH(l.tempoOcupacaoIntermediariaH) : '—'}</td>
+    <td>${fmtH(l.tempoOcupacaoFinalH)}</td>
+    <td>${fmtH(l.tempoTotalH)}</td>
+    <td>${l.caminho || '—'}</td>
+  </tr>`).join('');
+  return `<details class="relatorio-lotes">
+    <summary>Relatório detalhado por lote (${lotes.length} lotes — 1ª réplica)</summary>
+    <div class="relatorio-lotes-scroll">
+      <table>
+        <thead><tr>
+          <th>Lote</th><th>Liga</th><th>Peso</th><th>Carregamento</th>
+          <th>T. Panela Inicial</th><th>T. Intermediária</th><th>T. Panela Final</th><th>Total</th><th>Caminho</th>
+        </tr></thead>
+        <tbody>${linhas}</tbody>
+      </table>
+    </div>
+  </details>`;
 }
 
 // ============================================================================
@@ -2626,10 +3282,10 @@ const BASE_CONHECIMENTO = [
       `A panela libera assim que termina o lingotamento; quem paga o tempo de setup é o próximo lote que for carregar ali. Esse tempo também não conta como "panela em utilização" no relatório.`,
   },
   {
-    palavras: ['lingotamento', 'saida fisica tempo', 'ref115', 'ref50', 'interpolacao'],
+    palavras: ['lingotamento', 'saida fisica tempo', 'kg por hora', 'taxa de lingotamento'],
     resposta: () =>
-      `O tempo de lingotamento é interpolado linearmente pelo peso do lote entre dois pontos calibrados: lote pequeno (~50t) e lote grande (~115t), por saída (Hogueira/L1/L2) — ` +
-      `editável no bloco "Tempo de lingotamento". Reduzir esse tempo reduz a DURAÇÃO de cada disputa por linha, mas não elimina a disputa em si se várias panelas competirem pela mesma saída.`,
+      `O tempo de lingotamento é peso do lote (kg) dividido pela taxa da saída (kg/h), por saída (Hogueira/L1/L2) — editável clicando na própria saída no diagrama de Layout, no topo da página. ` +
+      `Reduzir esse tempo (aumentar a taxa) reduz a DURAÇÃO de cada disputa por linha, mas não elimina a disputa em si se várias panelas competirem pela mesma saída.`,
   },
   {
     palavras: ['lingotando outro lote', 'aguardando saida', 'disputa de linha', 'gargalo de linha'],
@@ -2779,6 +3435,7 @@ async function enviarMensagemChat() {
 // INICIALIZAÇÃO
 // ============================================================================
 renderParamForm();
+renderLayoutDiagram();
 
 </script>
 </body>
