@@ -2695,6 +2695,7 @@
     setTimeout(calcularExecucao, 250);
     setTimeout(atualizarAcords, 300);
     setTimeout(atualizarTempoTotal, 300);
+    setTimeout(salvarTimestampsRetroativos, 500);
     // Popular campos apenas quando não está salvando
     if (ignorarUpdate) return;
     document.querySelectorAll('[data-field]').forEach(el => {
@@ -3280,6 +3281,66 @@
     return LIGA_FAMILIA[liga] || 'CALCIO';
   }
 
+
+
+  // Salvar timestamps retroativos para etapas já preenchidas sem _ts
+  function salvarTimestampsRetroativos() {
+    const keysSup = ['limp1','desest','lanca','setuptemp','desant1','decup','transf','setuptemp2','desant2','limpeza1','transf2','limpeza2','metais','lingot'];
+    const keysInf = ['limp1','enxofre','desest','transf','soda','carvao','metais','lingot'];
+    const atualizacao = {};
+
+    function processar(prefixos, keys) {
+      prefixos.forEach(p => {
+        // Reconstruir timestamps em sequência cronológica
+        let dataRef = new Date(); // começar do momento atual e ir voltando
+        // Percorrer etapas de trás para frente para inferir datas
+        const etapasComIni = keys
+          .filter(k => cacheFirebase[`${p}_${k}_ini`])
+          .reverse();
+
+        let dataAtual = new Date();
+        etapasComIni.forEach((key, idx) => {
+          if (cacheFirebase[`${p}_${key}_ts`]) return; // já tem timestamp
+          const iniVal = cacheFirebase[`${p}_${key}_ini`];
+          const [h,m] = iniVal.split(':').map(Number);
+
+          // Se o horário desta etapa é maior que o horário da próxima (idx-1 no array reverso)
+          // significa que esta etapa foi no dia anterior
+          if (idx > 0) {
+            const proxKey = etapasComIni[idx-1];
+            const proxTs = atualizacao[`${p}_${proxKey}_ts`] || cacheFirebase[`${p}_${proxKey}_ts`];
+            if (proxTs) {
+              const proxDate = new Date(proxTs);
+              const candidato = new Date(proxDate);
+              candidato.setHours(h, m, 0, 0);
+              // Se candidato é depois da proxima etapa, recuar um dia
+              if (candidato >= proxDate) candidato.setDate(candidato.getDate() - 1);
+              atualizacao[`${p}_${key}_ts`] = candidato.getTime();
+              return;
+            }
+          }
+
+          // Primeira etapa (mais recente): usar hora atual como referência
+          const candidato = new Date();
+          candidato.setHours(h, m, 0, 0);
+          // Se horário é maior que agora, foi ontem
+          if (candidato > new Date()) candidato.setDate(candidato.getDate() - 1);
+          atualizacao[`${p}_${key}_ts`] = candidato.getTime();
+        });
+      });
+    }
+
+    processar(['a1','a2','a3','a4','a5','a6','a7','a8'], keysSup);
+    processar(['b1','b2'], keysInf);
+
+    if (Object.keys(atualizacao).length > 0) {
+      update(dbRef, atualizacao).then(() => {
+        // Atualizar cache local
+        Object.assign(cacheFirebase, atualizacao);
+        setTimeout(calcularExecucao, 300);
+      }).catch(err => console.error('Erro ao salvar timestamps retroativos:', err));
+    }
+  }
 
   // Listener para campos de lingotamento
   document.querySelectorAll('[data-field*="_lingot_"]').forEach(el => {
