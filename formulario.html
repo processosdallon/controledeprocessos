@@ -2863,6 +2863,8 @@
     atualizacaoSalvar[`${p}_${key}_ini_autor`] = dados[`${p}_${key}_ini_autor`];
     if (histJson) atualizacaoSalvar[`${p}_${key}_histedicao`] = histJson;
     if (dados[tsKey]) atualizacaoSalvar[tsKey] = dados[tsKey];
+    // Timestamp do momento real do preenchimento para cálculo preciso de execução
+    if (iniVal) atualizacaoSalvar[`${p}_${key}_ts`] = Date.now();
     update(dbRef, atualizacaoSalvar).catch(err => {
       console.error('Erro salvarCampos:', err);
       alert('⚠️ ERRO AO SALVAR: ' + err.message);
@@ -3376,18 +3378,28 @@
           const iniVal = cacheFirebase[`${p}_${key}_ini`] || '';
           const labelEl = document.querySelector(`[data-etapa="${p}_${key}"] .etapa-label`);
           if (!labelEl) return;
-          // Remover exec-time anterior
           const old = labelEl.querySelector('.exec-time');
           if (old) old.remove();
           if (!iniVal) return;
-          // Próxima etapa com início preenchido
           const proxKey = keys.slice(idx+1).find(k => cacheFirebase[`${p}_${k}_ini`]);
           if (!proxKey) return;
           const proxIni = cacheFirebase[`${p}_${proxKey}_ini`];
-          const [h1,m1] = iniVal.split(':').map(Number);
-          const [h2,m2] = proxIni.split(':').map(Number);
-          let diff = (h2*60+m2)-(h1*60+m1);
-          if (diff < 0) diff += 1440; // virada de dia
+
+          // Tentar usar timestamps para cálculo preciso (considera virada de dia)
+          const tsIni  = cacheFirebase[`${p}_${key}_ts`];
+          const tsProx = cacheFirebase[`${p}_${proxKey}_ts`];
+          let diff;
+          if (tsIni && tsProx) {
+            // Usar timestamps reais — precisão total
+            diff = Math.round((tsProx - tsIni) / 60000);
+          } else {
+            // Fallback: diferença de minutos com virada de dia
+            const [h1,m1] = iniVal.split(':').map(Number);
+            const [h2,m2] = proxIni.split(':').map(Number);
+            diff = (h2*60+m2)-(h1*60+m1);
+            if (diff < 0) diff += 1440;
+          }
+          if (diff < 0) diff = 0;
           const eh = Math.floor(diff/60), em = diff%60;
           const span = document.createElement('span');
           span.className = 'exec-time';
