@@ -107,7 +107,21 @@
     justify-content: space-between;
     border-bottom: 2px solid #2d6a3f;
     flex-shrink: 0;
-    gap: 10px;
+    gap: 16px;
+  }
+  .card-centro {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+  }
+  .card-panela-destaque {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    min-width: 220px;
   }
   .card-tv.atrasado .card-top { background: #5a0000; border-bottom: 2px solid #c00; }
 
@@ -140,14 +154,14 @@
     gap: 4px;
   }
   .card-liga-tv {
-    font-size: 22px;
+    font-size: 20px;
     font-weight: bold;
     color: #a8d44d;
     text-align: center;
   }
   .card-tv.atrasado .card-liga-tv { color: #ffaaaa; }
   .card-panela-box {
-    font-size: 36px;
+    font-size: 52px;
     font-weight: bold;
     color: #fff;
     background: #1e4d2b;
@@ -158,7 +172,7 @@
   }
   .card-tv.atrasado .card-panela-box { background: #c00; border-color: #ff9999; }
   .tempo-total-tv {
-    font-size: 18px;
+    font-size: 22px;
     color: #a8d44d;
     font-weight: bold;
     text-align: center;
@@ -533,11 +547,11 @@
         </div>
         <div class="card-centro">
           ${liga?`<div class="card-liga-tv">⚗️ ${liga}</div>`:''}
+          ${prevFimStr?`<span class="card-label-top" style="font-size:14px;">🏁 Prev. Fim: ${prevFimStr}</span>`:''}
+        </div>
+        <div class="card-panela-destaque">
           <div class="card-panela-box">Panela ${panela}</div>
           ${tempoTotalHtml?`<div class="tempo-total-tv">${tempoTotalHtml}</div>`:''}
-        </div>
-        <div class="card-prevfim-box">
-          ${prevFimStr?`<span class="card-label-top">Prev. Fim</span><span class="card-valor-top">${prevFimStr}</span>`:'<span></span>'}
         </div>
       </div>
       <div class="card-header-tv">
