@@ -16,156 +16,175 @@
     flex-direction: column;
   }
 
+  /* HEADER */
   .tv-header {
     background: #1e4d2b;
-    padding: 8px 24px;
+    padding: 10px 30px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-bottom: 3px solid #a8d44d;
+    border-bottom: 4px solid #a8d44d;
     flex-shrink: 0;
   }
-  .tv-header img { height: 48px; }
-  .tv-header-center h1 { font-size: 20px; color: #a8d44d; letter-spacing: 2px; text-transform: uppercase; text-align: center; }
-  .tv-header-center p { font-size: 11px; color: #7ab830; text-align: center; margin-top: 2px; }
+  .tv-header img { height: 52px; }
+  .tv-header-center h1 { font-size: 26px; color: #a8d44d; letter-spacing: 2px; text-transform: uppercase; text-align: center; }
+  .tv-header-center p { font-size: 14px; color: #7ab830; text-align: center; margin-top: 2px; }
   .tv-header-right { text-align: right; }
-  .tv-header-right .relogio { font-size: 26px; font-weight: bold; color: #fff; }
-  .tv-header-right .data { font-size: 11px; color: #7ab830; }
+  .tv-header-right .relogio { font-size: 34px; font-weight: bold; color: #fff; }
+  .tv-header-right .data { font-size: 13px; color: #7ab830; }
 
+  /* STATUS */
   .tv-status {
     background: #163d21;
-    padding: 4px 20px;
+    padding: 5px 24px;
     display: flex;
     align-items: center;
     gap: 12px;
-    font-size: 12px;
+    font-size: 14px;
     color: #7ab830;
     border-bottom: 1px solid #2d6a3f;
     flex-shrink: 0;
   }
-  .dot { width: 9px; height: 9px; border-radius: 50%; background: #ccc; display: inline-block; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: #ccc; display: inline-block; }
   .dot.on { background: #a8d44d; animation: pulse 2s infinite; }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
   .status-right { margin-left: auto; display: flex; align-items: center; gap: 16px; }
-  .secao-badge {
-    font-size: 12px; font-weight: bold; color: #1e4d2b;
-    background: #a8d44d; padding: 2px 14px; border-radius: 10px;
-  }
-  .slide-info { font-size: 11px; color: #5a9a5a; }
+  .secao-badge { font-size: 14px; font-weight: bold; color: #1e4d2b; background: #a8d44d; padding: 3px 16px; border-radius: 10px; }
+  .slide-info { font-size: 13px; color: #5a9a5a; }
 
   /* SLIDE */
   .slide-outer { flex: 1; overflow: hidden; position: relative; }
   .slide-viewport {
     display: flex;
     height: 100%;
-    transition: transform 0.6s cubic-bezier(0.77,0,0.175,1);
+    transition: transform 0.7s cubic-bezier(0.77,0,0.175,1);
   }
   .slide-page {
     min-width: 100%;
     height: 100%;
+    padding: 14px 20px 10px;
     display: flex;
     flex-direction: column;
-    padding: 12px 16px 8px;
-    gap: 8px;
   }
 
-  /* TÍTULO DA SEÇÃO DENTRO DO SLIDE */
+  /* TÍTULO DA SEÇÃO */
   .secao-titulo-slide {
-    font-size: 12px;
+    font-size: 15px;
     font-weight: bold;
     color: #fff;
     background: #1e4d2b;
-    padding: 3px 12px;
-    border-radius: 5px;
-    border-left: 4px solid #a8d44d;
+    padding: 5px 16px;
+    border-radius: 6px;
+    border-left: 5px solid #a8d44d;
     letter-spacing: 1px;
     flex-shrink: 0;
+    margin-bottom: 10px;
   }
 
-  /* GRID DE CARDS — sempre 4 colunas, centralizado */
-  .cards-row {
-    display: flex;
-    gap: 12px;
-    justify-content: center;
-    flex: 1;
-    min-height: 0;
-  }
-
-  /* CARD */
+  /* CARD — 1 por slide, ocupa toda a área */
   .card-tv {
     background: #0f2218;
-    border: 1.5px solid #2d6a3f;
-    border-radius: 10px;
+    border: 2px solid #2d6a3f;
+    border-radius: 14px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
     flex: 1;
-    max-width: 480px;
-    min-width: 0;
+    min-height: 0;
   }
   .card-tv.atrasado {
-    border: 2px solid #c00 !important;
-    box-shadow: 0 0 14px #f006;
+    border: 3px solid #c00 !important;
+    box-shadow: 0 0 20px #f006;
   }
 
-  /* TOPO: Liga + Panela */
+  /* TOPO DO CARD */
   .card-top {
     background: #163d21;
-    padding: 4px 8px;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid #2d6a3f;
+    flex-shrink: 0;
+    gap: 10px;
+  }
+  .card-tv.atrasado .card-top { background: #5a0000; border-bottom: 2px solid #c00; }
+
+  .card-inicio-box, .card-prevfim-box {
+    display: flex;
+    flex-direction: column;
+    min-width: 140px;
+  }
+  .card-inicio-box { align-items: flex-start; }
+  .card-prevfim-box { align-items: flex-end; }
+  .card-label-top {
+    font-size: 13px;
+    color: #a8d44d;
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .card-tv.atrasado .card-label-top { color: #ffaaaa; }
+  .card-valor-top {
+    font-size: 22px;
+    color: #fff;
+    font-weight: bold;
+  }
+  .card-tv.atrasado .card-valor-top { color: #ffcccc; }
+
+  .card-centro {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 4px;
-    border-bottom: 2px solid #2d6a3f;
-    flex-shrink: 0;
   }
-  .card-tv.atrasado .card-top { background: #5a0000; border-bottom: 2px solid #c00; }
   .card-liga-tv {
-    font-size: 11px;
+    font-size: 18px;
     font-weight: bold;
     color: #a8d44d;
     text-align: center;
-    letter-spacing: 0.5px;
   }
   .card-tv.atrasado .card-liga-tv { color: #ffaaaa; }
   .card-panela-box {
-    font-size: 16px;
+    font-size: 32px;
     font-weight: bold;
     color: #fff;
     background: #1e4d2b;
-    padding: 2px 20px;
-    border-radius: 6px;
-    border: 1.5px solid #a8d44d;
+    padding: 4px 28px;
+    border-radius: 8px;
+    border: 2px solid #a8d44d;
     letter-spacing: 2px;
+  }
+  .card-tv.atrasado .card-panela-box { background: #c00; border-color: #ff9999; }
+  .tempo-total-tv {
+    font-size: 15px;
+    color: #a8d44d;
+    font-weight: bold;
     text-align: center;
+    margin-top: 2px;
   }
-  .card-tv.atrasado .card-panela-box {
-    background: #c00;
-    border-color: #ff9999;
-  }
+  .card-tv.atrasado .tempo-total-tv { color: #ffaaaa; }
 
   /* HEADER: Lote + Badge */
   .card-header-tv {
     background: #1e4d2b;
-    padding: 3px 8px;
+    padding: 8px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-shrink: 0;
   }
   .card-tv.atrasado .card-header-tv { background: #c00; }
-  .card-lote-tv { font-size: 12px; font-weight: bold; color: #fff; }
-  .tempo-total-tv { font-size: 10px; color: #a8d44d; font-weight: bold; display: block; text-align: center; margin-top: 1px; }
-  .card-tv.atrasado .tempo-total-tv { color: #ffaaaa; }
+  .card-lote-tv { font-size: 22px; font-weight: bold; color: #fff; }
   .badge-andamento {
     background: #a8d44d; color: #1e4d2b;
-    font-size: 11px; font-weight: bold;
-    padding: 2px 8px; border-radius: 10px;
+    font-size: 13px; font-weight: bold;
+    padding: 4px 14px; border-radius: 10px;
   }
   .badge-atraso {
     background: #fff; color: #c00;
-    font-size: 11px; font-weight: bold;
-    padding: 2px 8px; border-radius: 10px;
+    font-size: 13px; font-weight: bold;
+    padding: 4px 14px; border-radius: 10px;
     animation: pisca 1s infinite;
   }
   @keyframes pisca { 0%,100%{opacity:1} 50%{opacity:0.3} }
@@ -174,152 +193,74 @@
   .card-table { width: 100%; border-collapse: collapse; flex: 1; }
   .card-table th {
     background: #163d21; color: #a8d44d;
-    font-size: 10px; padding: 2px 5px;
+    font-size: 16px; padding: 8px 14px;
     text-align: left; border-bottom: 1px solid #2d6a3f;
   }
   .card-tv.atrasado .card-table th { background: #5a0000; color: #ffd0d0; }
   .card-table td {
-    padding: 2px 5px;
+    padding: 7px 14px;
     border-bottom: 1px solid #1a3a20;
-    font-size: 11px; color: #bbb;
+    font-size: 17px; color: #bbb;
+    vertical-align: middle;
   }
   .card-tv.atrasado .card-table td { background: #ffe0e0 !important; border-bottom: 1px solid #f5a0a0 !important; color: #900; }
-  .etapa-tv { color: #ccc !important; font-size: 11px; }
+  .etapa-tv { color: #ccc !important; font-size: 17px; }
   .card-tv.atrasado .etapa-tv { color: #900 !important; font-weight: bold; }
-  .medio-tv { font-size: 9px; color: #3a6a3a; display: block; }
-  .exec-tv { font-size: 10px; color: #5ab8d4; display: block; font-weight: bold; margin-top: 1px; }
-  .linha-atr-tv { background: #ffe0e0 !important; }
-  .linha-atr-tv td { color: #900 !important; }
-  .card-tv.atrasado .linha-atr-tv { background: #5a1010 !important; }
-  .val { color: #fff !important; font-weight: bold; font-size: 12px; }
+  .medio-tv { font-size: 12px; color: #3a6a3a; display: block; }
+  .exec-tv { font-size: 13px; color: #5ab8d4; display: block; font-weight: bold; margin-top: 1px; }
+  .val { color: #fff !important; font-weight: bold; font-size: 20px; }
   .card-tv.atrasado .val { color: #c00 !important; }
-  .vz { color: #2a4a2a !important; font-style: italic; }
+  .vz { color: #2a4a2a !important; font-style: italic; font-size: 16px; }
   .tr-ativa { background: #0d2a18 !important; }
   .card-tv.atrasado .tr-ativa { background: #fff0f0 !important; }
-  .tr-ativa .etapa-tv { color: #a8d44d !important; font-weight: bold; }
+  .tr-ativa .etapa-tv { color: #a8d44d !important; font-weight: bold; font-size: 18px; }
   .card-tv.atrasado .tr-ativa .etapa-tv { color: #c00 !important; }
+  .linha-atr-tv td { background: #ffe0e0 !important; color: #900 !important; }
+  .card-tv.atrasado .linha-atr-tv td { background: #5a1010 !important; }
 
   .card-obs {
-    padding: 5px 10px; font-size: 12px; color: #5a8a5a;
+    padding: 6px 14px; font-size: 14px; color: #5a8a5a;
     border-top: 1px solid #1a3a20; flex-shrink: 0;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   .card-tv.atrasado .card-obs { background: #ffe0e0; color: #900; }
   .setup-tv {
     background: #3a0000; color: #ffaaaa;
-    font-size: 13px; padding: 4px 8px;
-    border-top: 1px solid #c00;
-    font-weight: bold; text-align: center;
-    animation: pisca 1.5s infinite; flex-shrink: 0;
+    font-size: 15px; padding: 6px 14px;
+    border-top: 1px solid #c00; font-weight: bold;
+    text-align: center; animation: pisca 1.5s infinite; flex-shrink: 0;
   }
 
   /* SEM ATIVOS */
   .sem-ativos {
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
-    height: 100%; color: #2d6a3f; font-size: 20px; gap: 12px;
+    height: 100%; color: #2d6a3f; font-size: 24px; gap: 16px;
   }
-  .sem-ativos span { font-size: 52px; }
+  .sem-ativos span { font-size: 72px; }
 
-
-  /* NAVEGAÇÃO MANUAL */
-  .nav-btn {
-    position: fixed;
-    top: 50%;
-    transform: translateY(-50%);
-    background: rgba(30,77,43,0.7);
-    border: 2px solid #a8d44d;
-    color: #a8d44d;
-    font-size: 32px;
-    width: 52px;
-    height: 80px;
-    border-radius: 8px;
-    cursor: pointer;
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.2s;
-    user-select: none;
-  }
-  .nav-btn:hover { background: rgba(30,77,43,0.95); color: #fff; }
-  .nav-btn:active { background: #1e4d2b; }
-  .nav-prev { left: 8px; }
-  .nav-next { right: 8px; }
-  .nav-btn.oculto { opacity: 0; pointer-events: none; }
-
-  @media (max-width: 768px) {
-    body { font-size: 11px; }
-    .tv-header { padding: 6px 12px; }
-    .tv-header img { height: 32px; }
-    .tv-header-center h1 { font-size: 13px; letter-spacing: 1px; }
-    .tv-header-center p { font-size: 10px; }
-    .tv-header-right .relogio { font-size: 18px; }
-    .tv-header-right .data { font-size: 10px; }
-    .tv-status { padding: 3px 12px; font-size: 11px; }
-    .slide-page { padding: 8px 8px 4px; gap: 8px; }
-    .cards-row { flex-direction: column; gap: 10px; overflow-y: auto; }
-    .card-tv { max-width: 100%; min-width: 0; }
-    .card-top { padding: 5px 8px; }
-    .card-liga-tv { font-size: 12px; }
-    .card-panela-box { font-size: 16px; padding: 2px 12px; }
-    .tempo-total-tv { font-size: 10px; }
-    .card-header-tv { padding: 4px 8px; }
-    .card-lote-tv { font-size: 12px; }
-    .card-table th { font-size: 10px; padding: 3px 5px; }
-    .card-table td { font-size: 11px; padding: 3px 5px; }
-    .etapa-tv { font-size: 11px; }
-    .medio-tv { font-size: 8px; }
-    .exec-tv { font-size: 9px; }
-    .val { font-size: 11px; }
-    .nav-btn { width: 36px; height: 56px; font-size: 22px; }
-    .slide-dots { padding: 2px 0; }
-    .secao-titulo-slide { font-size: 11px; }
-    .badge-andamento, .badge-atraso { font-size: 8px; padding: 1px 5px; }
-    .setup-tv { font-size: 10px; }
-    .card-obs { font-size: 9px; }
-  }
-
-  @media (max-width: 768px) {
-    .tv-header { padding: 6px 10px; }
-    .tv-header img { height: 30px; }
-    .tv-header-center h1 { font-size: 13px; letter-spacing: 1px; }
-    .tv-header-center p { display: none; }
-    .tv-header-right .relogio { font-size: 18px; }
-    .tv-header-right .data { font-size: 9px; }
-    .tv-status { padding: 3px 10px; font-size: 11px; }
-    .nav-btn { width: 32px; height: 52px; font-size: 20px; }
-    .slide-page { padding: 6px 6px 4px; gap: 6px; }
-    .cards-row { gap: 8px; }
-    .card-tv { max-width: 100%; }
-    .card-top { padding: 5px 8px; }
-    .card-liga-tv { font-size: 12px; }
-    .card-panela-box { font-size: 17px; padding: 2px 10px; }
-    .tempo-total-tv { font-size: 10px; }
-    .card-header-tv { padding: 4px 8px; }
-    .card-lote-tv { font-size: 12px; }
-    .card-table th { font-size: 10px; padding: 3px 5px; }
-    .card-table td { font-size: 11px; padding: 3px 5px; }
-    .etapa-tv { font-size: 11px; }
-    .medio-tv, .exec-tv { font-size: 9px; }
-    .val { font-size: 11px; }
-    .secao-titulo-slide { font-size: 11px; padding: 3px 10px; }
-    .badge-andamento, .badge-atraso { font-size: 8px; padding: 1px 5px; }
-    .setup-tv { font-size: 10px; }
-    .card-obs { font-size: 9px; }
-    .slide-dots { padding: 2px 0; gap: 5px; }
-    .slide-dot { width: 6px; height: 6px; }
-  }
   /* DOTS */
   .slide-dots {
-    display: flex; justify-content: center; gap: 8px;
-    padding: 4px 0; flex-shrink: 0;
+    display: flex; justify-content: center; gap: 10px;
+    padding: 6px 0; flex-shrink: 0;
   }
   .slide-dot {
-    width: 7px; height: 7px; border-radius: 50%;
+    width: 10px; height: 10px; border-radius: 50%;
     background: #2d6a3f; transition: background 0.3s;
   }
   .slide-dot.ativo { background: #a8d44d; }
+
+  /* NAV BUTTONS */
+  .nav-btn {
+    position: fixed; top: 50%; transform: translateY(-50%);
+    background: rgba(30,77,43,0.7); border: 2px solid #a8d44d;
+    color: #a8d44d; font-size: 40px; width: 60px; height: 100px;
+    border-radius: 10px; cursor: pointer; z-index: 100;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s; user-select: none;
+  }
+  .nav-btn:hover { background: rgba(30,77,43,0.95); color: #fff; }
+  .nav-prev { left: 6px; }
+  .nav-next { right: 6px; }
 </style>
 </head>
 <body>
@@ -347,6 +288,7 @@
 
 <button class="nav-btn nav-prev" id="btn-prev" onclick="navManual(-1)">‹</button>
 <button class="nav-btn nav-next" id="btn-next" onclick="navManual(1)">›</button>
+
 <div class="slide-outer">
   <div class="slide-viewport" id="viewport">
     <div class="slide-page">
@@ -372,6 +314,38 @@
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
+  // MANTER TELA LIGADA — Wake Lock API (evita proteção de tela da LG)
+  async function manterTelaLigada() {
+    try {
+      if ('wakeLock' in navigator) {
+        let wakeLock = await navigator.wakeLock.request('screen');
+        document.addEventListener('visibilitychange', async () => {
+          if (document.visibilityState === 'visible') {
+            wakeLock = await navigator.wakeLock.request('screen');
+          }
+        });
+        console.log('Wake Lock ativo — tela não vai dormir');
+      }
+    } catch(e) {
+      console.log('Wake Lock não suportado, usando fallback');
+    }
+    // Fallback: simular atividade com movimento invisível do mouse a cada 20s
+    setInterval(() => {
+      const ev = new MouseEvent('mousemove', { bubbles: true, clientX: Math.random(), clientY: Math.random() });
+      document.dispatchEvent(ev);
+    }, 20000);
+    // Fallback 2: vídeo invisível em loop (muito eficaz em TVs LG)
+    const video = document.createElement('video');
+    video.setAttribute('playsinline', '');
+    video.setAttribute('muted', '');
+    video.setAttribute('loop', '');
+    video.style.cssText = 'position:fixed;width:1px;height:1px;opacity:0.01;top:0;left:0;pointer-events:none;';
+    video.src = 'data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMW1wNDEAAAAIZnJlZQAAAA==';
+    document.body.appendChild(video);
+    video.play().catch(()=>{});
+  }
+  manterTelaLigada();
+
   function tick() {
     const n = new Date();
     document.getElementById('relogio').textContent = n.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
@@ -379,204 +353,158 @@
   }
   setInterval(tick,1000); tick();
 
+  const LIGA_FAMILIA = {
+    "C-P7":"CALCIO","C-NCA":"CALCIO","DL-CALCIO":"CALCIO","E-BX-CASNAL":"CALCIO",
+    "E-BX-SN3":"CALCIO","T-CASN":"CALCIO","T-MASTER ALLOY":"CALCIO","T-PB-CA":"CALCIO",
+    "ELO-CA":"CALCIO","C-NCA LINGOTE":"CALCIO","DL-PBCA LINGOTE":"CALCIO","AMP-PBCA":"CALCIO",
+    "B-CA POSITIVO LINGOTE":"CALCIO","B-CA NEGATIVO LINGOTE":"CALCIO","K-PBCASN":"CALCIO",
+    "C-P4 LINGOTE":"CALCIO","O-PBCA LINGOTE":"CALCIO",
+    "C-7.1.5B HOG":"PURO","C-7.1.5B LINGOTE":"PURO","DL-PURO":"PURO","E-BX-PURO":"PURO",
+    "T-PURO":"PURO","T-BLEND":"PURO","PRE LIGA":"PURO","E-PURO":"PURO","JP-PURO":"PURO",
+    "AMP-PURO LINGOTE":"PURO","C-P7 LINGOTE":"PURO",
+    "C-PBSE":"SBSN","DL-PBSE":"SBSN","DL-CONECTOR":"SBSN","E-BX-SB (FARMER)":"SBSN",
+    "T-PB-SB-SE":"SBSN","T-SB":"SBSN","T-SE":"SBSN","C-ALLOY3%SB":"SBSN",
+    "DL-PB-SB":"SBSN","DLN TECNOLOGIA":"SBSN","DL PBSB 3,5%":"SBSN"
+  };
+
   const ETAPAS_SUP = [
-    {k:'limp1_ini',   k2:'limp1_fim',   l:'1ª Limpeza',        m:60},
-    {k:'desest_ini',  k2:'desest_fim',  l:'Desestanhação',      m:120},
-    {k:'lanca_ini',    k2:'lanca_fim',    l:'Desant. c/ Lança',    m:330},
-    {k:'setuptemp_ini', k2:'setuptemp_fim', l:'Setup de Temperatura', m:120},
-    {k:'desant1_ini', k2:'desant1_fim', l:'1ª Desantimoniação', m:120},
-    {k:'decup_ini',   k2:'decup_fim',   l:'Decuprização',       m:150},
-    {k:'transf_ini',  k2:'transf_fim',  l:'1ª Transferência',   m:60},
-    {k:'setuptemp2_ini',k2:'setuptemp2_fim',l:'Setup de Temperatura 2',m:120},
-    {k:'desant2_ini', k2:'desant2_fim', l:'2ª Desantimoniação', m:330},
-    {k:'limpeza1_ini',k2:'limpeza1_fim',l:'1ª Limpeza Final',   m:120},
-    {k:'transf2_ini', k2:'transf2_fim', l:'2ª Transferência',   m:60},
-    {k:'limpeza2_ini',k2:'limpeza2_fim',l:'2ª Limpeza Final',   m:120},
-    {k:'metais_ini',  k2:'metais_fim',  l:'Agregar Metais',     m:300},
-    {k:'lingot_ini',  k2:'lingot_fim',  l:'Lingotamento',       m:null},
+    {k:'limp1_ini',   k2:'limp1_fim',    l:'1ª Limpeza',          m:60},
+    {k:'desest_ini',  k2:'desest_fim',   l:'Desestanhação',        m:120},
+    {k:'lanca_ini',   k2:'lanca_fim',    l:'Desant. c/ Lança',     m:330},
+    {k:'setuptemp_ini',k2:'setuptemp_fim',l:'Setup Temperatura',   m:120},
+    {k:'desant1_ini', k2:'desant1_fim',  l:'1ª Desantimoniação',   m:120},
+    {k:'decup_ini',   k2:'decup_fim',    l:'Decuprização',         m:150},
+    {k:'transf_ini',  k2:'transf_fim',   l:'1ª Transferência',     m:60},
+    {k:'setuptemp2_ini',k2:'setuptemp2_fim',l:'Setup Temperatura 2',m:120},
+    {k:'desant2_ini', k2:'desant2_fim',  l:'2ª Desantimoniação',   m:330},
+    {k:'limpeza1_ini',k2:'limpeza1_fim', l:'1ª Limpeza Final',     m:120},
+    {k:'transf2_ini', k2:'transf2_fim',  l:'2ª Transferência',     m:60},
+    {k:'limpeza2_ini',k2:'limpeza2_fim', l:'2ª Limpeza Final',     m:120},
+    {k:'metais_ini',  k2:'metais_fim',   l:'Agregar Metais',       m:300},
+    {k:'lingot_ini',  k2:'lingot_fim',   l:'Lingotamento',         m:null},
   ];
   const ETAPAS_INF = [
-    {k:'limp1_ini',   k2:'limp1_fim',   l:'1ª Limpeza',        m:60},
-    {k:'enxofre_ini', k2:'enxofre_fim', l:'Dec. Com Enxofre',  m:180},
-    {k:'desest_ini',  k2:'desest_fim',  l:'Desestanhação',      m:300},
-    {k:'transf_ini',  k2:'transf_fim',  l:'Transferência',      m:null},
-    {k:'soda_ini',    k2:'soda_fim',    l:'Limpeza c/ Soda',    m:120},
-    {k:'carvao_ini',  k2:'carvao_fim',  l:'Limpeza c/ Carvão',  m:120},
-    {k:'metais_ini',  k2:'metais_fim',  l:'Agregar Metais',     m:240},
-    {k:'lingot_ini',  k2:'lingot_fim',  l:'Lingotamento',       m:null},
+    {k:'limp1_ini',   k2:'limp1_fim',   l:'1ª Limpeza',           m:60},
+    {k:'enxofre_ini', k2:'enxofre_fim', l:'Dec. Com Enxofre',     m:180},
+    {k:'desest_ini',  k2:'desest_fim',  l:'Desestanhação',         m:300},
+    {k:'transf_ini',  k2:'transf_fim',  l:'Transferência',         m:null},
+    {k:'soda_ini',    k2:'soda_fim',    l:'Limpeza c/ Soda',       m:120},
+    {k:'carvao_ini',  k2:'carvao_fim',  l:'Limpeza c/ Carvão',     m:120},
+    {k:'metais_ini',  k2:'metais_fim',  l:'Agregar Metais',        m:240},
+    {k:'lingot_ini',  k2:'lingot_fim',  l:'Lingotamento',          m:null},
   ];
 
   let dados = {};
   let slideAtual = 0;
   let totalSlides = 0;
-  let slidesMeta = []; // {tipo, cards[]}
+  let slidesMeta = [];
   let slideTimer = null;
-  const INTERVALO = 30000; // 30 segundos
+  const INTERVALO = 15000;
 
   function toMin(s) { const [h,m]=s.split(':').map(Number); return h*60+m; }
 
   function isAtrasado(p, etapas) {
-    const agoraMin = new Date().getHours()*60+new Date().getMinutes();
-    // Lingotamento → nunca atraso
     if(dados[`${p}_lingot_ini`]) return false;
-    let ultimaIdx=-1;
-    let ultimaIni='';
-    etapas.forEach((e,i)=>{
-      const ini=dados[`${p}_${e.k}`]||'';
-      if(ini){ultimaIdx=i;ultimaIni=ini;}
-    });
+    let ultimaIdx=-1, ultimaIni='';
+    etapas.forEach((e,i)=>{ const ini=dados[`${p}_${e.k}`]||''; if(ini){ultimaIdx=i;ultimaIni=ini;} });
     if(ultimaIdx<0) return false;
-    // Verificar se setup está ativo (foi preenchido depois da última etapa)
     const setupMotivo=dados[`${p}_setup_motivo`]||'';
     const setupIni=dados[`${p}_setup_ini`]||'';
     const setupFim=dados[`${p}_setup_fim`]||'';
-    if(setupMotivo && setupIni && ultimaIni){
-      const mS=toMin(setupIni), mE=toMin(ultimaIni);
+    const agoraMin=new Date().getHours()*60+new Date().getMinutes();
+    if(setupMotivo&&setupIni&&ultimaIni){
+      const mS=toMin(setupIni),mE=toMin(ultimaIni);
       const diff=mS-mE;
-      const setupDepois=Math.abs(diff)>720?diff<0:diff>0;
-      if(setupDepois){
-        // Setup comanda
+      const depois=Math.abs(diff)>720?diff<0:diff>0;
+      if(depois){
         if(!setupFim) return false;
         const fimMin=toMin(setupFim);
-        return !(fimMin>22*60&&agoraMin<2*60) && agoraMin>fimMin;
+        return !(fimMin>22*60&&agoraMin<2*60)&&agoraMin>fimMin;
       }
     }
-    // Etapa normal comanda
     const fim=dados[`${p}_${etapas[ultimaIdx].k2}`]||'';
     if(!fim) return false;
     const fimMin=toMin(fim);
-    return !(fimMin>22*60&&agoraMin<2*60) && agoraMin>fimMin;
+    return !(fimMin>22*60&&agoraMin<2*60)&&agoraMin>fimMin;
   }
 
   function renderCard(p, etapas) {
-    const lote   = dados[`${p}_lote`]||'—';
-    const panela = dados[`${p}_panela`]||'—';
-    const liga   = dados[`${p}_liga`]||'';
-    const obs    = dados[`${p}_obs`]||'';
-    const setup  = dados[`${p}_setup_motivo`]||'';
-    let atr      = isAtrasado(p,etapas);
-    const dataIniTv = dados[`${p}_data_ini`] || '';
-    const horaIniTv = dados[`${p}_hora_ini`] || '';
-    // Previsão de fim considerando família da liga
-    const LIGA_FAM_TV = {
-  "C-P7": "CALCIO",
-  "C-NCA": "CALCIO",
-  "DL-CALCIO": "CALCIO",
-  "E-BX-CASNAL": "CALCIO",
-  "E-BX-SN3": "CALCIO",
-  "T-CASN": "CALCIO",
-  "T-MASTER ALLOY": "CALCIO",
-  "T-PB-CA": "CALCIO",
-  "ELO-CA": "CALCIO",
-  "C-NCA LINGOTE": "CALCIO",
-  "DL-PBCA LINGOTE": "CALCIO",
-  "AMP-PBCA": "CALCIO",
-  "B-CA POSITIVO LINGOTE": "CALCIO",
-  "B-CA NEGATIVO LINGOTE": "CALCIO",
-  "K-PBCASN": "CALCIO",
-  "C-P4 LINGOTE": "CALCIO",
-  "O-PBCA LINGOTE": "CALCIO",
-  "C-7.1.5B HOG": "PURO",
-  "C-7.1.5B LINGOTE": "PURO",
-  "DL-PURO": "PURO",
-  "E-BX-PURO": "PURO",
-  "T-PURO": "PURO",
-  "T-BLEND": "PURO",
-  "PRE LIGA": "PURO",
-  "E-PURO": "PURO",
-  "JP-PURO": "PURO",
-  "AMP-PURO LINGOTE": "PURO",
-  "C-P7 LINGOTE": "PURO",
-  "C-PBSE": "SBSN",
-  "DL-PBSE": "SBSN",
-  "DL-CONECTOR": "SBSN",
-  "E-BX-SB (FARMER)": "SBSN",
-  "T-PB-SB-SE": "SBSN",
-  "T-SB": "SBSN",
-  "T-SE": "SBSN",
-  "C-ALLOY3%SB": "SBSN",
-  "DL-PB-SB": "SBSN",
-  "DLN TECNOLOGIA": "SBSN",
-  "DL PBSB 3,5%": "SBSN"
-};
-    const ligaTv = dados[`${p}_liga`] || '';
-    const familiaTv = LIGA_FAM_TV[ligaTv] || 'CALCIO';
-    const totalMedioTvBase = etapas.reduce((s,e) => s+(e.m||0), 0);
-    // PURO: descontar transf2(60)+limpeza2(120)+metais(300) = 480min
-    const totalMedioTv = familiaTv === 'PURO' ? totalMedioTvBase - 480 : totalMedioTvBase;
-    let prevFimTv = '';
-    if (horaIniTv) {
-      const [hv,mv] = horaIniTv.split(':').map(Number);
-      const baseV = new Date(2000,0,1,hv,mv,0,0);
-      const resultV = new Date(baseV.getTime() + totalMedioTv*60000);
-      let prevStr = `${String(resultV.getHours()).padStart(2,'0')}:${String(resultV.getMinutes()).padStart(2,'0')}`;
-      if (dataIniTv) {
-        const [ano,mes,dia] = dataIniTv.split('-').map(Number);
-        const dataBaseV = new Date(ano,mes-1,dia,hv,mv,0,0);
-        const dataFimV = new Date(dataBaseV.getTime() + totalMedioTv*60000);
-        prevStr = dataFimV.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})+' '+prevStr;
+    const lote=dados[`${p}_lote`]||'—';
+    const panela=dados[`${p}_panela`]||'—';
+    const liga=dados[`${p}_liga`]||'';
+    const obs=dados[`${p}_obs`]||'';
+    const setup=dados[`${p}_setup_motivo`]||'';
+    let atr=isAtrasado(p,etapas);
+    const dataIni=dados[`${p}_data_ini`]||'';
+    const horaIni=dados[`${p}_hora_ini`]||'';
+
+    // Previsão de fim
+    const familia=LIGA_FAMILIA[liga]||'CALCIO';
+    const totalMedioBase=etapas.reduce((s,e)=>s+(e.m||0),0);
+    const totalMedio=familia==='PURO'?totalMedioBase-480:totalMedioBase;
+    let prevFimStr='';
+    if(horaIni){
+      const [hv,mv]=horaIni.split(':').map(Number);
+      const baseV=new Date(2000,0,1,hv,mv,0,0);
+      const resultV=new Date(baseV.getTime()+totalMedio*60000);
+      let prevStr=`${String(resultV.getHours()).padStart(2,'0')}:${String(resultV.getMinutes()).padStart(2,'0')}`;
+      if(dataIni){
+        const [ano,mes,dia]=dataIni.split('-').map(Number);
+        const dataBaseV=new Date(ano,mes-1,dia,hv,mv,0,0);
+        const dataFimV=new Date(dataBaseV.getTime()+totalMedio*60000);
+        prevStr=dataFimV.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})+' '+prevStr;
       }
-      prevFimTv = prevStr;
+      prevFimStr=prevStr;
     }
 
-    // Tempo total de processo
-    let tempoTotalTv = '';
-    const etapasComIni = etapas.map(e => dados[`${p}_${e.k}`]).find(v => v);
-    if (etapasComIni) {
-      const agr = new Date();
-      const [hpi,mpi] = etapasComIni.split(':').map(Number);
-      // Usar timestamp real se disponível
-      const tsKeyT = `${p}_processo_inicio_ts`;
-      const tsT = dados[`${p}_processo_inicio_ts`];
-      let dT;
-      if (tsT) {
-        dT = Math.floor((agr.getTime() - tsT) / 60000);
-      } else {
-        const agrMin = agr.getHours() * 60 + agr.getMinutes();
-        const iniMinT = hpi * 60 + mpi;
-        dT = agrMin - iniMinT;
-        if (dT < 0) dT += 1440;
-      }
-      tempoTotalTv = `<span class="tempo-total-tv">⏳ ${Math.floor(dT/60)}:${String(dT%60).padStart(2,'0')}h em processo</span>`;
+    // Tempo total em processo
+    let tempoTotalHtml='';
+    const ts=dados[`${p}_processo_inicio_ts`];
+    if(ts){
+      const dT=Math.floor((Date.now()-ts)/60000);
+      tempoTotalHtml=`⏳ ${Math.floor(dT/60)}:${String(dT%60).padStart(2,'0')}h em processo`;
+    } else if(horaIni){
+      const agrMin=new Date().getHours()*60+new Date().getMinutes();
+      const [hv,mv]=horaIni.split(':').map(Number);
+      let dT=agrMin-(hv*60+mv);
+      if(dT<0)dT+=1440;
+      tempoTotalHtml=`⏳ ${Math.floor(dT/60)}:${String(dT%60).padStart(2,'0')}h em processo`;
     }
 
     let ultimaIdx=-1;
     etapas.forEach((e,i)=>{ if(dados[`${p}_${e.k}`]) ultimaIdx=i; });
 
-    // Lingotamento iniciado → não considera atraso
-    const lingotKey = etapas.find(e2 => e2.k.includes('lingot'));
-    const lingotIniciado = lingotKey ? !!dados[`${p}_${lingotKey.k}`] : false;
-    if (lingotIniciado) atr = false;
-
-    const rows = etapas.map((e,idx)=>{
+    const rows=etapas.map((e,idx)=>{
       const ini=dados[`${p}_${e.k}`]||'';
       const fim=dados[`${p}_${e.k2}`]||'';
       const ativa=idx===ultimaIdx;
       const med=e.m?`<span class="medio-tv">T.M: ${Math.floor(e.m/60)}:${String(e.m%60).padStart(2,'0')}h</span>`:'';
-      // Tempo de execução
       let exec='';
       if(ini){
         const prox=etapas.slice(idx+1).find(e2=>dados[`${p}_${e2.k}`]);
         if(prox){
-          const pi=dados[`${p}_${prox.k}`];
-          const [h1,m1]=ini.split(':').map(Number);
-          const [h2,m2]=pi.split(':').map(Number);
-          let diff=(h2*60+m2)-(h1*60+m1);
-          if(diff<0) diff+=1440; // virada de dia
-          exec=`<span class="exec-tv">Tempo de Execução: ${Math.floor(diff/60)}:${String(diff%60).padStart(2,'0')}h</span>`;
+          const tsK=dados[`${p}_${e.k.replace('_ini','_ts')}`];
+          const tsP=dados[`${p}_${prox.k.replace('_ini','_ts')}`];
+          let diff;
+          if(tsK&&tsP){ diff=Math.round((tsP-tsK)/60000); }
+          else {
+            const [h1,m1]=ini.split(':').map(Number);
+            const [h2,m2]=dados[`${p}_${prox.k}`].split(':').map(Number);
+            diff=(h2*60+m2)-(h1*60+m1);
+            if(diff<0)diff+=1440;
+          }
+          exec=`<span class="exec-tv">⏱ Exec: ${Math.floor(diff/60)}:${String(diff%60).padStart(2,'0')}h</span>`;
         }
       }
-      // Linha vermelha: Tempo de Execução (ini_próxima - ini_atual) > T.M
-      let linhaAtr = false;
-      if(ini && e.m) {
-        const proxEtapaL = etapas.slice(idx+1).find(e2=>dados[`${p}_${e2.k}`]);
-        if(proxEtapaL) {
-          const proxIniL = dados[`${p}_${proxEtapaL.k}`];
+      let linhaAtr=false;
+      if(ini&&e.m){
+        const prox=etapas.slice(idx+1).find(e2=>dados[`${p}_${e2.k}`]);
+        if(prox){
           const [h1,m1]=ini.split(':').map(Number);
-          const [h2,m2]=proxIniL.split(':').map(Number);
-          let execL=(h2*60+m2)-(h1*60+m1);
-          if(execL<0) execL+=1440;
-          if(execL>e.m) linhaAtr=true;
+          const [h2,m2]=dados[`${p}_${prox.k}`].split(':').map(Number);
+          let dr=(h2*60+m2)-(h1*60+m1);
+          if(dr<0)dr+=1440;
+          if(dr>e.m)linhaAtr=true;
         }
       }
       return `<tr class="${ativa?'tr-ativa':''} ${linhaAtr?'linha-atr-tv':''}">
@@ -590,23 +518,17 @@
 
     return `<div class="card-tv${atr?' atrasado':''}">
       <div class="card-top">
-        ${liga?`<div class="card-liga-tv">⚗️ ${liga}</div>`:''}
-        <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:4px;">
-          <div style="display:flex;flex-direction:column;align-items:flex-start;min-width:90px;">
-            ${(dataIniTv||horaIniTv) ? `
-              <span style="font-size:12px;color:#a8d44d;font-weight:bold;letter-spacing:0.5px;text-transform:uppercase;">Início</span>
-              <span style="font-size:16px;color:#fff;font-weight:bold;">${dataIniTv?dataIniTv.split('-').reverse().slice(0,2).join('/'):''}${horaIniTv?' '+horaIniTv:''}</span>
-            ` : '<span></span>'}
-          </div>
-          <div class="card-panela-box">Panela ${panela}</div>
-          <div style="display:flex;flex-direction:column;align-items:flex-end;min-width:90px;">
-            ${prevFimTv ? `
-              <span style="font-size:12px;color:#a8d44d;font-weight:bold;letter-spacing:0.5px;text-transform:uppercase;">Prev. Fim</span>
-              <span style="font-size:16px;color:#fff;font-weight:bold;">${prevFimTv}</span>
-            ` : '<span></span>'}
-          </div>
+        <div class="card-inicio-box">
+          ${(dataIni||horaIni)?`<span class="card-label-top">Início</span><span class="card-valor-top">${dataIni?dataIni.split('-').reverse().slice(0,2).join('/'):''}&nbsp;${horaIni}</span>`:'<span></span>'}
         </div>
-        ${tempoTotalTv}
+        <div class="card-centro">
+          ${liga?`<div class="card-liga-tv">⚗️ ${liga}</div>`:''}
+          <div class="card-panela-box">Panela ${panela}</div>
+          ${tempoTotalHtml?`<div class="tempo-total-tv">${tempoTotalHtml}</div>`:''}
+        </div>
+        <div class="card-prevfim-box">
+          ${prevFimStr?`<span class="card-label-top">Prev. Fim</span><span class="card-valor-top">${prevFimStr}</span>`:'<span></span>'}
+        </div>
       </div>
       <div class="card-header-tv">
         <span class="card-lote-tv">Lote: ${lote}</span>${badge}
@@ -621,33 +543,22 @@
   }
 
   function buildSlides() {
-    // Coletar ativos
-    const sup=[], inf=[];
-    // Coletar ativos e ordenar por número de panela crescente
+    const sup=[],inf=[];
     for(let i=1;i<=8;i++) { if(dados[`a${i}_lote`]) sup.push({p:`a${i}`,etapas:ETAPAS_SUP,tipo:'PURO/CÁLCIO',panela:parseInt(dados[`a${i}_panela`])||999}); }
     sup.sort((a,b)=>a.panela-b.panela);
     for(let i=1;i<=2;i++) { if(dados[`b${i}_lote`]) inf.push({p:`b${i}`,etapas:ETAPAS_INF,tipo:'SB/SN',panela:parseInt(dados[`b${i}_panela`])||999}); }
     inf.sort((a,b)=>a.panela-b.panela);
-
-    slidesMeta = [];
-    // Slides de sup (4 por slide)
-    for(let i=0;i<sup.length;i+=3) slidesMeta.push({tipo:'PURO/CÁLCIO',cards:sup.slice(i,i+3)});
-    // Slides de inf (4 por slide, mas temos max 2)
-    if(inf.length) slidesMeta.push({tipo:'SB/SN',cards:inf});
-
-    totalSlides = slidesMeta.length;
-    return {sup,inf};
+    // 1 card por slide
+    slidesMeta=[];
+    [...sup,...inf].forEach(c=>slidesMeta.push(c));
+    totalSlides=slidesMeta.length;
   }
-
-  const isMobile = () => window.innerWidth <= 768;
 
   function buildUI() {
     const vp=document.getElementById('viewport');
     const dotsEl=document.getElementById('dots');
-
-    const {sup,inf}=buildSlides();
-
-    if(!sup.length&&!inf.length) {
+    buildSlides();
+    if(!slidesMeta.length){
       vp.style.transition='none';
       vp.innerHTML='<div class="slide-page"><div class="sem-ativos"><span>⏳</span>Nenhuma panela em andamento</div></div>';
       dotsEl.innerHTML='';
@@ -655,101 +566,57 @@
       document.getElementById('secao-badge').textContent='';
       return;
     }
-
-    let pagesHtml = '';
-
-    if (isMobile()) {
-      // MOBILE: 1 card por slide, cada card é uma página independente
-      const todosCards = [];
-      [...sup, ...inf].forEach(c => {
-        todosCards.push({card: c, tipo: c.tipo});
-      });
-      slidesMeta = todosCards.map(({card, tipo}) => ({tipo, cards:[card]}));
-      totalSlides = slidesMeta.length;
-      pagesHtml = slidesMeta.map(s => {
-        const cardsHtml = s.cards.map(c=>renderCard(c.p,c.etapas)).join('');
-        const titulo = s.tipo==='PURO/CÁLCIO' ? '🏭 PURO/CÁLCIO' : '⚗️ SB/SN';
-        return `<div class="slide-page">
-          <div class="secao-titulo-slide">${titulo}</div>
-          <div class="cards-row">${cardsHtml}</div>
-        </div>`;
-      }).join('');
-    } else {
-      // DESKTOP: 4 cards por slide (comportamento original)
-      pagesHtml = slidesMeta.map(s=>{
-        const cardsHtml = s.cards.map(c=>renderCard(c.p,c.etapas)).join('');
-        const titulo = s.tipo==='PURO/CÁLCIO' ? '🏭 PANELAS DE PURO/CÁLCIO' : '⚗️ PANELAS DE SB/SN';
-        return `<div class="slide-page">
-          <div class="secao-titulo-slide">${titulo}</div>
-          <div class="cards-row">${cardsHtml}</div>
-        </div>`;
-      }).join('');
-    }
-
+    const pagesHtml=slidesMeta.map(c=>{
+      const titulo=c.tipo==='PURO/CÁLCIO'?'🏭 PANELAS DE PURO/CÁLCIO':'⚗️ PANELAS DE SB/SN';
+      return `<div class="slide-page">
+        <div class="secao-titulo-slide">${titulo}</div>
+        ${renderCard(c.p,c.etapas)}
+      </div>`;
+    }).join('');
     vp.style.transition='none';
     vp.innerHTML=pagesHtml;
-
-    dotsEl.innerHTML = totalSlides>1
-      ? slidesMeta.map((_,i)=>`<div class="slide-dot${i===slideAtual?' ativo':''}"></div>`).join('')
-      : '';
-
-    const cur = slideAtual<totalSlides?slideAtual:0;
-    goTo(cur,false);
+    dotsEl.innerHTML=totalSlides>1?slidesMeta.map((_,i)=>`<div class="slide-dot${i===slideAtual?' ativo':''}"></div>`).join(''):'';
+    goTo(slideAtual<totalSlides?slideAtual:0,false);
   }
 
-  // Reconstruir ao redimensionar (ex: rotação do celular)
-  window.addEventListener('resize', () => { buildUI(); iniciarTimer(); });
-
-  function goTo(idx,animate=true) {
+  function goTo(idx,animate=true){
     slideAtual=idx;
     const vp=document.getElementById('viewport');
-    if(!vp) return;
-    if(!animate) vp.style.transition='none';
-    else vp.style.transition='transform 0.6s cubic-bezier(0.77,0,0.175,1)';
+    if(!vp)return;
+    if(!animate)vp.style.transition='none';
+    else vp.style.transition='transform 0.7s cubic-bezier(0.77,0,0.175,1)';
     vp.style.transform=`translateX(-${idx*100}%)`;
-    if(!animate) setTimeout(()=>vp.style.transition='',50);
+    if(!animate)setTimeout(()=>vp.style.transition='',50);
     document.querySelectorAll('.slide-dot').forEach((d,i)=>d.classList.toggle('ativo',i===idx));
-    if(slidesMeta[idx]) {
+    if(slidesMeta[idx]){
       document.getElementById('secao-badge').textContent=slidesMeta[idx].tipo;
-      document.getElementById('slide-info').textContent=totalSlides>1?`Slide ${idx+1} de ${totalSlides}`:'';
+      document.getElementById('slide-info').textContent=totalSlides>1?`${idx+1} / ${totalSlides}`:'';
     }
-    // Atualizar visibilidade dos botões
-    const btnPrev = document.getElementById('btn-prev');
-    const btnNext = document.getElementById('btn-next');
-    if(btnPrev) btnPrev.classList.toggle('oculto', totalSlides<=1);
-    if(btnNext) btnNext.classList.toggle('oculto', totalSlides<=1);
+    const btnP=document.getElementById('btn-prev');
+    const btnN=document.getElementById('btn-next');
+    if(btnP)btnP.style.opacity=totalSlides>1?'1':'0';
+    if(btnN)btnN.style.opacity=totalSlides>1?'1':'0';
   }
 
-  window.navManual = (dir) => {
-    if(totalSlides<=1) return;
-    goTo((slideAtual + dir + totalSlides) % totalSlides);
-    // Reiniciar timer para dar tempo completo após navegação manual
+  window.navManual=(dir)=>{
+    if(totalSlides<=1)return;
+    goTo((slideAtual+dir+totalSlides)%totalSlides);
     iniciarTimer();
   };
 
-  // Suporte a teclado (setas) e swipe em touch
-  document.addEventListener('keydown', e => {
-    if(e.key==='ArrowRight') navManual(1);
-    if(e.key==='ArrowLeft') navManual(-1);
+  function nextSlide(){ if(totalSlides<=1)return; goTo((slideAtual+1)%totalSlides); }
+  function iniciarTimer(){ if(slideTimer)clearInterval(slideTimer); slideTimer=setInterval(nextSlide,INTERVALO); }
+
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight')navManual(1);
+    if(e.key==='ArrowLeft')navManual(-1);
   });
-
-  // Swipe touch
-  let touchStartX = 0;
-  document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, {passive:true});
-  document.addEventListener('touchend', e => {
-    const diff = touchStartX - e.changedTouches[0].clientX;
-    if(Math.abs(diff) > 50) navManual(diff > 0 ? 1 : -1);
-  }, {passive:true});
-
-  function nextSlide() {
-    if(totalSlides<=1) return;
-    goTo((slideAtual+1)%totalSlides);
-  }
-
-  function iniciarTimer() {
-    if(slideTimer) clearInterval(slideTimer);
-    slideTimer=setInterval(nextSlide,INTERVALO);
-  }
+  let touchStartX=0;
+  document.addEventListener('touchstart',e=>{touchStartX=e.touches[0].clientX;},{passive:true});
+  document.addEventListener('touchend',e=>{
+    const diff=touchStartX-e.changedTouches[0].clientX;
+    if(Math.abs(diff)>50)navManual(diff>0?1:-1);
+  },{passive:true});
 
   onValue(ref(db,'formulario/dados'),(snap)=>{
     document.getElementById('dot').className='dot on';
