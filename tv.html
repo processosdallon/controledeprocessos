@@ -338,35 +338,66 @@
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
-  // MANTER TELA LIGADA — Wake Lock API (evita proteção de tela da LG)
+  // MANTER TELA LIGADA — múltiplos métodos para TVs LG
   async function manterTelaLigada() {
-    try {
-      if ('wakeLock' in navigator) {
-        let wakeLock = await navigator.wakeLock.request('screen');
-        document.addEventListener('visibilitychange', async () => {
-          if (document.visibilityState === 'visible') {
-            wakeLock = await navigator.wakeLock.request('screen');
-          }
-        });
-        console.log('Wake Lock ativo — tela não vai dormir');
-      }
-    } catch(e) {
-      console.log('Wake Lock não suportado, usando fallback');
+    // Método 1: Wake Lock API
+    let wakeLock = null;
+    async function requestWakeLock() {
+      try {
+        if ('wakeLock' in navigator) {
+          wakeLock = await navigator.wakeLock.request('screen');
+          wakeLock.addEventListener('release', () => {
+            setTimeout(requestWakeLock, 1000);
+          });
+        }
+      } catch(e) {}
     }
-    // Fallback: simular atividade com movimento invisível do mouse a cada 20s
+    await requestWakeLock();
+    document.addEventListener('visibilitychange', async () => {
+      if (document.visibilityState === 'visible') await requestWakeLock();
+    });
+
+    // Método 2: Canvas animado invisível — engana o browser achando que há animação
+    const canvas = document.createElement('canvas');
+    canvas.width = 2; canvas.height = 2;
+    canvas.style.cssText = 'position:fixed;top:0;left:0;opacity:0.01;pointer-events:none;z-index:-1;';
+    document.body.appendChild(canvas);
+    const ctx = canvas.getContext('2d');
+    let frame = 0;
+    function animateCanvas() {
+      ctx.fillStyle = frame++ % 2 === 0 ? '#000001' : '#000000';
+      ctx.fillRect(0, 0, 2, 2);
+      requestAnimationFrame(animateCanvas);
+    }
+    animateCanvas();
+
+    // Método 3: Simular interação do usuário a cada 15 segundos
     setInterval(() => {
-      const ev = new MouseEvent('mousemove', { bubbles: true, clientX: Math.random(), clientY: Math.random() });
-      document.dispatchEvent(ev);
-    }, 20000);
-    // Fallback 2: vídeo invisível em loop (muito eficaz em TVs LG)
+      document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: Math.random() * 10, clientY: Math.random() * 10 }));
+      document.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Shift' }));
+      document.dispatchEvent(new TouchEvent('touchstart', { bubbles: true }));
+    }, 15000);
+
+    // Método 4: Vídeo mudo em loop
     const video = document.createElement('video');
     video.setAttribute('playsinline', '');
     video.setAttribute('muted', '');
     video.setAttribute('loop', '');
-    video.style.cssText = 'position:fixed;width:1px;height:1px;opacity:0.01;top:0;left:0;pointer-events:none;';
-    video.src = 'data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMW1wNDEAAAAIZnJlZQAAAA==';
+    video.setAttribute('autoplay', '');
+    video.style.cssText = 'position:fixed;width:2px;height:2px;opacity:0.01;top:0;left:0;pointer-events:none;z-index:-1;';
+    // Vídeo MP4 mínimo válido de 1 segundo
+    video.src = 'https://www.w3schools.com/html/mov_bbb.mp4';
     document.body.appendChild(video);
-    video.play().catch(()=>{});
+    video.play().catch(() => {});
+    // Restartar se parar
+    video.addEventListener('ended', () => video.play().catch(() => {}));
+    setInterval(() => { if(video.paused) video.play().catch(()=>{}); }, 5000);
+
+    // Método 5: Scroll invisível (simula atividade)
+    setInterval(() => {
+      window.scrollBy(0, 1);
+      setTimeout(() => window.scrollBy(0, -1), 100);
+    }, 25000);
   }
   manterTelaLigada();
 
