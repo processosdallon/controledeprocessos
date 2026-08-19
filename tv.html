@@ -466,6 +466,7 @@
   }
 
   function renderCard(p, etapas) {
+    try {
     const lote=dados[`${p}_lote`]||'—';
     const panela=dados[`${p}_panela`]||'—';
     const liga=dados[`${p}_liga`]||'';
@@ -517,20 +518,24 @@
       const ativa=idx===ultimaIdx;
       const med=e.m?`<span class="medio-tv">T.M: ${Math.floor(e.m/60)}:${String(e.m%60).padStart(2,'0')}h</span>`:'';
       let exec='';
+      // Proteger split de valores undefined
       if(ini){
         const prox=etapas.slice(idx+1).find(e2=>dados[`${p}_${e2.k}`]);
-        if(prox){
+        if(prox && dados[`${p}_${prox.k}`]){
           const tsK=dados[`${p}_${e.k.replace('_ini','_ts')}`];
           const tsP=dados[`${p}_${prox.k.replace('_ini','_ts')}`];
           let diff;
           if(tsK&&tsP){ diff=Math.round((tsP-tsK)/60000); }
           else {
-            const [h1,m1]=ini.split(':').map(Number);
-            const [h2,m2]=dados[`${p}_${prox.k}`].split(':').map(Number);
-            diff=(h2*60+m2)-(h1*60+m1);
-            if(diff<0)diff+=1440;
+            const proxVal=dados[`${p}_${prox.k}`]||'';
+            if(proxVal){
+              const [h1,m1]=ini.split(':').map(Number);
+              const [h2,m2]=proxVal.split(':').map(Number);
+              diff=(h2*60+m2)-(h1*60+m1);
+              if(diff<0)diff+=1440;
+            }
           }
-          exec=`<span class="exec-tv">⏱ ${Math.floor(diff/60)}:${String(diff%60).padStart(2,'0')}h</span>`;
+          if(diff!=null) exec=`<span class="exec-tv">⏱ ${Math.floor(diff/60)}:${String(diff%60).padStart(2,'0')}h</span>`;
         }
       }
       let linhaAtr=false;
@@ -590,6 +595,10 @@
       ${obs?`<div class="card-obs">OBS: ${obs}</div>`:''}
       ${setup?`<div class="setup-tv">⚠️ SETUP: ${setup}</div>`:''}
     </div>`;
+  } catch(err) {
+    console.error('Erro renderCard:', p, err);
+    return `<div class="card-tv"><div style="color:#f00;padding:20px;">Erro ao renderizar card ${p}</div></div>`;
+  }
   }
 
   function buildSlides() {
