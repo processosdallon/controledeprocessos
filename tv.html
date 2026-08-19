@@ -466,7 +466,6 @@
   }
 
   function renderCard(p, etapas) {
-    try {
     const lote=dados[`${p}_lote`]||'—';
     const panela=dados[`${p}_panela`]||'—';
     const liga=dados[`${p}_liga`]||'';
@@ -595,10 +594,6 @@
       ${obs?`<div class="card-obs">OBS: ${obs}</div>`:''}
       ${setup?`<div class="setup-tv">⚠️ SETUP: ${setup}</div>`:''}
     </div>`;
-  } catch(err) {
-    console.error('Erro renderCard:', p, err);
-    return `<div class="card-tv"><div style="color:#f00;padding:20px;">Erro ao renderizar card ${p}</div></div>`;
-  }
   }
 
   function buildSlides() {
