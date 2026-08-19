@@ -393,13 +393,8 @@
     video.addEventListener('ended', () => video.play().catch(() => {}));
     setInterval(() => { if(video.paused) video.play().catch(()=>{}); }, 5000);
 
-    // Método 5: Scroll invisível (simula atividade)
-    setInterval(() => {
-      window.scrollBy(0, 1);
-      setTimeout(() => window.scrollBy(0, -1), 100);
-    }, 25000);
-  }
-  manterTelaLigada();
+    // Método 6: Recarregar a página a cada 25 minutos — força atividade na TV
+    setTimeout(() => { location.reload(); }, 25 * 60 * 1000);
 
   function tick() {
     const n = new Date();
