@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="refresh" content="1440">
+<meta http-equiv="refresh" content="600">
 <title>Painel TV — Dallon</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -381,8 +381,8 @@
 
     // Método 4: Canvas animado já cobre o caso do vídeo — removido vídeo externo
 
-    // Método 6: Recarregar a página a cada 25 minutos — força atividade na TV
-    setTimeout(() => { location.reload(); }, 25 * 60 * 1000);
+    // Recarregar a cada 20 minutos — antes dos 30min de inatividade da LG
+    setTimeout(() => { location.reload(); }, 10 * 60 * 1000);
   }
   manterTelaLigada();
 
