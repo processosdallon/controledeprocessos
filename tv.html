@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="refresh" content="600">
+<meta http-equiv="refresh" content="300">
 <title>Painel TV — Dallon</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -382,7 +382,7 @@
     // Método 4: Canvas animado já cobre o caso do vídeo — removido vídeo externo
 
     // Recarregar a cada 20 minutos — antes dos 30min de inatividade da LG
-    setTimeout(() => { location.reload(); }, 10 * 60 * 1000);
+    setTimeout(() => { location.reload(); }, 5 * 60 * 1000);
   }
   manterTelaLigada();
 
@@ -501,9 +501,18 @@
     let tempoTotalHtml='';
     const ts=dados[`${p}_processo_inicio_ts`];
     if(ts){
+      // Usar timestamp real — mais preciso
       const dT=Math.floor((Date.now()-ts)/60000);
-      tempoTotalHtml=`⏳ ${Math.floor(dT/60)}:${String(dT%60).padStart(2,'0')}h em processo`;
+      if(dT>=0) tempoTotalHtml=`⏳ ${Math.floor(dT/60)}:${String(dT%60).padStart(2,'0')}h em processo`;
+    } else if(dataIni&&horaIni){
+      // Usar data_ini + hora_ini para calcular com precisão de dias
+      const [ano,mes,dia]=dataIni.split('-').map(Number);
+      const [hv,mv]=horaIni.split(':').map(Number);
+      const inicioTs=new Date(ano,mes-1,dia,hv,mv,0,0).getTime();
+      const dT=Math.floor((Date.now()-inicioTs)/60000);
+      if(dT>=0) tempoTotalHtml=`⏳ ${Math.floor(dT/60)}:${String(dT%60).padStart(2,'0')}h em processo`;
     } else if(horaIni){
+      // Fallback: só hora — assume mesmo dia
       const agrMin=new Date().getHours()*60+new Date().getMinutes();
       const [hv,mv]=horaIni.split(':').map(Number);
       let dT=agrMin-(hv*60+mv);
