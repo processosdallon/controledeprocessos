@@ -420,13 +420,14 @@
       const ts2 = dados[tsKey2];
       const dataIni2 = dados[`${prefix}_data_ini`] || '';
       let diffTotal;
-      if (ts2) {
-        diffTotal = Math.floor((agora2.getTime() - ts2) / 60000);
-      } else if (dataIni2 && horaIni) {
-        // Usar data_ini + hora_ini para calcular com precisão
+      if (dataIni2 && horaIni) {
+        // data_ini + hora_ini tem prioridade — mais confiável
         const [ano2,mes2,dia2] = dataIni2.split('-').map(Number);
         const inicioTs2 = new Date(ano2,mes2-1,dia2,hp,mp,0,0).getTime();
         diffTotal = Math.floor((agora2.getTime() - inicioTs2) / 60000);
+      } else if (ts2) {
+        // Fallback: timestamp
+        diffTotal = Math.floor((agora2.getTime() - ts2) / 60000);
       } else {
         const agoraMin2 = agora2.getHours() * 60 + agora2.getMinutes();
         const iniMin2 = hp * 60 + mp;
