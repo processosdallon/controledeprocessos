@@ -3023,10 +3023,18 @@
         if (ts) {
           diff = Math.floor((agora.getTime() - ts) / 60000);
         } else {
-          const agoraMin3 = agora.getHours() * 60 + agora.getMinutes();
-          const iniMin3 = h * 60 + m;
-          diff = agoraMin3 - iniMin3;
-          if (diff < 0) diff += 1440;
+          // Usar data_ini se disponível para cálculo preciso com dias
+          const dataIniF = cacheFirebase[`${p}_data_ini`] || '';
+          if (dataIniF) {
+            const [ano3,mes3,dia3] = dataIniF.split('-').map(Number);
+            const inicioTs3 = new Date(ano3,mes3-1,dia3,h,m,0,0).getTime();
+            diff = Math.floor((agora.getTime() - inicioTs3) / 60000);
+          } else {
+            const agoraMin3 = agora.getHours() * 60 + agora.getMinutes();
+            const iniMin3 = h * 60 + m;
+            diff = agoraMin3 - iniMin3;
+            if (diff < 0) diff += 1440;
+          }
         }
         el.textContent = `⏳ ${Math.floor(diff/60)}:${String(diff%60).padStart(2,'0')}h em processo`;
       });
