@@ -500,16 +500,16 @@
     // Tempo total em processo
     let tempoTotalHtml='';
     const ts=dados[`${p}_processo_inicio_ts`];
-    if(ts){
-      // Usar timestamp real — mais preciso
-      const dT=Math.floor((Date.now()-ts)/60000);
-      if(dT>=0) tempoTotalHtml=`⏳ ${Math.floor(dT/60)}:${String(dT%60).padStart(2,'0')}h em processo`;
-    } else if(dataIni&&horaIni){
-      // Usar data_ini + hora_ini para calcular com precisão de dias
+    if(dataIni&&horaIni){
+      // data_ini + hora_ini tem prioridade — mais confiável
       const [ano,mes,dia]=dataIni.split('-').map(Number);
       const [hv,mv]=horaIni.split(':').map(Number);
       const inicioTs=new Date(ano,mes-1,dia,hv,mv,0,0).getTime();
       const dT=Math.floor((Date.now()-inicioTs)/60000);
+      if(dT>=0) tempoTotalHtml=`⏳ ${Math.floor(dT/60)}:${String(dT%60).padStart(2,'0')}h em processo`;
+    } else if(ts){
+      // Fallback: timestamp salvo
+      const dT=Math.floor((Date.now()-ts)/60000);
       if(dT>=0) tempoTotalHtml=`⏳ ${Math.floor(dT/60)}:${String(dT%60).padStart(2,'0')}h em processo`;
     } else if(horaIni){
       // Fallback: só hora — assume mesmo dia
