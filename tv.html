@@ -379,7 +379,18 @@
       document.dispatchEvent(new TouchEvent('touchstart', { bubbles: true }));
     }, 15000);
 
-    // Método 4: Canvas animado já cobre o caso do vídeo — removido vídeo externo
+    // Método 4: Áudio inaudível em loop — mantém browser em estado ativo
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (AudioCtx) {
+      const audioCtx = new AudioCtx();
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      gainNode.gain.value = 0.001; // quase zero — inaudível
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      oscillator.frequency.value = 20; // 20Hz — abaixo do audível humano
+      oscillator.start();
+    }
 
     // Recarregar a cada 20 minutos — antes dos 30min de inatividade da LG
     setTimeout(() => { location.reload(); }, 5 * 60 * 1000);
