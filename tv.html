@@ -379,18 +379,27 @@
       document.dispatchEvent(new TouchEvent('touchstart', { bubbles: true }));
     }, 15000);
 
-    // Método 4: Áudio inaudível em loop — mantém browser em estado ativo
-    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    if (AudioCtx) {
-      const audioCtx = new AudioCtx();
-      const oscillator = audioCtx.createOscillator();
-      const gainNode = audioCtx.createGain();
-      gainNode.gain.value = 0.001; // quase zero — inaudível
-      oscillator.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
-      oscillator.frequency.value = 20; // 20Hz — abaixo do audível humano
-      oscillator.start();
-    }
+    // Método 4: Vídeo gerado via canvas em loop — muito eficaz para manter TV ativa
+    try {
+      const cv = document.createElement('canvas');
+      cv.width = 2; cv.height = 2;
+      const stream = cv.captureStream(1); // 1 fps
+      const vid = document.createElement('video');
+      vid.srcObject = stream;
+      vid.muted = true;
+      vid.loop = true;
+      vid.playsInline = true;
+      vid.style.cssText = 'position:fixed;width:2px;height:2px;top:0;left:0;opacity:0.01;pointer-events:none;z-index:-1;';
+      document.body.appendChild(vid);
+      vid.play().catch(()=>{});
+      // Animar canvas para gerar frames reais
+      const cvCtx = cv.getContext('2d');
+      let tick2 = 0;
+      setInterval(() => {
+        cvCtx.fillStyle = tick2++%2===0 ? '#010101' : '#020202';
+        cvCtx.fillRect(0,0,2,2);
+      }, 500);
+    } catch(e) {}
 
     // Recarregar a cada 20 minutos — antes dos 30min de inatividade da LG
     setTimeout(() => { location.reload(); }, 5 * 60 * 1000);
