@@ -399,12 +399,27 @@
     }
     animateCanvas();
 
-    // Método 3: Simular interação do usuário a cada 15 segundos
+    // Método 3: Mover cursor real via elemento que atrai o ponteiro
+    // Cria um elemento invisível que se move pela tela — força movimento real do cursor
+    const mover = document.createElement('div');
+    mover.style.cssText = 'position:fixed;width:1px;height:1px;background:transparent;pointer-events:all;z-index:9999;cursor:none;';
+    document.body.appendChild(mover);
+    
+    let mx = 100, my = 100, dir = 1;
     setInterval(() => {
-      document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: Math.random() * 10, clientY: Math.random() * 10 }));
-      document.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Shift' }));
-      document.dispatchEvent(new TouchEvent('touchstart', { bubbles: true }));
-    }, 15000);
+      mx += dir * 8;
+      if (mx > window.innerWidth - 10 || mx < 10) dir *= -1;
+      my = window.innerHeight / 2 + Math.sin(Date.now() / 3000) * 50;
+      mover.style.left = mx + 'px';
+      mover.style.top = my + 'px';
+      // Disparar evento real de mousemove no elemento
+      mover.dispatchEvent(new MouseEvent('mousemove', {
+        bubbles: true, cancelable: true,
+        clientX: mx, clientY: my,
+        screenX: mx, screenY: my,
+        movementX: dir * 8, movementY: 0
+      }));
+    }, 3000);
 
     // Método 4: Logo animada via CSS — mantém TV ativa visualmente
 
