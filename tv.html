@@ -457,7 +457,45 @@
       }));
     }, 3000);
 
-    // Método 4: Logo animada via CSS — mantém TV ativa visualmente
+    // SOLUÇÃO DEFINITIVA: vídeo canvas em fullscreen
+    // O WebOS nunca ativa o screensaver durante reprodução de vídeo em tela cheia
+    try {
+      const cvFull = document.createElement('canvas');
+      cvFull.width = 16; cvFull.height = 16;
+      const ctxFull = cvFull.getContext('2d');
+      let frameCnt = 0;
+
+      // Desenhar frame diferente a cada vez para simular vídeo real
+      function drawFrame() {
+        frameCnt++;
+        // Pixel quase invisível que muda a cada frame
+        ctxFull.fillStyle = `rgb(${frameCnt%2},${(frameCnt+1)%2},0)`;
+        ctxFull.fillRect(0, 0, 16, 16);
+        requestAnimationFrame(drawFrame);
+      }
+      drawFrame();
+
+      const streamFull = cvFull.captureStream(30); // 30fps
+      const vidFull = document.createElement('video');
+      vidFull.srcObject = streamFull;
+      vidFull.muted = true;
+      vidFull.playsInline = true;
+      vidFull.loop = true;
+      // Posicionar atrás de tudo, mas visível (opacity 0 não funciona para WebOS)
+      vidFull.style.cssText = 'position:fixed;width:100vw;height:100vh;top:0;left:0;object-fit:cover;opacity:0.001;z-index:-999;pointer-events:none;';
+      document.body.appendChild(vidFull);
+
+      vidFull.play().then(() => {
+        console.log('Vídeo canvas fullscreen ativo — screensaver bloqueado');
+        // Tentar fullscreen após interação do usuário
+        document.addEventListener('click', () => {
+          if (vidFull.requestFullscreen) vidFull.requestFullscreen().catch(()=>{});
+        }, { once: true });
+      }).catch(e => console.log('Erro vídeo canvas:', e));
+
+    } catch(e) {
+      console.log('captureStream não suportado:', e);
+    }
 
     // Recarregar a cada 20 minutos — antes dos 30min de inatividade da LG
     setTimeout(() => { location.reload(); }, 5 * 60 * 1000);
