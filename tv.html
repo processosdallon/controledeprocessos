@@ -366,6 +366,42 @@
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
+  // API LUNA WEBOS — cancela o screensaver antes de ativar (método oficial não documentado)
+  function bloquearScreensaverWebOS() {
+    try {
+      if (typeof WebOSServiceBridge !== 'undefined') {
+        const bridge = new WebOSServiceBridge();
+        bridge.onservicecallback = (msg) => {
+          try {
+            const message = JSON.parse(msg);
+            if (message.state === 'Active') {
+              // Screensaver prestes a ativar — cancela!
+              bridge.call(
+                'luna://com.webos.service.tvpower/power/responseScreenSaverRequest',
+                JSON.stringify({
+                  clientName: 'DallonMonitor',
+                  ack: false,
+                  timestamp: message.timestamp
+                })
+              );
+              console.log('Screensaver bloqueado via Luna API!');
+            }
+          } catch(e) {}
+        };
+        bridge.call(
+          'luna://com.webos.service.tvpower/power/registerScreenSaverRequest',
+          JSON.stringify({ subscribe: true, clientName: 'DallonMonitor' })
+        );
+        console.log('Luna API registrada — screensaver será bloqueado');
+      } else {
+        console.log('WebOSServiceBridge não disponível neste browser');
+      }
+    } catch(e) {
+      console.log('Erro Luna API:', e);
+    }
+  }
+  bloquearScreensaverWebOS();
+
   // MANTER TELA LIGADA — múltiplos métodos para TVs LG
   async function manterTelaLigada() {
     // Método 1: Wake Lock API
