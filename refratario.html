@@ -326,7 +326,8 @@ function brandOf(desc){
 function autoCuts(st){
   const keys=[...new Set(st.stock.map(s=>normKey(s.formato,s.medida)).filter(Boolean))];
   const accG=new Set(st.recipe.filter(r=>!r.same).map(r=>r.group));
-  const needs=[...new Set(st.recipe.map(r=>r.group))].filter(g=>parseKey(g)&&(!accG.has(g)||parseKey(g)));
+  const pm={}; (st.pools||[]).forEach(p=>pm[p.name]=(p.members||[]).map(normFull));
+  const needs=[...new Set(st.recipe.flatMap(r=>pm[r.group]||[r.group]))].filter(g=>parseKey(g));
   const out=[];
   needs.forEach(g=>{ const pg=parseKey(g); keys.forEach(k=>{ const pk=parseKey(k); if(pk&&pk.code[0]===pg.code[0]&&pk.W===pg.W&&pk.T===pg.T&&pk.L>pg.L) out.push({need:g,from:k}); }); });
   return out;
@@ -348,6 +349,7 @@ function Engine(state){
   state.stock.forEach(s=>{ const k=normKey(s.formato,s.medida); if(k) addG(k); });
   state.cutRules.forEach(c=>{ if(c.from) addG(normFull(c.from)); if(c.need) addG(c.need); });
   const poolOf=k=>Object.keys(pools).find(n=>pools[n].includes(k));
+  const lbl=g=>pools[g]?(pools[g].length>1?`${pools[g][0]} (ou ${pools[g].slice(1).join(", ")})`:pools[g][0]||g):g;
   const S={}; groups.forEach(g=>{S[g]={}; brands.forEach(b=>S[g][b]=0);});
   state.stock.forEach(s=>{ const k=normKey(s.formato,s.medida); if(!k) return; const g=groupOf(k); const b=brands.includes(s.brand)?s.brand:brands[brands.length-1]; S[g][b]=(S[g][b]||0)+(Number(s.qty)||0); });
   const m=1+(Number(state.cfg.margin)||0)/100;
@@ -386,9 +388,9 @@ function Engine(state){
     });
     const cuts=[];
     if(useCuts) dem.forEach(d=>{ if(d.miss<=1e-9) return;
-      rules.filter(r=>r.need===d.g&&r.src!==d.g).forEach(r=>{ const row=R[r.src]; if(!row) return;
+      rules.filter(r=>(pools[d.g]||[d.g]).includes(r.need)&&r.src!==r.need).forEach(r=>{ const row=R[r.src]; if(!row) return;
         for(const b of d.allow){ if(d.miss<=1e-9) break; const t=Math.min(pos(row[b]||0),d.miss); if(t>0){ row[b]-=t; d.miss-=t; parts[d.p].used[b]+=t; if(d.main) parts[d.p].main[b]+=t;
-          G(d.g).cutIn+=t; G(d.g).need+=t; G(r.src).cutOut+=t; cuts.push({need:d.g,from:r.from,brand:b,qty:t,p:d.p}); } }
+          G(r.need).cutIn+=t; G(r.need).need+=t; G(r.src).cutOut+=t; cuts.push({need:r.need,from:r.from,brand:b,qty:t,p:d.p}); } }
       });
     });
     dem.forEach(d=>{ parts[d.p].falta+=d.miss; if(d.miss>1e-9){ G(d.k0).miss+=d.miss; G(d.k0).need+=d.miss; } });
@@ -403,7 +405,7 @@ function Engine(state){
     let n=0, last=null;
     while(n<200){ const r=allocate(S,qf(n+1),useCuts); if(miss(r)>1e-6){ last=r; break; } n++; }
     const ok=allocate(S,qf(n),useCuts);
-    const short=[]; if(last){ const agg={}; last.dem.filter(mine).forEach(d=>{ if(d.miss>1e-6){ const bl=d.main&&d.allow.length<brands.length?d.allow:[]; const k=d.g+"|"+bl.join("/"); agg[k]=agg[k]||{g:d.g,brands:bl,qty:0}; agg[k].qty+=d.miss; } }); for(const k in agg) short.push({...agg[k],qty:Math.ceil(agg[k].qty-1e-6)}); }
+    const short=[]; if(last){ const agg={}; last.dem.filter(mine).forEach(d=>{ if(d.miss>1e-6){ const bl=d.main&&d.allow.length<brands.length?d.allow:[]; const k=d.g+"|"+bl.join("/"); agg[k]=agg[k]||{g:lbl(d.g),brands:bl,qty:0}; agg[k].qty+=d.miss; } }); for(const k in agg) short.push({...agg[k],qty:Math.ceil(agg[k].qty-1e-6)}); }
     const cutsAgg={}; if(n>0) ok.cuts.filter(c=>weights[c.p]>0).forEach(c=>{ const k=c.need+"|"+c.from; cutsAgg[k]=cutsAgg[k]||{need:c.need,from:c.from,qty:0}; cutsAgg[k].qty+=c.qty; });
     return {count:n, short, cuts:Object.values(cutsAgg)};
   }
@@ -420,7 +422,7 @@ function Engine(state){
     const out={};
     PARTS.forEach(p=>{ if(!isOn(p.code)){ out[p.code]=null; return; }
       const pp=r.parts[p.code]; let f=1; const miss=[];
-      pp.dem.forEach(d=>{ f=Math.min(f,(d.qty-d.miss)/d.qty); if(d.miss>1e-6) miss.push({g:d.g,qty:Math.ceil(d.miss-1e-6),brands:d.main&&d.allow.length<brands.length?d.allow:[]}); });
+      pp.dem.forEach(d=>{ f=Math.min(f,(d.qty-d.miss)/d.qty); if(d.miss>1e-6) miss.push({g:lbl(d.g),qty:Math.ceil(d.miss-1e-6),brands:d.main&&d.allow.length<brands.length?d.allow:[]}); });
       const pc=r.cuts.filter(c=>c.p===p.code);
       out[p.code]={f:Math.max(0,Math.min(1,f)),miss,bricks:Math.round(pp.need-pp.falta),cuts:pc};
     });
@@ -600,7 +602,7 @@ function render(){
 
   // Cortes (editável)
   const keys=[...new Set(state.stock.map(s=>normKey(s.formato,s.medida)).filter(Boolean))].sort();
-  const needOpts=[...new Set(state.recipe.map(r=>r.group).filter(Boolean))];
+  const needOpts=[...new Set(state.recipe.flatMap(r=>E.pools[r.group]||[r.group]).filter(g=>g&&!E.pools[g]))];
   const sel=(attr,i,val,opts)=>`<select ${attr}="${i}">${[...(opts.includes(val)||!val?[]:[val]),...opts].map(o=>`<option ${o===val?"selected":""}>${esc(o)}</option>`).join("")}${!val?'<option selected value="">— escolha —</option>':""}</select>`;
   t=`<tr><th>Precisa</th><th class="n">Falta na simulação</th><th>Pode cortar de</th><th class="n">Em estoque</th><th>Marcas</th><th class="n">Usado na simulação</th><th class="n">Livre p/ cortar</th><th>Situação</th><th></th></tr>`;
   cutRows.forEach(c=>{ const st=!c.need||!c.from?'<span class="note">preencha</span>':c.diff?'<span class="bad">não permitido: tipo A só com A, C só com C</span>':!c.okRule?'<span class="bad">medidas não compatíveis</span>':c.falta===0?'<span class="note">sem falta</span>':c.free===0?'<span class="bad">sem estoque livre</span>':c.free>=c.falta?'<span class="good"><b>✓ cobre a falta</b></span>':`<span class="warn"><b>cobre ${fmt(c.free)} de ${fmt(c.falta)}</b></span>`;
