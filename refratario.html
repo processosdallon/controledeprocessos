@@ -10,39 +10,41 @@
 <style>
 :root{
   --bg:#EEF0EE; --panel:#FFFFFF; --ink:#1D2327; --muted:#66707A; --line:#D5DAD8;
-  --steel:#2E363C; --steel2:#3C464D; --glow:#F0A23B; --bad:#B4362B; --good:#2E7D4F; --warn:#B26A14;
-  --miss:#E7B7AE; --keep:#A7B0B6; --sel:#FFF4D6;
+  --steel:#2E363C; --steel2:#3C464D; --glow:#F0A23B; --bad:#B4362B; --good:#2E7D4F; --warn:#A85E0C;
+  --miss:#E7B7AE; --keep:#A7B0B6; --sel:#FFF4D6; --cut:#FFF1DE;
   --f1:#D9C08C; --d:#E3893F; --t:#B4532A; --cd:#5E9E6E; --ct:#6A8CAF;
   color-scheme:light;
 }
 @media (prefers-color-scheme: dark){
   :root{ --bg:#15191C; --panel:#1E2428; --ink:#E6EAEC; --muted:#98A3AB; --line:#323B41;
-    --steel:#0F1316; --steel2:#262E33; --sel:#3A3320; --miss:#7A4A44; --keep:#5A646B; color-scheme:dark; }
+    --steel:#0F1316; --steel2:#2E383E; --sel:#3A3320; --miss:#7A4A44; --keep:#5A646B; --cut:#3A2E1C; color-scheme:dark; }
 }
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "IBM Plex Sans",system-ui,sans-serif}
-h1,h2,h3,.tab,.big{font-family:"IBM Plex Sans Condensed","IBM Plex Sans",system-ui,sans-serif}
+h1,h2,h3,.tab,.big,.stepper output{font-family:"IBM Plex Sans Condensed","IBM Plex Sans",system-ui,sans-serif}
 header{background:var(--steel);color:#F2F4F5;padding:14px 24px 0}
-header h1{margin:0;font-size:22px;font-weight:600;letter-spacing:.2px}
+header h1{margin:0;font-size:22px;font-weight:600}
 header p{margin:2px 0 12px;color:#AEB8BF;font-size:13px}
+.hrow{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
 nav{display:flex;gap:2px;flex-wrap:wrap}
 .tab{background:none;border:0;color:#C9D1D6;font-size:15px;font-weight:600;padding:9px 14px;cursor:pointer;border-radius:6px 6px 0 0}
 .tab:hover{color:#fff}
 .tab[aria-selected=true]{background:var(--bg);color:var(--ink)}
-.tab:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--glow);outline-offset:2px}
-main{max-width:1240px;margin:0 auto;padding:22px 24px 60px}
+:focus-visible{outline:2px solid var(--glow);outline-offset:2px}
+main{max-width:1260px;margin:0 auto;padding:22px 24px 60px}
 section.view{display:none}
 section.view.on{display:block}
 h2{font-size:21px;margin:0 0 4px;font-weight:600}
-h3{font-size:17px;margin:26px 0 8px;font-weight:600}
-.lead{color:var(--muted);margin:0 0 16px;max-width:75ch}
+h3{font-size:17px;margin:0 0 8px;font-weight:600}
+.lead{color:var(--muted);margin:0 0 16px;max-width:80ch}
 .note{color:var(--muted);font-size:13px;margin:6px 0}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px 18px;margin-bottom:18px}
+.phead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.phead h3{margin:0}
 table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
 th{font-size:12.5px;font-weight:600;color:var(--muted);text-align:left;padding:6px 8px;border-bottom:2px solid var(--line);vertical-align:bottom}
 td{padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
-td.n,th.n{text-align:right}
-td.c,th.c{text-align:center}
+td.n,th.n{text-align:right} td.c,th.c{text-align:center}
 .scroll{overflow-x:auto}
 .chip{display:inline-block;width:10px;height:22px;border-radius:2px;vertical-align:middle}
 .brand{font-weight:600}
@@ -50,26 +52,31 @@ td.c,th.c{text-align:center}
 .bad{color:var(--bad)} .good{color:var(--good)} .warn{color:var(--warn)}
 .big{font-size:30px;font-weight:700;line-height:1}
 input,select,button{font:inherit;color:inherit}
-input[type=number],input[type=text],input[type=password],select{background:var(--sel);border:1px solid var(--line);border-radius:5px;padding:4px 6px}
-input[type=number]{width:90px;text-align:right}
-td input[type=text]{width:100%}
+input[type=number],input[type=text],input[type=password],select{background:var(--sel);border:1px solid var(--line);border-radius:5px;padding:4px 6px;max-width:100%}
+input[type=number]{width:86px;text-align:right}
 button{background:var(--steel2);color:#fff;border:0;border-radius:6px;padding:7px 12px;cursor:pointer;font-weight:500}
 button.ghost{background:none;color:var(--ink);border:1px solid var(--line)}
 button.small{padding:3px 8px;font-size:13px}
+button:disabled{opacity:.5;cursor:default}
 .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 @media (max-width:860px){.grid2{grid-template-columns:1fr} main{padding:16px 12px 50px}}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
 .seg button{background:none;color:var(--ink);border-radius:0;padding:7px 12px}
 .seg button[aria-pressed=true]{background:var(--steel2);color:#fff}
-/* forno */
+.bchips{display:flex;gap:5px;flex-wrap:wrap}
+.bchip{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line);border-radius:14px;padding:2px 9px 2px 6px;font-size:13px;cursor:pointer;user-select:none}
+.bchip input{margin:0}
+.bchip.on{border-color:currentColor;font-weight:600}
+.cutbox{background:var(--cut);border-left:3px solid var(--warn);padding:6px 10px;border-radius:4px;font-size:13.5px}
 .kiln{background:var(--steel);border-radius:10px;padding:16px 16px 8px;color:#C9D1D6}
 .kiln svg{width:100%;height:auto;display:block}
 .kiln .lbls{display:flex;justify-content:space-between;font-size:12px;color:#97A3AB;padding:0 4px}
+.kiln label{color:#C9D1D6;font-size:14px}
 .ring{transition:fill .35s ease}
 .stepper{display:inline-flex;align-items:center;gap:6px}
 .stepper button{width:34px;height:34px;padding:0;font-size:18px}
-.stepper output{font-family:"IBM Plex Sans Condensed","IBM Plex Sans",system-ui,sans-serif;font-size:26px;font-weight:700;min-width:34px;text-align:center;color:#fff}
+.stepper output{font-size:26px;font-weight:700;min-width:34px;text-align:center;color:#fff}
 .bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden;min-width:80px}
 .bar i{display:block;height:100%;background:var(--glow)}
 .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:#C9D1D6;margin-top:6px}
@@ -77,19 +84,38 @@ button.small{padding:3px 8px;font-size:13px}
 .drop{border:2px dashed var(--line);border-radius:8px;padding:20px;text-align:center;color:var(--muted);cursor:pointer}
 .drop.hover{border-color:var(--glow);color:var(--ink)}
 .thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-.thumbs div{font-size:12px;border:1px solid var(--line);border-radius:6px;padding:4px 8px;background:var(--panel)}
+.thumbs div{font-size:12px;border:1px solid var(--line);border-radius:6px;padding:4px 8px}
 .tag{font-size:11.5px;padding:1px 6px;border-radius:9px;background:var(--line);color:var(--ink);white-space:nowrap}
 .tag.pen{background:#F6DFC4;color:#7A4510}
-details summary{cursor:pointer;color:var(--muted)}
-.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--steel);color:#fff;padding:9px 16px;border-radius:8px;opacity:0;transition:opacity .25s;pointer-events:none}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--steel);color:#fff;padding:9px 16px;border-radius:8px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:50}
 .toast.on{opacity:1}
-@media (prefers-reduced-motion: reduce){ .ring{transition:none} }
+#login{position:fixed;inset:0;background:var(--steel);display:flex;align-items:center;justify-content:center;z-index:100}
+#login form{background:var(--panel);color:var(--ink);padding:28px 28px 22px;border-radius:10px;width:min(360px,92vw)}
+#login h1{font-family:"IBM Plex Sans Condensed",sans-serif;margin:0 0 4px;font-size:22px}
+#login label{display:block;margin-top:12px;font-size:13px;color:var(--muted)}
+#login input{width:100%;padding:8px;margin-top:3px;background:var(--bg)}
+#login button{width:100%;margin-top:18px;padding:10px}
+#login .err{color:var(--bad);font-size:13px;min-height:18px;margin-top:8px}
+body.locked header, body.locked main{visibility:hidden}
+@media (prefers-reduced-motion: reduce){ .ring,.toast{transition:none} }
 </style>
 </head>
-<body>
+<body class="locked">
+<div id="login">
+  <form id="loginForm" autocomplete="on">
+    <h1>Refratário dos fornos</h1>
+    <p class="note">Entre para acessar o simulador.</p>
+    <label>Usuário<input id="lu" name="username" autocomplete="username" required></label>
+    <label>Senha<input id="lp" name="password" type="password" autocomplete="current-password" required></label>
+    <button type="submit">Entrar</button>
+    <div class="err" id="lerr" role="alert"></div>
+  </form>
+</div>
 <header>
-  <h1>Refratário dos fornos rotativos</h1>
-  <p>Estoque de tijolos, montagem por fase e por marca, cortes e compras</p>
+  <div class="hrow">
+    <div><h1>Refratário dos fornos rotativos</h1><p>Estoque de tijolos, montagem por fase e por marca, cortes e compras</p></div>
+    <button class="ghost small" id="logout" style="color:#C9D1D6;border-color:#56626a;margin-top:6px">Sair</button>
+  </div>
   <nav role="tablist">
     <button class="tab" role="tab" data-v="forno" aria-selected="true">Forno</button>
     <button class="tab" role="tab" data-v="resumo">Montagem</button>
@@ -111,27 +137,28 @@ details summary{cursor:pointer;color:var(--muted)}
         <span class="stepper"><button id="nMinus" aria-label="Reforma anterior">−</button><output id="nOut">1</output><button id="nPlus" aria-label="Próxima reforma">+</button></span>
         <span id="kilnMsg" style="font-size:14px"></span>
       </div>
-      <span id="modeTag" style="font-size:13px;color:#AEB8BF"></span>
+      <div class="row"><label><input type="checkbox" id="fornoCuts"> considerar cortes</label><span id="modeTag" style="font-size:13px;color:#AEB8BF"></span></div>
     </div>
     <div class="lbls"><span>◄ traseira</span><span>frente ►</span></div>
     <svg id="kiln" viewBox="0 0 990 300" role="img" aria-label="Desenho do forno com os anéis de refratário"></svg>
     <div class="legend">
       <span style="--c:var(--d)">Metade dianteira</span><span style="--c:var(--t)">Metade traseira</span>
       <span style="--c:var(--cd)">Cone dianteiro</span><span style="--c:var(--ct)">Cone traseiro</span>
-      <span style="--c:var(--f1)">1ª fase</span><span style="--c:var(--miss)">Falta tijolo</span><span style="--c:var(--keep)">Não será refeito</span>
+      <span style="--c:var(--f1)">1ª fase nova</span><span style="--c:#8f7a4e">1ª fase existente (não retirada)</span>
+      <span style="--c:var(--miss)">Falta tijolo</span><span style="--c:var(--keep)">Fica o atual (não será refeito)</span>
     </div>
   </div>
   <div class="panel" style="margin-top:16px">
     <div class="scroll"><table id="kilnTable"></table></div>
-    <p class="note">As peças são calculadas na ordem da tabela: o tijolo usado na dianteira não é contado de novo na traseira. Desenho fora de escala.</p>
+    <p class="note">Desenho fora de escala. O anel em andamento aparece parcialmente pintado.</p>
   </div>
 </section>
 
 <section class="view" id="v-resumo">
   <h2>Montagem</h2>
-  <p class="lead">Escolha o que vai montar e de qual marca. As contas abaixo usam só as peças marcadas.</p>
+  <p class="lead">Escolha o que vai montar e quais marcas cada peça pode usar. Marcar mais de uma marca permite misturar entre elas.</p>
   <div class="panel">
-    <h3 style="margin-top:0">O que vai montar</h3>
+    <h3>O que vai montar</h3>
     <div class="row" style="margin-bottom:12px">
       <span>Tipo de reforma</span>
       <div class="seg" id="modeSeg">
@@ -140,126 +167,136 @@ details summary{cursor:pointer;color:var(--muted)}
       </div>
     </div>
     <div class="scroll"><table id="cfgTable"></table></div>
-    <p class="note">Marca: escolha uma marca para não misturar, ou "Todas as marcas" para permitir mistura (a ordem de gasto segue a prioridade em Ajustes).</p>
+    <p class="note">Quando mais de uma marca está marcada, o tijolo sai primeiro da marca de maior prioridade (Ajustes).</p>
   </div>
   <div class="panel">
-    <h3 style="margin-top:0">Quanto dá para montar com o estoque de hoje</h3>
+    <h3>Quanto dá para montar com os tijolos como estão</h3>
     <div class="row" style="margin-bottom:10px"><span class="big" id="kBig">0</span><span>reforma(s) completa(s) com as peças marcadas</span></div>
     <div class="scroll"><table id="capTable"></table></div>
-    <p class="note">Cada linha usa o estoque inteiro de hoje. Cilindro, cones e 1ª fase não disputam os mesmos tijolos; as duas metades do cilindro sim, por isso aparecem juntas.</p>
+  </div>
+  <div class="panel" style="border-left:4px solid var(--warn)">
+    <h3>Quanto dá para montar cortando tijolos</h3>
+    <p class="note" style="margin-top:0">Usa a sobra de tijolos mais compridos com a mesma largura e angulação (regras na aba Cortes), sem tirar de outra peça.</p>
+    <div class="row" style="margin-bottom:10px"><span class="big" id="kBigCut">0</span><span>reforma(s) completa(s) cortando tijolos</span></div>
+    <div class="scroll"><table id="capCutTable"></table></div>
   </div>
   <div class="panel">
-    <h3 style="margin-top:0">Simulação: de qual marca sai cada tijolo</h3>
-    <div class="row" style="margin-bottom:10px"><label>Quantas reformas simular <input type="number" id="simN" min="1" step="1" value="1"></label><span class="note">Mesmo que não feche, mostra o que falta.</span></div>
+    <div class="phead"><h3>Simulação: de qual marca sai cada tijolo</h3>
+      <div class="row"><label>Reformas <input type="number" id="simN" min="1" step="1" value="1"></label><label><input type="checkbox" id="simCuts"> considerar cortes</label></div></div>
     <div class="scroll"><table id="simParts"></table></div>
-    <p id="cutLine" class="warn" style="font-weight:600"></p>
-    <h3>Por tijolo</h3>
+    <div id="cutLine" style="margin-top:10px"></div>
+    <h3 style="margin-top:22px">Por tijolo</h3>
     <div class="scroll"><table id="simBricks"></table></div>
-    <p class="note">Fechamentos dos cones e A1 305x229 aceitam qualquer marca; o alerta de mistura considera só os tijolos principais.</p>
   </div>
 </section>
 
 <section class="view" id="v-estoque">
   <h2>Estoque</h2>
-  <p class="lead">Edite as quantidades direto na tabela ou leia uma foto/PDF da ficha de contagem. Formato + medida definem o tijolo; marcas com a mesma medida são somadas quando a peça permite mistura.</p>
+  <p class="lead">Edite direto na tabela ou leia uma foto/PDF da ficha de contagem. Formato + medida definem o tijolo.</p>
   <div class="panel">
-    <h3 style="margin-top:0">Ler estoque de foto ou PDF</h3>
+    <h3>Ler estoque de foto ou PDF</h3>
     <div class="drop" id="drop" tabindex="0">Arraste fotos ou PDFs das fichas aqui, ou clique para escolher<input type="file" id="files" accept="image/*,application/pdf" multiple hidden></div>
     <div class="thumbs" id="thumbs"></div>
-    <div class="row" style="margin-top:10px">
-      <button id="readBtn">Ler com IA</button>
-      <span id="readMsg" class="note"></span>
-    </div>
-    <p class="note">A leitura usa a API da Anthropic com a sua chave (configure em Ajustes). Confira a tabela antes de aplicar — números à caneta e linhas tortas podem ser lidos errado.</p>
+    <div class="row" style="margin-top:10px"><button id="readBtn">Ler com IA</button><span id="readMsg" class="note"></span></div>
+    <p class="note">Usa a API da Anthropic com a sua chave (Ajustes). Confira a tabela antes de aplicar.</p>
     <div id="review"></div>
   </div>
   <div class="panel">
-    <div class="row" style="justify-content:space-between">
+    <div class="phead">
       <input type="text" id="stockFilter" placeholder="Filtrar por item, marca, formato…" style="width:280px">
-      <div class="row"><label><input type="checkbox" id="onlyQty"> só com quantidade</label><button class="ghost small" id="addRow">Adicionar tijolo</button></div>
+      <div class="row"><label><input type="checkbox" id="onlyQty"> só com quantidade</label><button class="ghost small" id="addRow">Adicionar tijolo</button><button class="ghost small" id="resetStock">Restaurar estoque original</button></div>
     </div>
     <div class="scroll"><table id="stockTable"></table></div>
   </div>
 </section>
 
 <section class="view" id="v-compra">
-  <h2>Sugestão de compra</h2>
-  <p class="lead">Diga quantas reformas (e peças avulsas) quer montar. A marca de cada peça vem da aba Montagem.</p>
+  <h2>Compra</h2>
+  <p class="lead">Diga o que quer montar. As marcas de cada peça vêm da aba Montagem.</p>
   <div class="panel">
-    <div class="row" style="margin-bottom:10px">
-      <label>Reformas <input type="number" id="buyN" min="0" value="1"></label>
-      <label><input type="checkbox" id="buyDesc" checked> descontar o estoque atual</label>
-    </div>
+    <div class="phead"><h3>O que quer montar</h3>
+      <div class="row"><label>Quantidade <input type="number" id="presetN" min="0" value="1" style="width:64px"></label>
+        <button class="ghost small" data-preset="completa">Reforma completa</button>
+        <button class="ghost small" data-preset="semT51">Completa sem T-51</button>
+        <button class="ghost small" data-preset="zero">Zerar</button></div></div>
     <div class="scroll"><table id="buyParts"></table></div>
+    <div class="row" style="margin-top:10px"><label><input type="checkbox" id="buyDesc" checked> descontar o estoque atual</label></div>
   </div>
-  <div class="panel"><div class="scroll"><table id="buyTable"></table></div>
-  <p class="note">Peça com marca definida só usa o estoque daquela marca; "Todas as marcas" usa qualquer uma. "Ref. antiga" é a tabela antiga de uma campanha completa, só para comparar.</p></div>
+  <div class="panel">
+    <div class="scroll"><table id="buyTable"></table></div>
+    <p class="note">Quando dá para cortar, aparece a alternativa: comprar menos e cortar a sobra de um tijolo mais comprido.</p>
+  </div>
 </section>
 
 <section class="view" id="v-cortes">
-  <h2>Opções de corte</h2>
-  <p class="lead">Tijolo com a mesma largura e a mesma angulação, só que mais comprido, pode ser cortado no comprimento para substituir o que falta. Ex.: falta A1 305x152x(76-70) → cortar A1 343x152x(76-70). Baseado na simulação da aba Montagem.</p>
-  <div class="panel"><div class="scroll"><table id="cutTable"></table></div>
-  <p class="note">O mesmo tijolo livre pode aparecer como opção para mais de um formato. Os cortes são sugestão: não entram nas contas automaticamente.</p></div>
+  <h2>Cortes</h2>
+  <p class="lead">Um tijolo pode ser cortado no comprimento para virar outro de mesma largura e angulação. Ex.: A1 343x152x(76-70) → A1 305x152x(76-70). Cada linha é uma regra de corte usada nas contas "cortando tijolos".</p>
+  <div class="panel">
+    <div class="phead"><h3>Regras de corte</h3><div class="row"><button class="ghost small" id="addCut">Adicionar linha</button><button class="ghost small" id="resetCuts">Restaurar regras automáticas</button></div></div>
+    <div class="scroll"><table id="cutTable"></table></div>
+    <p class="note">"Livre" = sobra do tijolo maior depois da simulação da aba Montagem. Regras com tipo diferente (C × A) estão marcadas: confirme se a conicidade está na mesma face.</p>
+  </div>
 </section>
 
 <section class="view" id="v-marcas">
   <h2>Uso por marca</h2>
   <p class="lead">O que cada marca tem, o que a simulação da aba Montagem usa e o que fica.</p>
-  <div class="panel"><h3 style="margin-top:0">Estoque hoje</h3><div class="scroll"><table id="mStock"></table></div></div>
-  <div class="panel"><h3 style="margin-top:0">A simulação usa</h3><div class="scroll"><table id="mUsed"></table></div></div>
-  <div class="panel"><h3 style="margin-top:0">Fica no estoque</h3><div class="scroll"><table id="mLeft"></table></div></div>
+  <div class="panel"><h3>Estoque hoje</h3><div class="scroll"><table id="mStock"></table></div></div>
+  <div class="panel"><h3>A simulação usa</h3><div class="scroll"><table id="mUsed"></table></div></div>
+  <div class="panel"><h3>Fica no estoque</h3><div class="scroll"><table id="mLeft"></table></div></div>
 </section>
 
 <section class="view" id="v-receita">
   <h2>Receita e campanhas</h2>
-  <p class="lead">Peças por montagem = média das campanhas (arredondada para cima). Digite em "Ajustada" para usar outro número.</p>
+  <p class="lead">Quantos tijolos cada peça usa por montagem. A média das campanhas (arredondada para cima) é usada, a menos que você preencha "Usar".</p>
   <div class="panel">
-    <div class="row" style="margin-bottom:10px"><label>Margem de quebra <input type="number" id="margin" min="0" max="50" step="1" value="0"> %</label></div>
+    <div class="phead"><h3>Tijolos por montagem</h3>
+      <div class="row"><label>Margem de quebra <input type="number" id="margin" min="0" max="50" step="1" value="0" style="width:60px"> %</label>
+      <button class="ghost small" id="addRec">Adicionar linha</button><button class="ghost small" id="resetRec">Restaurar valores originais</button></div></div>
+    <p class="note" style="margin-top:0"><b>Coluna "Marca":</b> "da peça" = esse tijolo tem que ser de uma das marcas marcadas para a peça na aba Montagem. "qualquer" = pode vir de qualquer marca, mesmo que a peça tenha marca definida (usado nas peças de fechamento dos cones).</p>
     <div class="scroll"><table id="recTable"></table></div>
   </div>
-  <div class="panel"><h3 style="margin-top:0">Referência antiga (campanha completa)</h3><div class="scroll"><table id="oldTable"></table></div></div>
+  <div class="panel"><div class="phead"><h3>Referência antiga (campanha completa)</h3><button class="ghost small" id="resetOld">Restaurar valores originais</button></div><div class="scroll"><table id="oldTable"></table></div></div>
 </section>
 
 <section class="view" id="v-ajustes">
   <h2>Ajustes</h2>
   <div class="grid2">
     <div class="panel">
-      <h3 style="margin-top:0">Marcas</h3>
-      <p class="note">Prioridade = ordem de gasto quando a peça permite mistura (1 = gasta primeiro).</p>
+      <div class="phead"><h3>Marcas</h3><div class="row"><button class="ghost small" id="addBrand">Adicionar marca</button><button class="ghost small" id="resetBrands">Restaurar</button></div></div>
+      <p class="note" style="margin-top:0">Prioridade = ordem de gasto quando mais de uma marca é permitida (1 = gasta primeiro).</p>
       <table id="brandTable"></table>
     </div>
     <div class="panel">
-      <h3 style="margin-top:0">Leitura por IA</h3>
+      <h3>Leitura por IA</h3>
       <p class="note">Chave da API da Anthropic. Fica só neste navegador; não vai para o GitHub.</p>
-      <div class="row"><input type="password" id="apiKey" placeholder="sk-ant-..." style="width:100%"></div>
+      <input type="password" id="apiKey" placeholder="sk-ant-..." style="width:100%">
       <div class="row" style="margin-top:8px"><label>Modelo <input type="text" id="apiModel" value="claude-sonnet-5-5" style="width:200px"></label><label><input type="checkbox" id="rememberKey"> lembrar a chave</label></div>
     </div>
   </div>
   <div class="panel">
-    <h3 style="margin-top:0">Equivalências de formato</h3>
-    <p class="note">Liste só o que deve contar como outro grupo (ex.: peças de fechamento). O resto é agrupado pelo próprio formato + medida.</p>
+    <div class="phead"><h3>Equivalências de formato</h3><div class="row"><button class="ghost small" id="addEq">Adicionar</button><button class="ghost small" id="resetEq">Restaurar</button></div></div>
+    <p class="note" style="margin-top:0">Tijolos que contam como outro grupo (ex.: peças de fechamento dos cones). O resto é agrupado pelo próprio formato + medida.</p>
     <table id="eqTable"></table>
-    <button class="ghost small" id="addEq" style="margin-top:8px">Adicionar equivalência</button>
   </div>
   <div class="panel">
-    <h3 style="margin-top:0">Dados</h3>
+    <h3>Dados</h3>
     <div class="row">
       <button id="expJson">Baixar backup (JSON)</button>
       <button class="ghost" id="impJsonBtn">Importar backup</button><input type="file" id="impJson" accept="application/json" hidden>
       <button class="ghost" id="expCsv">Baixar estoque (CSV)</button>
-      <button class="ghost" id="resetAll">Restaurar dados de exemplo</button>
+      <button class="ghost" id="resetAll">Restaurar tudo</button>
     </div>
-    <p class="note">Tudo fica salvo no navegador automaticamente. Use o backup para levar para outro computador.</p>
+    <p class="note">Tudo fica salvo no navegador automaticamente.</p>
   </div>
 </section>
 </main>
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status"></div>
+<datalist id="dlGroups"></datalist>
 
 <script>
 /*ENGINE-START*/
-const DEFAULT_DATA = {"stock": [{"item": "I01871", "desc": "TIJOLO T51", "brand": "Togni", "formato": "AX-1", "medida": "229x114x(76-73)", "qty": 1000, "origem": "Ficha 2"}, {"item": "I01866", "desc": "TIJOLO T51", "brand": "Togni", "formato": "A1", "medida": "229x114x(76-70)", "qty": 1020, "origem": "Ficha 2"}, {"item": "I01846", "desc": "MAGNIBAR 60 CRB", "brand": "IBAR", "formato": "C1", "medida": "229x152x(76-70)", "qty": 1706, "origem": "Ficha 3 — número ao lado de rasura, conferir"}, {"item": "I09820", "desc": "DURACHROME GF95", "brand": "FRC", "formato": "C1", "medida": "229x152x(76-70)", "qty": 335, "origem": "Ficha 1"}, {"item": "I05555", "desc": "MACRO-MAG-RH-M", "brand": "Togni", "formato": "C1", "medida": "229x152x(76-70)", "qty": 6440, "origem": "Ficha 2"}, {"item": "I01847", "desc": "MAGNIBAR 60 CRB", "brand": "IBAR", "formato": "C2", "medida": "229x152x(76-63)", "qty": 1404, "origem": "Ficha 3"}, {"item": "I05556", "desc": "MACRO-MAG-RH-M", "brand": "Togni", "formato": "C2", "medida": "229x152x(76-63)", "qty": 2920, "origem": "Ficha 2"}, {"item": "I06126", "desc": "RADEX FGS-BR", "brand": "RHI BR", "formato": "C2", "medida": "229x152x(76-63)", "qty": 840, "origem": "Ficha 2"}, {"item": "I08626", "desc": "RADEX FGS-EUR", "brand": "RHI Europa", "formato": "C2", "medida": "229x152x(76-63)", "qty": 368, "origem": "Ficha 1"}, {"item": "I05557", "desc": "MACRO-MAG-RH-M", "brand": "Togni", "formato": "A1", "medida": "305x152x(76-70)", "qty": 336, "origem": "Ficha 2"}, {"item": "I01816", "desc": "MACRO-3774", "brand": "Togni", "formato": "A3", "medida": "305x152x(76-51)", "qty": 210, "origem": "Ficha 3"}, {"item": "I05559", "desc": "MACRO-MAG-RH-M", "brand": "Togni", "formato": "A1", "medida": "343x152x(76-70)", "qty": 1020, "origem": "Ficha 2"}, {"item": "I05560", "desc": "MACRO-MAG-RH-M", "brand": "Togni", "formato": "A2", "medida": "343x152x(76-63)", "qty": 1100, "origem": "Ficha 2"}, {"item": "I01834", "desc": "MAGNIBAR 60 CRB", "brand": "IBAR", "formato": "A1", "medida": "305x229x(76-70)", "qty": 303, "origem": "Ficha 3"}, {"item": "s/ cód.", "desc": "MACRO-MAG-RH-M (etiqueta Togni)", "brand": "Togni", "formato": "A2", "medida": "305x114x(76-63)", "qty": 270, "origem": "✎ Etiqueta Togni colada na ficha 1"}, {"item": "I09829", "desc": "MAGNIBAR 60 CRB", "brand": "IBAR", "formato": "A1", "medida": "305x114x(76-25)", "qty": 47, "origem": "✎ Anotação a caneta ficha 3: 'A-305x114x(76-25) = 47 Magnibar'"}, {"item": "I09819", "desc": "MAGNIBAR 60 CRB", "brand": "IBAR", "formato": "PARALELO", "medida": "229x152x76", "qty": 1040, "origem": "✎ Anotação a caneta ficha 1: 'Magnibar 60 CRB P. 229x152x76 = 1.040'"}, {"item": "I08625", "desc": "RADEX FGS-EUR", "brand": "RHI Europa", "formato": "C1", "medida": "229x152x(76-70)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I06125", "desc": "RADEX FGS-BR", "brand": "RHI BR", "formato": "C1", "medida": "229x152x(76-70)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I01819", "desc": "MACRO-3774", "brand": "Togni", "formato": "C1", "medida": "229x152x(76-70)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I09821", "desc": "DURACHROME GF95", "brand": "FRC", "formato": "C2", "medida": "229x152x(76-63)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I01820", "desc": "MACRO-3774", "brand": "Togni", "formato": "C2", "medida": "229x152x(76-63)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I09814", "desc": "T51", "brand": "Togni", "formato": "C2", "medida": "229x152x(76-63)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I01810", "desc": "MACRO-3774", "brand": "Togni", "formato": "A2", "medida": "229x152x(76-63)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I01833", "desc": "MAGNIBAR 60 CRB", "brand": "IBAR", "formato": "A1", "medida": "305x152x(76-70)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I08624", "desc": "RADEX FGS-EUR", "brand": "RHI Europa", "formato": "A1", "medida": "305x152x(76-70)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I09825", "desc": "DURACHROME GF95", "brand": "FRC", "formato": "A1", "medida": "305x152x(76-70)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I01839", "desc": "MAGNIBAR 60 CRB", "brand": "IBAR", "formato": "A2", "medida": "305x152x(76-63)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I08630", "desc": "RADEX FGS-EUR", "brand": "RHI Europa", "formato": "A2", "medida": "305x152x(76-63)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I05558", "desc": "MACRO-MAG-RH-M", "brand": "Togni", "formato": "A2", "medida": "305x152x(76-63)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I09826", "desc": "DURACHROME GF95", "brand": "FRC", "formato": "A2", "medida": "305x152x(76-63)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I01843", "desc": "MAGNIBAR 60 CRB", "brand": "IBAR", "formato": "A3", "medida": "305x152x(76-51)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I08631", "desc": "RADEX FGS-EUR", "brand": "RHI Europa", "formato": "A3", "medida": "305x152x(76-51)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I01837", "desc": "MAGNIBAR 60 CRB", "brand": "IBAR", "formato": "A2", "medida": "305x114x(76-63)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I01842", "desc": "MAGNIBAR 60 CRB", "brand": "IBAR", "formato": "A3", "medida": "305x114x(76-51)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I08632", "desc": "RADEX FGS-EUR", "brand": "RHI Europa", "formato": "A3", "medida": "305x114x(76-51)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I06094", "desc": "MACRO-MAG-RH-M", "brand": "Togni", "formato": "A2", "medida": "305x114x(76-51)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I08627", "desc": "RADEX FGS-EUR", "brand": "RHI Europa", "formato": "A1", "medida": "343x152x(76-70)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I01823", "desc": "RADEX 60PB E", "brand": "RHI Europa", "formato": "A1", "medida": "343x152x(76-70)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I09822", "desc": "DURACHROME GF95", "brand": "FRC", "formato": "A1", "medida": "343x152x(76-70)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I08628", "desc": "RADEX FGS-EUR", "brand": "RHI Europa", "formato": "A2", "medida": "343x152x(76-63)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I01824", "desc": "RADEX 60PB E", "brand": "RHI Europa", "formato": "A2", "medida": "343x152x(76-63)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I09823", "desc": "DURACHROME GF95", "brand": "FRC", "formato": "A2", "medida": "343x152x(76-63)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I08629", "desc": "RADEX FGS-EUR", "brand": "RHI Europa", "formato": "A3", "medida": "343x152x(76-51)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I06129", "desc": "RADEX FGS-BR", "brand": "RHI BR", "formato": "A3", "medida": "343x152x(76-51)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I05563", "desc": "MACRO-MAG-RH-M", "brand": "Togni", "formato": "A3", "medida": "343x152x(76-51)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I01825", "desc": "RADEX 60PB E", "brand": "RHI Europa", "formato": "A3", "medida": "343x152x(76-51)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I09824", "desc": "DURACHROME GF95", "brand": "FRC", "formato": "A3", "medida": "343x152x(76-51)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I01881", "desc": "T51", "brand": "Togni", "formato": "PARALELO", "medida": "229x114x76", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I01874", "desc": "T51", "brand": "Togni", "formato": "C2", "medida": "229x114x(76-63)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I01808", "desc": "MACRO-3774", "brand": "Togni", "formato": "A1", "medida": "305x229x(76-70)", "qty": 0, "origem": "Catálogo (zerado)"}], "equiv": [{"key": "A2 229x152x(76-63)", "group": "C2 229x152x(76-63)", "why": "Usado no lugar do C2 no cilindro da campanha 027."}, {"key": "A3 305x152x(76-51)", "group": "Fech. cone traseiro (A3 305x152 / A2-A3 305x114)", "why": "Peça de fechamento do cone traseiro."}, {"key": "A2 305x114x(76-63)", "group": "Fech. cone traseiro (A3 305x152 / A2-A3 305x114)", "why": "Peça de fechamento do cone traseiro (inclui a etiqueta Togni)."}, {"key": "A3 305x114x(76-51)", "group": "Fech. cone traseiro (A3 305x152 / A2-A3 305x114)", "why": "Peça de fechamento do cone traseiro."}, {"key": "A2 305x114x(76-51)", "group": "Fech. cone traseiro (A3 305x152 / A2-A3 305x114)", "why": "Peça de fechamento do cone traseiro (014, 027)."}, {"key": "A1 305x114x(76-25)", "group": "Fech. cone traseiro (A3 305x152 / A2-A3 305x114)", "why": "Premissa: peça fina de fechamento (anotação a caneta, 47 pç)."}, {"key": "A3 305x114x(76-25)", "group": "Fech. cone traseiro (A3 305x152 / A2-A3 305x114)", "why": "Premissa: peça fina de fechamento."}, {"key": "PARALELO 229x114x76", "group": "Fech. cone dianteiro (paralelos / C2 229x114)", "why": "Anel de fechamento do cone dianteiro (013)."}, {"key": "C2 229x114x(76-63)", "group": "Fech. cone dianteiro (paralelos / C2 229x114)", "why": "Anel de fechamento do cone dianteiro (026)."}, {"key": "PARALELO 229x152x76", "group": "Fech. cone dianteiro (paralelos / C2 229x114)", "why": "Premissa: paralelo anotado a caneta (1.040 pç), usado como fechamento."}], "hist": [{"phase": "F1", "group": "AX-1 229x114x(76-73)", "c013": null, "c014": null, "c026": null, "c027": 2759, "obs": "Só a 027 tem a 1ª fase inteira. A 013 lançou só 4 anéis (454) — fora da média."}, {"phase": "F1", "group": "A1 229x114x(76-70)", "c013": null, "c014": null, "c026": null, "c027": 902, "obs": "013 parcial (208) — fora da média."}, {"phase": "F2D", "group": "C1 229x152x(76-70)", "c013": 1518, "c014": 1453, "c026": 1447, "c027": 1413, "obs": "Anéis 1–16 (metade dianteira)."}, {"phase": "F2D", "group": "C2 229x152x(76-63)", "c013": 982, "c014": 1056, "c026": 1021, "c027": 1118, "obs": "027 usou MACRO-3774 A2 229x152x(76-63) no lugar do C2."}, {"phase": "F2T", "group": "C1 229x152x(76-70)", "c013": 1508, "c014": null, "c026": 1460, "c027": 1550, "obs": "Anéis 17–34 (metade traseira). Na 014 só foi refeita a dianteira."}, {"phase": "F2T", "group": "C2 229x152x(76-63)", "c013": 1232, "c014": null, "c026": 1255, "c027": 1084, "obs": ""}, {"phase": "F3", "group": "A1 305x152x(76-70)", "c013": 451, "c014": 450, "c026": null, "c027": 425, "obs": "026 lançou 1.412 (provável erro de digitação) — fora da média."}, {"phase": "F3", "group": "A2 305x152x(76-63)", "c013": 220, "c014": 214, "c026": 196, "c027": 255, "obs": ""}, {"phase": "F3", "group": "Fech. cone traseiro (A3 305x152 / A2-A3 305x114)", "c013": 64, "c014": 56, "c026": 69, "c027": 60, "obs": "Peças de fechamento: A3 305x152 + A2/A3 305x114."}, {"phase": "F4", "group": "A1 343x152x(76-70)", "c013": 420, "c014": 452, "c026": 433, "c027": 462, "obs": ""}, {"phase": "F4", "group": "A2 343x152x(76-63)", "c013": 352, "c014": 284, "c026": 286, "c027": 297, "obs": ""}, {"phase": "F4", "group": "A3 343x152x(76-51)", "c013": 77, "c014": 238, "c026": 25, "c027": 37, "obs": ""}, {"phase": "F4", "group": "Fech. cone dianteiro (paralelos / C2 229x114)", "c013": 210, "c014": 160, "c026": 260, "c027": null, "obs": "013: paralelo 229x114x76 · 014: C2 229x152 · 026: C2 229x114. 027 sem fechamento lançado."}, {"phase": "F4", "group": "A1 305x229x(76-70)", "c013": 24, "c014": 24, "c026": null, "c027": null, "obs": "MACRO-3774 A1 305x229x(76-70)."}], "old": [{"name": "C1-229x152x(76-70)", "qty": 3103, "group": "C1 229x152x(76-70)"}, {"name": "C2-229x152x(76-63)", "qty": 1751, "group": "C2 229x152x(76-63)"}, {"name": "A1-305x229x(76-70)", "qty": 15, "group": "A1 305x229x(76-70)"}, {"name": "P-229x114x76", "qty": 2370, "group": null}, {"name": "T-51 AX-1 229x114x(76-73)", "qty": 2198, "group": "AX-1 229x114x(76-73)"}, {"name": "T-51 A1 229x114x(76-70)", "qty": 1084, "group": "A1 229x114x(76-70)"}, {"name": "A1-305x152x(76-70)", "qty": 397, "group": "A1 305x152x(76-70)"}, {"name": "A2-305x152x(76-63)", "qty": 231, "group": "A2 305x152x(76-63)"}, {"name": "A3-305x152x(76-51)", "qty": 13, "group": "Fech. cone traseiro (A3 305x152 / A2-A3 305x114)"}, {"name": "A1-343x152x(76-70)", "qty": 453, "group": "A1 343x152x(76-70)"}, {"name": "A2-343x152x(76-63)", "qty": 217, "group": "A2 343x152x(76-63)"}, {"name": "A3-343x152x(76-51)", "qty": 13, "group": "A3 343x152x(76-51)"}], "acc": ["Fech. cone traseiro (A3 305x152 / A2-A3 305x114)", "Fech. cone dianteiro (paralelos / C2 229x114)", "A1 305x229x(76-70)"]};
-const TODAS = "Todas as marcas";
+const D0 = {"stock": [{"item": "I01871", "desc": "TIJOLO T51", "brand": "Togni", "formato": "AX-1", "medida": "229x114x(76-73)", "qty": 1000, "origem": "Ficha 2"}, {"item": "I01866", "desc": "TIJOLO T51", "brand": "Togni", "formato": "A1", "medida": "229x114x(76-70)", "qty": 1020, "origem": "Ficha 2"}, {"item": "I01846", "desc": "MAGNIBAR 60 CRB", "brand": "IBAR", "formato": "C1", "medida": "229x152x(76-70)", "qty": 1706, "origem": "Ficha 3 — número ao lado de rasura, conferir"}, {"item": "I09820", "desc": "DURACHROME GF95", "brand": "FRC", "formato": "C1", "medida": "229x152x(76-70)", "qty": 335, "origem": "Ficha 1"}, {"item": "I05555", "desc": "MACRO-MAG-RH-M", "brand": "Togni", "formato": "C1", "medida": "229x152x(76-70)", "qty": 6440, "origem": "Ficha 2"}, {"item": "I01847", "desc": "MAGNIBAR 60 CRB", "brand": "IBAR", "formato": "C2", "medida": "229x152x(76-63)", "qty": 1404, "origem": "Ficha 3"}, {"item": "I05556", "desc": "MACRO-MAG-RH-M", "brand": "Togni", "formato": "C2", "medida": "229x152x(76-63)", "qty": 2920, "origem": "Ficha 2"}, {"item": "I06126", "desc": "RADEX FGS-BR", "brand": "RHI BR", "formato": "C2", "medida": "229x152x(76-63)", "qty": 840, "origem": "Ficha 2"}, {"item": "I08626", "desc": "RADEX FGS-EUR", "brand": "RHI Europa", "formato": "C2", "medida": "229x152x(76-63)", "qty": 368, "origem": "Ficha 1"}, {"item": "I05557", "desc": "MACRO-MAG-RH-M", "brand": "Togni", "formato": "A1", "medida": "305x152x(76-70)", "qty": 336, "origem": "Ficha 2"}, {"item": "I01816", "desc": "MACRO-3774", "brand": "Togni", "formato": "A3", "medida": "305x152x(76-51)", "qty": 210, "origem": "Ficha 3"}, {"item": "I05559", "desc": "MACRO-MAG-RH-M", "brand": "Togni", "formato": "A1", "medida": "343x152x(76-70)", "qty": 1020, "origem": "Ficha 2"}, {"item": "I05560", "desc": "MACRO-MAG-RH-M", "brand": "Togni", "formato": "A2", "medida": "343x152x(76-63)", "qty": 1100, "origem": "Ficha 2"}, {"item": "I01834", "desc": "MAGNIBAR 60 CRB", "brand": "IBAR", "formato": "A1", "medida": "305x229x(76-70)", "qty": 303, "origem": "Ficha 3"}, {"item": "s/ cód.", "desc": "MACRO-MAG-RH-M (etiqueta Togni)", "brand": "Togni", "formato": "A2", "medida": "305x114x(76-63)", "qty": 270, "origem": "✎ Etiqueta Togni colada na ficha 1"}, {"item": "I09829", "desc": "MAGNIBAR 60 CRB", "brand": "IBAR", "formato": "A1", "medida": "305x114x(76-25)", "qty": 47, "origem": "✎ Anotação a caneta ficha 3: 'A-305x114x(76-25) = 47 Magnibar'"}, {"item": "I09819", "desc": "MAGNIBAR 60 CRB", "brand": "IBAR", "formato": "PARALELO", "medida": "229x152x76", "qty": 1040, "origem": "✎ Anotação a caneta ficha 1: 'Magnibar 60 CRB P. 229x152x76 = 1.040'"}, {"item": "I08625", "desc": "RADEX FGS-EUR", "brand": "RHI Europa", "formato": "C1", "medida": "229x152x(76-70)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I06125", "desc": "RADEX FGS-BR", "brand": "RHI BR", "formato": "C1", "medida": "229x152x(76-70)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I01819", "desc": "MACRO-3774", "brand": "Togni", "formato": "C1", "medida": "229x152x(76-70)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I09821", "desc": "DURACHROME GF95", "brand": "FRC", "formato": "C2", "medida": "229x152x(76-63)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I01820", "desc": "MACRO-3774", "brand": "Togni", "formato": "C2", "medida": "229x152x(76-63)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I09814", "desc": "T51", "brand": "Togni", "formato": "C2", "medida": "229x152x(76-63)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I01810", "desc": "MACRO-3774", "brand": "Togni", "formato": "A2", "medida": "229x152x(76-63)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I01833", "desc": "MAGNIBAR 60 CRB", "brand": "IBAR", "formato": "A1", "medida": "305x152x(76-70)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I08624", "desc": "RADEX FGS-EUR", "brand": "RHI Europa", "formato": "A1", "medida": "305x152x(76-70)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I09825", "desc": "DURACHROME GF95", "brand": "FRC", "formato": "A1", "medida": "305x152x(76-70)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I01839", "desc": "MAGNIBAR 60 CRB", "brand": "IBAR", "formato": "A2", "medida": "305x152x(76-63)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I08630", "desc": "RADEX FGS-EUR", "brand": "RHI Europa", "formato": "A2", "medida": "305x152x(76-63)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I05558", "desc": "MACRO-MAG-RH-M", "brand": "Togni", "formato": "A2", "medida": "305x152x(76-63)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I09826", "desc": "DURACHROME GF95", "brand": "FRC", "formato": "A2", "medida": "305x152x(76-63)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I01843", "desc": "MAGNIBAR 60 CRB", "brand": "IBAR", "formato": "A3", "medida": "305x152x(76-51)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I08631", "desc": "RADEX FGS-EUR", "brand": "RHI Europa", "formato": "A3", "medida": "305x152x(76-51)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I01837", "desc": "MAGNIBAR 60 CRB", "brand": "IBAR", "formato": "A2", "medida": "305x114x(76-63)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I01842", "desc": "MAGNIBAR 60 CRB", "brand": "IBAR", "formato": "A3", "medida": "305x114x(76-51)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I08632", "desc": "RADEX FGS-EUR", "brand": "RHI Europa", "formato": "A3", "medida": "305x114x(76-51)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I06094", "desc": "MACRO-MAG-RH-M", "brand": "Togni", "formato": "A2", "medida": "305x114x(76-51)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I08627", "desc": "RADEX FGS-EUR", "brand": "RHI Europa", "formato": "A1", "medida": "343x152x(76-70)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I01823", "desc": "RADEX 60PB E", "brand": "RHI Europa", "formato": "A1", "medida": "343x152x(76-70)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I09822", "desc": "DURACHROME GF95", "brand": "FRC", "formato": "A1", "medida": "343x152x(76-70)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I08628", "desc": "RADEX FGS-EUR", "brand": "RHI Europa", "formato": "A2", "medida": "343x152x(76-63)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I01824", "desc": "RADEX 60PB E", "brand": "RHI Europa", "formato": "A2", "medida": "343x152x(76-63)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I09823", "desc": "DURACHROME GF95", "brand": "FRC", "formato": "A2", "medida": "343x152x(76-63)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I08629", "desc": "RADEX FGS-EUR", "brand": "RHI Europa", "formato": "A3", "medida": "343x152x(76-51)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I06129", "desc": "RADEX FGS-BR", "brand": "RHI BR", "formato": "A3", "medida": "343x152x(76-51)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I05563", "desc": "MACRO-MAG-RH-M", "brand": "Togni", "formato": "A3", "medida": "343x152x(76-51)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I01825", "desc": "RADEX 60PB E", "brand": "RHI Europa", "formato": "A3", "medida": "343x152x(76-51)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I09824", "desc": "DURACHROME GF95", "brand": "FRC", "formato": "A3", "medida": "343x152x(76-51)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I01881", "desc": "T51", "brand": "Togni", "formato": "PARALELO", "medida": "229x114x76", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I01874", "desc": "T51", "brand": "Togni", "formato": "C2", "medida": "229x114x(76-63)", "qty": 0, "origem": "Catálogo (zerado)"}, {"item": "I01808", "desc": "MACRO-3774", "brand": "Togni", "formato": "A1", "medida": "305x229x(76-70)", "qty": 0, "origem": "Catálogo (zerado)"}], "equiv": [{"key": "A2 229x152x(76-63)", "group": "C2 229x152x(76-63)", "why": "Usado no lugar do C2 no cilindro da campanha 027."}, {"key": "A3 305x152x(76-51)", "group": "Fech. cone traseiro (A3 305x152 / A2-A3 305x114)", "why": "Peça de fechamento do cone traseiro."}, {"key": "A2 305x114x(76-63)", "group": "Fech. cone traseiro (A3 305x152 / A2-A3 305x114)", "why": "Peça de fechamento do cone traseiro (inclui a etiqueta Togni)."}, {"key": "A3 305x114x(76-51)", "group": "Fech. cone traseiro (A3 305x152 / A2-A3 305x114)", "why": "Peça de fechamento do cone traseiro."}, {"key": "A2 305x114x(76-51)", "group": "Fech. cone traseiro (A3 305x152 / A2-A3 305x114)", "why": "Peça de fechamento do cone traseiro (014, 027)."}, {"key": "A1 305x114x(76-25)", "group": "Fech. cone traseiro (A3 305x152 / A2-A3 305x114)", "why": "Premissa: peça fina de fechamento (anotação a caneta, 47 pç)."}, {"key": "A3 305x114x(76-25)", "group": "Fech. cone traseiro (A3 305x152 / A2-A3 305x114)", "why": "Premissa: peça fina de fechamento."}, {"key": "PARALELO 229x114x76", "group": "Fech. cone dianteiro (paralelos / C2 229x114)", "why": "Anel de fechamento do cone dianteiro (013)."}, {"key": "C2 229x114x(76-63)", "group": "Fech. cone dianteiro (paralelos / C2 229x114)", "why": "Anel de fechamento do cone dianteiro (026)."}, {"key": "PARALELO 229x152x76", "group": "Fech. cone dianteiro (paralelos / C2 229x114)", "why": "Premissa: paralelo anotado a caneta (1.040 pç), usado como fechamento."}], "recipe": [{"phase": "F1", "group": "AX-1 229x114x(76-73)", "c013": null, "c014": null, "c026": null, "c027": 2759, "adj": null, "same": true, "obs": "Só a 027 tem a 1ª fase inteira. A 013 lançou só 4 anéis (454) — fora da média."}, {"phase": "F1", "group": "A1 229x114x(76-70)", "c013": null, "c014": null, "c026": null, "c027": 902, "adj": null, "same": true, "obs": "013 parcial (208) — fora da média."}, {"phase": "F2D", "group": "C1 229x152x(76-70)", "c013": 1518, "c014": 1453, "c026": 1447, "c027": 1413, "adj": null, "same": true, "obs": "Anéis 1–16 (metade dianteira)."}, {"phase": "F2D", "group": "C2 229x152x(76-63)", "c013": 982, "c014": 1056, "c026": 1021, "c027": 1118, "adj": null, "same": true, "obs": "027 usou MACRO-3774 A2 229x152x(76-63) no lugar do C2."}, {"phase": "F2T", "group": "C1 229x152x(76-70)", "c013": 1508, "c014": null, "c026": 1460, "c027": 1550, "adj": null, "same": true, "obs": "Anéis 17–34 (metade traseira). Na 014 só foi refeita a dianteira."}, {"phase": "F2T", "group": "C2 229x152x(76-63)", "c013": 1232, "c014": null, "c026": 1255, "c027": 1084, "adj": null, "same": true, "obs": ""}, {"phase": "F3", "group": "A1 305x152x(76-70)", "c013": 451, "c014": 450, "c026": null, "c027": 425, "adj": null, "same": true, "obs": "026 lançou 1.412 (provável erro de digitação) — fora da média."}, {"phase": "F3", "group": "A2 305x152x(76-63)", "c013": 220, "c014": 214, "c026": 196, "c027": 255, "adj": null, "same": true, "obs": ""}, {"phase": "F3", "group": "Fech. cone traseiro (A3 305x152 / A2-A3 305x114)", "c013": 64, "c014": 56, "c026": 69, "c027": 60, "adj": null, "same": false, "obs": "Peças de fechamento: A3 305x152 + A2/A3 305x114."}, {"phase": "F4", "group": "A1 343x152x(76-70)", "c013": 420, "c014": 452, "c026": 433, "c027": 462, "adj": null, "same": true, "obs": ""}, {"phase": "F4", "group": "A2 343x152x(76-63)", "c013": 352, "c014": 284, "c026": 286, "c027": 297, "adj": null, "same": true, "obs": ""}, {"phase": "F4", "group": "A3 343x152x(76-51)", "c013": 77, "c014": 238, "c026": 25, "c027": 37, "adj": null, "same": true, "obs": ""}, {"phase": "F4", "group": "Fech. cone dianteiro (paralelos / C2 229x114)", "c013": 210, "c014": 160, "c026": 260, "c027": null, "adj": null, "same": false, "obs": "013: paralelo 229x114x76 · 014: C2 229x152 · 026: C2 229x114. 027 sem fechamento lançado."}, {"phase": "F4", "group": "A1 305x229x(76-70)", "c013": 24, "c014": 24, "c026": null, "c027": null, "adj": null, "same": false, "obs": "MACRO-3774 A1 305x229x(76-70)."}], "old": [{"name": "C1-229x152x(76-70)", "qty": 3103, "group": "C1 229x152x(76-70)"}, {"name": "C2-229x152x(76-63)", "qty": 1751, "group": "C2 229x152x(76-63)"}, {"name": "A1-305x229x(76-70)", "qty": 15, "group": "A1 305x229x(76-70)"}, {"name": "P-229x114x76", "qty": 2370, "group": null}, {"name": "T-51 AX-1 229x114x(76-73)", "qty": 2198, "group": "AX-1 229x114x(76-73)"}, {"name": "T-51 A1 229x114x(76-70)", "qty": 1084, "group": "A1 229x114x(76-70)"}, {"name": "A1-305x152x(76-70)", "qty": 397, "group": "A1 305x152x(76-70)"}, {"name": "A2-305x152x(76-63)", "qty": 231, "group": "A2 305x152x(76-63)"}, {"name": "A3-305x152x(76-51)", "qty": 13, "group": "Fech. cone traseiro (A3 305x152 / A2-A3 305x114)"}, {"name": "A1-343x152x(76-70)", "qty": 453, "group": "A1 343x152x(76-70)"}, {"name": "A2-343x152x(76-63)", "qty": 217, "group": "A2 343x152x(76-63)"}, {"name": "A3-343x152x(76-51)", "qty": 13, "group": "A3 343x152x(76-51)"}]};
 const PARTS = [
   {code:"D", name:"Metade dianteira (anéis 1–16)", phase:"F2D", color:"--d", rings:16},
   {code:"T", name:"Metade traseira (anéis 17–34)", phase:"F2T", color:"--t", rings:18},
@@ -267,20 +304,16 @@ const PARTS = [
   {code:"CT", name:"Cone traseiro (3ª fase)", phase:"F3", color:"--ct", rings:9},
   {code:"I", name:"1ª fase – isolante / T-51 e AX", phase:"F1", color:"--f1", rings:34},
 ];
+const PHASE_NAME={F1:"1ª fase",F2D:"Metade dianteira",F2T:"Metade traseira",F3:"Cone traseiro",F4:"Cone dianteiro"};
 const DEFAULT_BRANDS = [
   {name:"IBAR",prio:2,color:"#4472C4"},{name:"Togni",prio:1,color:"#C55A11"},{name:"RHI Europa",prio:3,color:"#7030A0"},
   {name:"RHI BR",prio:4,color:"#00A3A3"},{name:"FRC",prio:5,color:"#7F7F7F"},{name:"Sem marca",prio:6,color:"#9AA3AA"}];
-
-function defaultState(){
-  return {
-    stock: DEFAULT_DATA.stock.map(s=>({...s})),
-    equiv: DEFAULT_DATA.equiv.map(e=>({...e})),
-    recipe: DEFAULT_DATA.hist.map(h=>({phase:h.phase, group:h.group, adj:null, same: !DEFAULT_DATA.acc.includes(h.group)})),
-    brands: DEFAULT_BRANDS.map(b=>({...b})),
-    cfg: {mode:"completa", parts: PARTS.map(p=>({code:p.code, on:true, brand:"Togni"})), sim:1, n:1, margin:0},
-    buy: {n:1, desc:true, extra:{D:0,T:0,CD:0,CT:0,I:0}},
-  };
-}
+const clone=o=>JSON.parse(JSON.stringify(o));
+const normKey=(f,m)=>((f||"").trim().toUpperCase()+" "+(m||"").replace(/\s+/g,"").toLowerCase()).trim();
+const splitKey=k=>{ const i=(k||"").indexOf(" "); return i<0?[k||"",""]:[k.slice(0,i),k.slice(i+1)]; };
+const normFull=k=>normKey(...splitKey(k));
+function parseKey(k){ const m=/^(\S+)\s+(\d+)x(\d+)x\((\d+)-(\d+)\)$/.exec(k||""); return m?{code:m[1],L:+m[2],W:+m[3],T:m[4]+"-"+m[5]}:null; }
+function recBase(r){ const v=[r.c013,r.c014,r.c026,r.c027].filter(x=>x!=null&&x!==""&&!isNaN(x)).map(Number); return v.length?Math.ceil(v.reduce((a,b)=>a+b,0)/v.length):0; }
 function brandOf(desc){
   const d=(desc||"").toUpperCase();
   if(/MAGNIBAR|SUPERIBAR|INSULIBAR/.test(d)) return "IBAR";
@@ -290,137 +323,135 @@ function brandOf(desc){
   if(/MACRO|T51|T-51|T151|TOGNI|BASITOG/.test(d)) return "Togni";
   return "Sem marca";
 }
-const normKey=(f,m)=>((f||"").trim().toUpperCase()+" "+(m||"").replace(/\s+/g,"").toLowerCase()).trim();
-function histBase(h){ const v=[h.c013,h.c014,h.c026,h.c027].filter(x=>x!=null&&x!==""); return v.length?Math.ceil(v.reduce((a,b)=>a+b,0)/v.length):0; }
+function autoCuts(st){
+  const keys=[...new Set(st.stock.map(s=>normKey(s.formato,s.medida)).filter(Boolean))];
+  const accG=new Set(st.recipe.filter(r=>!r.same).map(r=>r.group));
+  const needs=[...new Set(st.recipe.map(r=>r.group))].filter(g=>parseKey(g)&&(!accG.has(g)||parseKey(g)));
+  const out=[];
+  needs.forEach(g=>{ const pg=parseKey(g); keys.forEach(k=>{ const pk=parseKey(k); if(pk&&pk.W===pg.W&&pk.T===pg.T&&pk.L>pg.L) out.push({need:g,from:k}); }); });
+  return out;
+}
+function defaultState(){
+  const st={ stock:clone(D0.stock), equiv:clone(D0.equiv), recipe:clone(D0.recipe), old:clone(D0.old), brands:clone(DEFAULT_BRANDS),
+    cfg:{mode:"completa", parts:PARTS.map(p=>({code:p.code,on:true,brands:["Togni"]})), sim:1, n:1, margin:0, simCuts:false, fornoCuts:false},
+    buy:{qty:{D:1,T:1,CD:1,CT:1,I:1}, desc:true, presetN:1} };
+  st.cutRules=autoCuts(st);
+  return st;
+}
 
 function Engine(state){
   const brands=[...state.brands].sort((a,b)=>a.prio-b.prio).map(b=>b.name);
-  const eq={}; state.equiv.forEach(e=>{ if(e.key) eq[normKey(...splitKey(e.key))]=e.group; });
+  const eq={}; state.equiv.forEach(e=>{ if(e.key&&e.group) eq[normFull(e.key)]=e.group; });
   const groupOf=k=>eq[k]||k;
-  const groups=[]; const addG=g=>{ if(g && !groups.includes(g)) groups.push(g); };
+  const groups=[]; const addG=g=>{ if(g&&!groups.includes(g)) groups.push(g); };
   state.recipe.forEach(r=>addG(r.group));
   state.stock.forEach(s=>{ const k=normKey(s.formato,s.medida); if(k) addG(groupOf(k)); });
+  state.cutRules.forEach(c=>{ if(c.from) addG(groupOf(normFull(c.from))); });
   const S={}; groups.forEach(g=>{S[g]={}; brands.forEach(b=>S[g][b]=0);});
-  state.stock.forEach(s=>{ const k=normKey(s.formato,s.medida); if(!k) return; const g=groupOf(k); const b=brands.includes(s.brand)?s.brand:"Sem marca"; if(!S[g][b]&&S[g][b]!==0) S[g][b]=0; S[g][b]+=Number(s.qty)||0; });
+  state.stock.forEach(s=>{ const k=normKey(s.formato,s.medida); if(!k) return; const g=groupOf(k); const b=brands.includes(s.brand)?s.brand:brands[brands.length-1]; S[g][b]=(S[g][b]||0)+(Number(s.qty)||0); });
   const m=1+(Number(state.cfg.margin)||0)/100;
-  const hist=DEFAULT_DATA.hist;
   const need={}; PARTS.forEach(p=>need[p.code]={main:{},acc:{}});
-  state.recipe.forEach((r,i)=>{
-    const h=hist.find(x=>x.phase===r.phase&&x.group===r.group);
-    const base=(r.adj!=null&&r.adj!=="")?Number(r.adj):(h?histBase(h):0);
+  state.recipe.forEach(r=>{
+    if(!r.group) return;
+    const base=(r.adj!=null&&r.adj!=="")?Number(r.adj):recBase(r);
     const n=Math.ceil(base*m);
     PARTS.filter(p=>p.phase===r.phase).forEach(p=>{ const t=r.same?need[p.code].main:need[p.code].acc; t[r.group]=(t[r.group]||0)+n; });
   });
   const cfgP=c=>state.cfg.parts.find(x=>x.code===c);
   const isOn=c=>{ const p=cfgP(c); return !!p.on && !(c==="I"&&state.cfg.mode==="cilcones"); };
-  const brandP=c=>cfgP(c).brand;
-  const copyR=R=>{const o={}; for(const g in R){o[g]={...R[g]};} return o;};
+  const allowed=c=>brands.filter(b=>(cfgP(c).brands||[]).includes(b));
   const pos=x=>Math.max(0,x);
-  const sumPos=row=>brands.reduce((a,b)=>a+pos(row[b]||0),0);
+  const sumPos=row=>brands.reduce((a,b)=>a+pos((row||{})[b]||0),0);
+  const copyR=R=>{const o={}; for(const g in R) o[g]={...R[g]}; return o;};
   const perPart=c=>{ const n=need[c]; let t=0; for(const g in n.main)t+=n.main[g]; for(const g in n.acc)t+=n.acc[g]; return t; };
+  const rules=state.cutRules.filter(r=>r.need&&r.from).map(r=>({need:r.need,from:normFull(r.from),src:groupOf(normFull(r.from))}));
 
-  function closedForm(R,weights){
-    let count=Infinity; const spec={},P={};
-    groups.forEach(g=>{
-      spec[g]={}; brands.forEach(b=>spec[g][b]=0); P[g]=0;
-      PARTS.forEach(p=>{ const w=weights[p.code]||0; if(!w) return; const mm=need[p.code].main[g]||0, aa=need[p.code].acc[g]||0; const b=brandP(p.code);
-        if(b===TODAS) P[g]+=w*(mm+aa); else { spec[g][b]=(spec[g][b]||0)+w*mm; P[g]+=w*aa; } });
-      brands.forEach(b=>{ if(spec[g][b]>0) count=Math.min(count,Math.floor(pos(R[g][b])/spec[g][b]+1e-9)); });
-      const ts=brands.reduce((a,b)=>a+spec[g][b],0);
-      if(P[g]>0) count=Math.min(count,Math.floor(sumPos(R[g])/(P[g]+ts)+1e-9));
+  // aloca tijolos para quantidades por peça (q pode ser fracionária)
+  function allocate(R0,qty,useCuts){
+    const R=copyR(R0);
+    const parts={}; PARTS.forEach(p=>{ parts[p.code]={used:{},main:{},falta:0,need:0,dem:[]}; brands.forEach(b=>{parts[p.code].used[b]=0;parts[p.code].main[b]=0;}); });
+    const byG={}; const G=g=>byG[g]||(byG[g]={need:0,used:{},miss:0,cutIn:0,cutOut:0});
+    const dem=[];
+    PARTS.forEach((p,pi)=>{ const q=qty[p.code]||0; if(q<=0) return;
+      for(const g in need[p.code].main){ const v=q*need[p.code].main[g]; if(v>0) dem.push({p:p.code,pi,g,qty:v,allow:allowed(p.code),main:true}); }
+      for(const g in need[p.code].acc){ const v=q*need[p.code].acc[g]; if(v>0) dem.push({p:p.code,pi,g,qty:v,allow:brands,main:false}); }
     });
-    if(count===Infinity) count=0;
-    const n=count+1, short=[];
-    groups.forEach(g=>{
-      let sh=0; const bl=[];
-      brands.forEach(b=>{ if(spec[g][b]>0){ const s=pos(n*spec[g][b]-pos(R[g][b])); if(s>0){sh+=s; bl.push(b);} }});
-      const avail=brands.reduce((a,b)=>a+pos(R[g][b]-n*spec[g][b]),0);
-      sh+=pos(n*P[g]-avail);
-      if(sh>0) short.push({g, qty:Math.round(sh), brands:bl});
+    dem.sort((a,b)=>a.allow.length-b.allow.length||a.pi-b.pi);
+    dem.forEach(d=>{ let rem=d.qty; const row=R[d.g]||(R[d.g]={});
+      for(const b of d.allow){ if(rem<=1e-9) break; const t=Math.min(pos(row[b]||0),rem); if(t>0){ row[b]-=t; rem-=t; parts[d.p].used[b]+=t; if(d.main) parts[d.p].main[b]+=t; G(d.g).used[b]=(G(d.g).used[b]||0)+t; } }
+      d.miss=rem; G(d.g).need+=d.qty; parts[d.p].need+=d.qty; parts[d.p].dem.push(d);
     });
-    return {count, short};
-  }
-  function runPart(R,c,q){
-    const res={used:{},main:{},falta:0,byG:{}}; brands.forEach(b=>{res.used[b]=0;res.main[b]=0;});
-    if(q<=0) return res;
-    const b0=brandP(c), tod=b0===TODAS;
-    groups.forEach(g=>{
-      const mm=need[c].main[g]||0, aa=need[c].acc[g]||0; if(!mm&&!aa) return;
-      const bg={}; let spec=tod?0:q*mm, pool=q*(aa+(tod?mm:0)), miss=0;
-      if(spec>0){ const y=Math.min(spec,pos(R[g][b0]||0)); R[g][b0]=(R[g][b0]||0)-spec; miss+=spec-y; res.used[b0]+=y; if(mm) res.main[b0]+=y; bg[b0]=(bg[b0]||0)+y; }
-      for(const b of brands){ if(pool<=0) break; const t=Math.min(pos(R[g][b]),pool); if(t>0){R[g][b]-=t; pool-=t; res.used[b]+=t; if(mm&&tod) res.main[b]+=t; bg[b]=(bg[b]||0)+t;} }
-      miss+=pool; res.falta+=miss; res.byG[g]={need:q*(mm+aa),used:bg,miss};
-    });
-    return res;
-  }
-  function frac(R,c){
-    const b0=brandP(c), tod=b0===TODAS; let f=Infinity; const miss=[];
-    groups.forEach(g=>{
-      const mm=need[c].main[g]||0, aa=need[c].acc[g]||0; const pool=aa+(tod?mm:0); let w=0;
-      if(mm>0&&!tod){ const av=pos(R[g][b0]||0); f=Math.min(f,av/mm); w+=pos(mm-av); }
-      if(pool>0){ const av=sumPos(R[g]); f=Math.min(f,av/pool); w+=pos(pool-av); }
-      if(w>0) miss.push({g,qty:Math.round(w),brand:(mm>0&&!tod)?b0:null});
-    });
-    if(f===Infinity) f=1;
-    return {f:Math.max(0,Math.min(1,f)), miss};
-  }
-  function simulate(n){
-    const R=copyR(S), parts={}, byG={};
-    PARTS.forEach(p=>{ if(!isOn(p.code)){parts[p.code]=null; return;}
-      const r=runPart(R,p.code,n); parts[p.code]=r;
-      for(const g in r.byG){ const x=byG[g]||(byG[g]={need:0,used:{},miss:0}); x.need+=r.byG[g].need; x.miss+=r.byG[g].miss; for(const b in r.byG[g].used) x.used[b]=(x.used[b]||0)+r.byG[g].used[b]; }
-    });
-    return {R, parts, byG};
-  }
-  function forno(N){
-    const R=copyR(S); PARTS.forEach(p=>{ if(isOn(p.code)) runPart(R,p.code,N-1); });
-    const out={};
-    PARTS.forEach(p=>{ if(!isOn(p.code)){out[p.code]=null;return;} const fr=frac(R,p.code); runPart(R,p.code,fr.f); out[p.code]={f:fr.f, miss:fr.miss, bricks:Math.round(fr.f*perPart(p.code))}; });
-    return out;
-  }
-  const W=c=>({[c]:1});
-  function capacity(){
-    const all={}; PARTS.forEach(p=>all[p.code]=isOn(p.code)?1:0);
-    return { k: closedForm(S,all), cyl: closedForm(S,{D:1,T:1}), D: closedForm(S,W("D")), T: closedForm(S,W("T")),
-      CD: closedForm(S,W("CD")), CT: closedForm(S,W("CT")), I: closedForm(S,W("I")) };
-  }
-  function parse(k){ const mm=/^(\S+)\s+(\d+)x(\d+)x\((\d+)-(\d+)\)$/.exec(k); return mm?{code:mm[1],L:+mm[2],W:+mm[3],T:mm[4]+"-"+mm[5]}:null; }
-  function cuts(sim){
-    const keys=[]; state.stock.forEach(s=>{ const k=normKey(s.formato,s.medida); if(k&&!keys.includes(k)) keys.push(k); });
-    const accG=state.recipe.filter(r=>!r.same).map(r=>r.group);
-    const out=[];
-    const needs=[...new Set(state.recipe.map(r=>r.group))].filter(g=>!accG.includes(g)||parse(g));
-    needs.forEach(g=>{ const pg=parse(g); if(!pg) return;
-      keys.forEach(k=>{ const pk=parse(k); if(!pk||pk.W!==pg.W||pk.T!==pg.T||pk.L<=pg.L) return;
-        const gk=groupOf(k); const stockK=state.stock.filter(s=>normKey(s.formato,s.medida)===k).reduce((a,s)=>a+(Number(s.qty)||0),0);
-        const byB={}; state.stock.filter(s=>normKey(s.formato,s.medida)===k&&Number(s.qty)>0).forEach(s=>byB[s.brand]=(byB[s.brand]||0)+Number(s.qty));
-        const fica=sim.R[gk]?sumPos(sim.R[gk]):stockK; const usedSim=(S[gk]?brands.reduce((a,b)=>a+S[gk][b],0):stockK)-fica;
-        const falta=sim.byG[g]?Math.round(sim.byG[g].miss):0;
-        out.push({g,k,falta,stock:stockK,byB,usedSim:Math.round(usedSim),free:Math.round(Math.max(0,Math.min(stockK,fica))),diff:pk.code[0]!==pg.code[0]});
+    const cuts=[];
+    if(useCuts) dem.forEach(d=>{ if(d.miss<=1e-9) return;
+      rules.filter(r=>r.need===d.g&&r.src!==d.g).forEach(r=>{ const row=R[r.src]; if(!row) return;
+        for(const b of d.allow){ if(d.miss<=1e-9) break; const t=Math.min(pos(row[b]||0),d.miss); if(t>0){ row[b]-=t; d.miss-=t; parts[d.p].used[b]+=t; if(d.main) parts[d.p].main[b]+=t;
+          G(d.g).cutIn+=t; G(r.src).cutOut+=t; cuts.push({need:d.g,from:r.from,brand:b,qty:t,p:d.p}); } }
       });
+    });
+    dem.forEach(d=>{ parts[d.p].falta+=d.miss; G(d.g).miss+=d.miss; });
+    let falta=0; dem.forEach(d=>falta+=d.miss);
+    return {R,parts,byG,cuts,falta,dem};
+  }
+  const mul=(w,n)=>{ const o={}; for(const k in w) o[k]=w[k]*n; return o; };
+  function count(weights,useCuts,reserve){
+    reserve=reserve||{}; const mine=d=>weights[d.p]>0;
+    const qf=n=>{ const q={...reserve}; for(const k in weights) q[k]=(q[k]||0)+weights[k]*n; return q; };
+    const miss=r=>r.dem.filter(mine).reduce((a,d)=>a+d.miss,0);
+    let n=0, last=null;
+    while(n<200){ const r=allocate(S,qf(n+1),useCuts); if(miss(r)>1e-6){ last=r; break; } n++; }
+    const ok=allocate(S,qf(n),useCuts);
+    const short=[]; if(last){ const agg={}; last.dem.filter(mine).forEach(d=>{ if(d.miss>1e-6){ const bl=d.main&&d.allow.length<brands.length?d.allow:[]; const k=d.g+"|"+bl.join("/"); agg[k]=agg[k]||{g:d.g,brands:bl,qty:0}; agg[k].qty+=d.miss; } }); for(const k in agg) short.push({...agg[k],qty:Math.ceil(agg[k].qty-1e-6)}); }
+    const cutsAgg={}; if(n>0) ok.cuts.filter(c=>weights[c.p]>0).forEach(c=>{ const k=c.need+"|"+c.from; cutsAgg[k]=cutsAgg[k]||{need:c.need,from:c.from,qty:0}; cutsAgg[k].qty+=c.qty; });
+    return {count:n, short, cuts:Object.values(cutsAgg)};
+  }
+  const onW=()=>{ const w={}; PARTS.forEach(p=>w[p.code]=isOn(p.code)?1:0); return w; };
+  function capacity(useCuts){
+    const res=(...codes)=>{ const r={}; codes.forEach(c=>{ if(isOn(c)) r[c]=1; }); return r; };
+    return {k:count(onW(),useCuts), cyl:count({D:1,T:1},useCuts,res("CD","CT","I")), D:count({D:1},useCuts,res("CD","CT","I")), T:count({T:1},useCuts,res("CD","CT","I")),
+      CD:count({CD:1},useCuts,res("D","T","CT","I")), CT:count({CT:1},useCuts,res("D","T","CD","I")), I:count({I:1},useCuts,res("D","T","CD","CT"))};
+  }
+  function simulate(n,useCuts){ return allocate(S,mul(onW(),n),useCuts); }
+  function forno(N,useCuts){
+    const base=N>1?allocate(S,mul(onW(),N-1),useCuts).R:copyR(S);
+    const r=allocate(base,onW(),useCuts);
+    const out={};
+    PARTS.forEach(p=>{ if(!isOn(p.code)){ out[p.code]=null; return; }
+      const pp=r.parts[p.code]; let f=1; const miss=[];
+      pp.dem.forEach(d=>{ f=Math.min(f,(d.qty-d.miss)/d.qty); if(d.miss>1e-6) miss.push({g:d.g,qty:Math.ceil(d.miss-1e-6),brands:d.main&&d.allow.length<brands.length?d.allow:[]}); });
+      const pc=r.cuts.filter(c=>c.p===p.code);
+      out[p.code]={f:Math.max(0,Math.min(1,f)),miss,bricks:Math.round(pp.need-pp.falta),cuts:pc};
     });
     return out;
   }
   function buy(qty,desc){
+    const base={}; groups.forEach(g=>{ base[g]={}; brands.forEach(b=>base[g][b]=desc?S[g][b]:0); });
+    const a=allocate(base,qty,false), c=allocate(base,qty,true);
     const rows=[];
-    [...new Set(state.recipe.map(r=>r.group))].forEach(g=>{
-      const spec={}; let P=0; brands.forEach(b=>spec[b]=0);
-      PARTS.forEach(p=>{ const q=qty[p.code]||0; if(!q) return; const mm=need[p.code].main[g]||0, aa=need[p.code].acc[g]||0; const b=brandP(p.code);
-        if(b===TODAS) P+=q*(mm+aa); else { spec[b]+=q*mm; P+=q*aa; } });
-      const tot=brands.reduce((a,b)=>a+S[g][b],0); const needT=brands.reduce((a,b)=>a+spec[b],0)+P;
-      const buyB={}; let bt=0; brands.forEach(b=>{ buyB[b]=pos(spec[b]-(desc?S[g][b]:0)); bt+=buyB[b]; });
-      const availPool=desc?brands.reduce((a,b)=>a+pos(S[g][b]-spec[b]),0):0; const buyPool=pos(P-availPool);
-      rows.push({g,need:needT,stock:tot,buy:bt+buyPool,buyB,buyPool,left:desc?pos(tot-(needT-(bt+buyPool))):tot});
+    const gs=[...new Set(a.dem.map(d=>d.g))];
+    gs.forEach(g=>{
+      const ds=a.dem.filter(d=>d.g===g), dc=c.dem.filter(d=>d.g===g);
+      const needT=ds.reduce((x,d)=>x+d.qty,0), buyA=ds.reduce((x,d)=>x+d.miss,0), buyC=dc.reduce((x,d)=>x+d.miss,0);
+      const which={}; ds.forEach(d=>{ if(d.miss>1e-6){ const k=d.main&&d.allow.length<brands.length?d.allow.join(" ou "):"qualquer marca"; which[k]=(which[k]||0)+d.miss; } });
+      const cuts={}; c.cuts.filter(x=>x.need===g).forEach(x=>cuts[x.from]=(cuts[x.from]||0)+x.qty);
+      rows.push({g,need:Math.ceil(needT),stock:brands.reduce((x,b)=>x+S[g][b],0),buy:Math.ceil(buyA-1e-6),which,buyCut:Math.ceil(buyC-1e-6),cuts});
     });
     return rows;
   }
-  return {brands, groups, S, need, isOn, brandP, closedForm, simulate, forno, capacity, cuts, buy, perPart, sumPos};
+  return {brands,groups,S,need,isOn,allowed,allocate,count,capacity,simulate,forno,buy,perPart,sumPos,groupOf,rules};
 }
-function splitKey(k){ const i=k.indexOf(" "); return i<0?[k,""]:[k.slice(0,i),k.slice(i+1)]; }
 /*ENGINE-END*/
 
+// ---------- login ----------
+const AUTH="refratario-auth";
+function unlock(){ document.body.classList.remove("locked"); document.getElementById("login").style.display="none"; }
+try{ if(sessionStorage.getItem(AUTH)==="ok") unlock(); }catch(e){}
+document.getElementById("loginForm").addEventListener("submit",e=>{ e.preventDefault();
+  if(document.getElementById("lu").value.trim()==="tijolos"&&document.getElementById("lp").value==="tijolos"){ try{sessionStorage.setItem(AUTH,"ok");}catch(_){} unlock(); }
+  else document.getElementById("lerr").textContent="Usuário ou senha incorretos."; });
+document.getElementById("logout").onclick=()=>{ try{sessionStorage.removeItem(AUTH);}catch(_){} location.reload(); };
+
 // ---------- estado ----------
-const LS="refratario-dallon-v1";
+const LS="refratario-dallon-v2";
 let state;
 try{ state=JSON.parse(localStorage.getItem(LS))||defaultState(); }catch(e){ state=defaultState(); }
 function save(){ try{ localStorage.setItem(LS,JSON.stringify(state)); }catch(e){} }
@@ -429,18 +460,19 @@ const fmt=x=>(Math.round(x)||0).toLocaleString("pt-BR");
 const dash=x=>Math.round(x)?fmt(x):"–";
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
 const bColor=b=>(state.brands.find(x=>x.name===b)||{}).color||"inherit";
-const bSpan=b=>b===TODAS?`<span>${b}</span>`:`<span class="brand" style="color:${bColor(b)}">${esc(b)}</span>`;
+const bSpan=b=>`<span class="brand" style="color:${bColor(b)}">${esc(b)}</span>`;
+const bList=arr=>arr.length?arr.map(bSpan).join(" + "):'<span class="bad">nenhuma marca</span>';
 const chip=p=>`<span class="chip" style="background:var(${p.color})"></span>`;
 function toast(t){ const el=$("#toast"); el.textContent=t; el.classList.add("on"); clearTimeout(toast.t); toast.t=setTimeout(()=>el.classList.remove("on"),2200); }
-const shortTxt=list=>list.map(s=>`${esc(s.g)}${s.brands&&s.brands.length?` (${s.brands.join(", ")})`:s.brand?` (${s.brand})`:""}: <b>${fmt(s.qty)}</b> pç`).join(" &nbsp;·&nbsp; ");
+const shortTxt=list=>list.map(s=>`${esc(s.g)}${s.brands&&s.brands.length?` (${s.brands.join("/")})`:""}: <b>${fmt(s.qty)}</b> pç`).join(" &nbsp;·&nbsp; ");
+const cutTxt=list=>list.map(c=>`cortar <b>${fmt(c.qty)}</b> ${esc(c.from)} → ${esc(c.need)}`).join(" &nbsp;·&nbsp; ");
 
-// ---------- abas ----------
 document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{
   document.querySelectorAll(".tab").forEach(x=>x.setAttribute("aria-selected",x===t));
   document.querySelectorAll(".view").forEach(v=>v.classList.toggle("on",v.id==="v-"+t.dataset.v));
 });
 
-// ---------- desenho do forno ----------
+// ---------- desenho ----------
 const NC=51, CW=19, X0=11, CY=150, U=11.5, TS=.6, T1=.9, TW=1.7;
 const cols=[];
 for(let j=0;j<NC;j++){
@@ -451,212 +483,225 @@ for(let j=0;j<NC;j++){
   c.x=X0+j*CW; cols.push(c);
 }
 function buildKiln(){
-  const svg=$("#kiln"); let h=`<defs><linearGradient id="fire" gradientUnits="userSpaceOnUse" x1="0" x2="990" y1="0" y2="0"><stop offset="0" stop-color="#5a2a10"/><stop offset=".75" stop-color="#9a4a14"/><stop offset="1" stop-color="#e8892b"/></linearGradient>
-  <pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="var(--keep)"/><line x1="0" y1="0" x2="0" y2="6" stroke="rgba(0,0,0,.18)" stroke-width="2"/></pattern></defs>`;
+  let h=`<defs><linearGradient id="fire" gradientUnits="userSpaceOnUse" x1="0" x2="990" y1="0" y2="0"><stop offset="0" stop-color="#5a2a10"/><stop offset=".75" stop-color="#9a4a14"/><stop offset="1" stop-color="#e8892b"/></linearGradient>
+  <pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#A7B0B6"/><line x1="0" y1="0" x2="0" y2="6" stroke="rgba(0,0,0,.2)" stroke-width="2"/></pattern></defs>`;
   cols.forEach((c,j)=>{
-    const R=c.R*U, top=CY-R, bot=CY+R, w=CW-1;
-    const ts=TS*U, t1=c.t1*U, tw=TW*U;
-    const inner=R-ts-t1-tw;
+    const R=c.R*U, top=CY-R, bot=CY+R, w=CW-1, ts=TS*U, t1=c.t1*U, tw=TW*U, inner=R-ts-t1-tw;
     h+=`<rect x="${c.x}" y="${CY-inner}" width="${w+1}" height="${2*inner}" fill="url(#fire)" opacity=".85"/>`;
     h+=`<rect x="${c.x}" y="${top}" width="${w}" height="${ts}" fill="#11161a"/><rect x="${c.x}" y="${bot-ts}" width="${w}" height="${ts}" fill="#11161a"/>`;
-    if(c.t1){
-      h+=`<rect id="f1t${j}" class="ring" x="${c.x}" y="${top+ts}" width="${w}" height="${t1-1}"/><rect id="f1b${j}" class="ring" x="${c.x}" y="${bot-ts-t1+1}" width="${w}" height="${t1-1}"/>`;
-    }
+    if(c.t1) h+=`<rect id="f1t${j}" class="ring" x="${c.x}" y="${top+ts}" width="${w}" height="${t1-1}"/><rect id="f1b${j}" class="ring" x="${c.x}" y="${bot-ts-t1+1}" width="${w}" height="${t1-1}"/>`;
     const wy=top+ts+t1, by=bot-ts-t1-tw;
     h+=`<rect id="wt${j}" class="ring" x="${c.x}" y="${wy}" width="${w}" height="${tw}"/><rect id="wtf${j}" class="ring" x="${c.x}" y="${wy}" width="${w}" height="0"/>`;
     h+=`<rect id="wb${j}" class="ring" x="${c.x}" y="${by}" width="${w}" height="${tw}"/><rect id="wbf${j}" class="ring" x="${c.x}" y="${by+tw}" width="${w}" height="0"/>`;
-    h+=`<text x="${c.x+w/2}" y="${296}" font-size="8" fill="#7d8a93" text-anchor="middle">${c.lab}</text>`;
+    h+=`<text x="${c.x+w/2}" y="296" font-size="8" fill="#7d8a93" text-anchor="middle">${c.lab}</text>`;
   });
-  svg.innerHTML=h;
+  $("#kiln").innerHTML=h;
 }
 function paintKiln(fo){
   const pc={D:"var(--d)",T:"var(--t)",CD:"var(--cd)",CT:"var(--ct)"};
   cols.forEach((c,j)=>{
-    const p=fo[c.part]; const delay=(j*12)+"ms";
-    const tw=TW*U, R=c.R*U, ts=TS*U, t1=c.t1*U;
-    const wy=CY-R+ts+t1, by=CY+R-ts-t1-tw;
+    const p=fo[c.part], delay=(j*12)+"ms", tw=TW*U, R=c.R*U, ts=TS*U, t1=c.t1*U, wy=CY-R+ts+t1, by=CY+R-ts-t1-tw;
     const set=(id,fill,y,hgt)=>{ const el=document.getElementById(id); if(!el) return; el.style.transitionDelay=delay; el.setAttribute("fill",fill); if(y!=null){el.setAttribute("y",y); el.setAttribute("height",Math.max(0,hgt));} };
     if(!p){ set("wt"+j,"url(#hatch)"); set("wb"+j,"url(#hatch)"); set("wtf"+j,"none",wy,0); set("wbf"+j,"none",by+tw,0); }
-    else{
-      const fr=Math.max(0,Math.min(1,p.f*PARTS.find(x=>x.code===c.part).rings-(c.order-1)));
-      set("wt"+j,"var(--miss)"); set("wb"+j,"var(--miss)");
-      set("wtf"+j,pc[c.part],wy,tw*fr); set("wbf"+j,pc[c.part],by+tw*(1-fr),tw*fr);
-    }
-    if(c.t1){
-      const pi=fo.I;
-      if(!pi){ set("f1t"+j,"url(#hatch)"); set("f1b"+j,"url(#hatch)"); }
-      else{ const f=Math.max(0,Math.min(1,pi.f*34-(c.ring-1))); const col=f>=.5?"var(--f1)":"var(--miss)"; set("f1t"+j,col); set("f1b"+j,col); }
-    }
+    else{ const fr=Math.max(0,Math.min(1,p.f*PARTS.find(x=>x.code===c.part).rings-(c.order-1)));
+      set("wt"+j,"var(--miss)"); set("wb"+j,"var(--miss)"); set("wtf"+j,pc[c.part],wy,tw*fr); set("wbf"+j,pc[c.part],by+tw*(1-fr),tw*fr); }
+    if(c.t1){ const pi=fo.I;
+      if(!pi){ set("f1t"+j,"#8f7a4e"); set("f1b"+j,"#8f7a4e"); }
+      else{ const f=Math.max(0,Math.min(1,pi.f*34-(c.ring-1))); const col=f>=.5?"var(--f1)":"var(--miss)"; set("f1t"+j,col); set("f1b"+j,col); } }
   });
 }
 
 // ---------- render ----------
+let E;
 function render(){
-  const E=Engine(state);
-  const cap=E.capacity();
-  const sim=E.simulate(Math.max(1,Number(state.cfg.sim)||1));
+  E=Engine(state);
+  const BR=E.brands;
+  $("#dlGroups").innerHTML=E.groups.map(g=>`<option value="${esc(g)}">`).join("");
+  const cap=E.capacity(false), capC=E.capacity(true);
+  const simCuts=!!state.cfg.simCuts, sim=E.simulate(Math.max(1,Number(state.cfg.sim)||1),simCuts);
+  const simNo=simCuts?E.simulate(Math.max(1,Number(state.cfg.sim)||1),false):sim;
+  const cfgP=c=>state.cfg.parts.find(x=>x.code===c);
+
   // Forno
-  $("#nOut").textContent=state.cfg.n;
-  const fo=E.forno(state.cfg.n);
-  paintKiln(fo);
-  $("#kilnMsg").innerHTML=`com essa configuração dá <b>${cap.k.count}</b> reforma(s) completa(s)`;
+  $("#nOut").textContent=state.cfg.n; $("#fornoCuts").checked=!!state.cfg.fornoCuts;
+  const fo=E.forno(state.cfg.n,!!state.cfg.fornoCuts); paintKiln(fo);
+  const kk=state.cfg.fornoCuts?capC.k.count:cap.k.count;
+  $("#kilnMsg").innerHTML=`com essa configuração dá <b>${kk}</b> reforma(s) completa(s)${state.cfg.fornoCuts?" cortando tijolos":""}`;
   $("#modeTag").textContent=state.cfg.mode==="completa"?"Reforma completa (com T-51 e AX)":"Só cilindro e cones";
-  let t=`<tr><th></th><th>Peça</th><th>Marca</th><th>Nesta reforma</th><th class="n">Tijolos</th><th>O que falta para completar</th></tr>`;
-  PARTS.forEach(p=>{
-    const r=fo[p.code]; const cp=state.cfg.parts.find(x=>x.code===p.code);
-    if(!r){ t+=`<tr><td>${chip(p)}</td><td class="off">${p.name}</td><td colspan="4" class="note">não será refeito</td></tr>`; return; }
-    t+=`<tr><td>${chip(p)}</td><td>${p.name}</td><td>${bSpan(cp.brand)}</td><td><div class="row" style="gap:8px"><div class="bar"><i style="width:${Math.round(r.f*100)}%"></i></div>${Math.round(r.f*100)}%</div></td><td class="n">${fmt(r.bricks)}</td><td>${r.miss.length?`<span class="bad">${shortTxt(r.miss)}</span>`:`<span class="good">✓ dá para montar</span>`}</td></tr>`;
-  });
+  let t=`<tr><th></th><th>Peça</th><th>Marcas</th><th>Nesta reforma</th><th class="n">Tijolos</th><th>O que falta para completar</th></tr>`;
+  PARTS.forEach(p=>{ const r=fo[p.code];
+    if(!r){ t+=`<tr><td>${chip(p)}</td><td class="off">${p.name}</td><td colspan="4" class="note">${p.code==="I"?"não será retirada — fica a existente":"não será refeito"}</td></tr>`; return; }
+    t+=`<tr><td>${chip(p)}</td><td>${p.name}</td><td>${bList(E.allowed(p.code))}</td><td><div class="row" style="gap:8px"><div class="bar"><i style="width:${Math.round(r.f*100)}%"></i></div>${Math.round(r.f*100)}%</div></td><td class="n">${fmt(r.bricks)}</td><td>${r.miss.length?`<span class="bad">${shortTxt(r.miss)}</span>`:`<span class="good">✓ dá para montar</span>`}${r.cuts.length?`<div class="cutbox" style="margin-top:4px">✂ ${cutTxt(r.cuts)}</div>`:""}</td></tr>`; });
   $("#kilnTable").innerHTML=t;
 
-  // Montagem: config
+  // Config
   document.querySelectorAll("#modeSeg button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.m===state.cfg.mode));
-  const bopts=[TODAS,...state.brands.map(b=>b.name)];
-  t=`<tr><th></th><th>Peça</th><th class="c">Montar?</th><th>Marca</th></tr>`;
-  PARTS.forEach(p=>{
-    const cp=state.cfg.parts.find(x=>x.code===p.code); const locked=p.code==="I"&&state.cfg.mode==="cilcones";
-    t+=`<tr><td>${chip(p)}</td><td class="${E.isOn(p.code)?"":"off"}">${p.name}${locked?' <span class="tag">fora no modo "só cilindro e cones"</span>':""}</td>
+  t=`<tr><th></th><th>Peça</th><th class="c">Montar?</th><th>Marcas permitidas</th><th></th></tr>`;
+  PARTS.forEach(p=>{ const cp=cfgP(p.code); const locked=p.code==="I"&&state.cfg.mode==="cilcones"; const on=E.isOn(p.code);
+    const chips=state.brands.map(b=>{ const ck=(cp.brands||[]).includes(b.name); return `<label class="bchip ${ck?"on":""}" style="${ck?`color:${b.color}`:""}"><input type="checkbox" data-pb="${p.code}" data-bn="${esc(b.name)}" ${ck?"checked":""} ${on?"":"disabled"}>${esc(b.name)}</label>`; }).join("");
+    const nb=(cp.brands||[]).length;
+    t+=`<tr><td>${chip(p)}</td><td class="${on?"":"off"}">${p.name}${locked?' <span class="tag">fora no modo "só cilindro e cones"</span>':""}</td>
     <td class="c"><input type="checkbox" data-on="${p.code}" ${cp.on?"checked":""} ${locked?"disabled":""} aria-label="Montar ${p.name}"></td>
-    <td><select data-br="${p.code}" ${E.isOn(p.code)?"":"disabled"}>${bopts.map(o=>`<option ${o===cp.brand?"selected":""}>${esc(o)}</option>`).join("")}</select></td></tr>`;
-  });
+    <td><div class="bchips">${chips}</div></td><td style="font-size:12.5px">${!on?"":nb===0?'<span class="bad">marque ao menos uma</span>':nb>1?'<span class="warn">mistura permitida</span>':'<span class="good">uma marca só</span>'}</td></tr>`; });
   $("#cfgTable").innerHTML=t;
-  // capacidade
+
+  // Capacidade
+  const capRows=(C,withCuts)=>{
+    const on=c=>E.isOn(c), rows=[];
+    if(on("D")&&on("T")) rows.push({p:PARTS[0],nm:"Cilindro (dianteira + traseira)",b:(BR.filter(b=>cfgP("D").brands.includes(b)).join("/")===BR.filter(b=>cfgP("T").brands.includes(b)).join("/"))?bList(E.allowed("D")):`D: ${bList(E.allowed("D"))}<br>T: ${bList(E.allowed("T"))}`,
+      r:C.cyl,opt:`completo(s) — ou <b>${C.D.count}</b> só dianteira, ou <b>${C.T.count}</b> só traseira`});
+    else if(on("D")) rows.push({p:PARTS[0],nm:"Metade dianteira",b:bList(E.allowed("D")),r:C.D,opt:"metade(s)"});
+    else if(on("T")) rows.push({p:PARTS[1],nm:"Metade traseira",b:bList(E.allowed("T")),r:C.T,opt:"metade(s)"});
+    else rows.push({p:PARTS[0],nm:"Cilindro",off:true});
+    [["CD","cone(s)"],["CT","cone(s)"],["I","montagem(ns)"]].forEach(([c,u])=>{ const p=PARTS.find(x=>x.code===c); rows.push(on(c)?{p,nm:p.name,b:bList(E.allowed(c)),r:C[c],opt:u}:{p,nm:p.name,off:true}); });
+    let h=`<tr><th></th><th>Peça</th><th>Marcas</th><th class="c">Dá para fazer</th><th></th><th>${withCuts?"Cortes usados / o que ainda falta":"O que falta para fazer mais 1"}</th></tr>`;
+    rows.forEach(x=>{ if(x.off){ h+=`<tr><td>${chip(x.p)}</td><td class="off">${x.nm}</td><td colspan="4" class="note">${x.p.code==="I"?"não será retirada — fica a existente":"não será refeito"}</td></tr>`; return; }
+      const fal=x.r.short.length?`<span class="bad">faltam ${shortTxt(x.r.short)}</span>`:'<span class="good">✓ não falta</span>';
+      const cu=withCuts&&x.r.cuts.length?`<div class="cutbox" style="margin-bottom:4px">✂ ${cutTxt(x.r.cuts)}</div>`:"";
+      h+=`<tr><td>${chip(x.p)}</td><td>${x.nm}</td><td style="font-size:13.5px">${x.b}</td><td class="c"><span class="big ${x.r.count>0?"good":"bad"}" style="font-size:24px">${x.r.count}</span></td><td style="font-size:13.5px">${x.opt}</td><td style="font-size:13.5px">${cu}${withCuts?`<span class="note">para mais 1: </span>`:""}${fal}</td></tr>`; });
+    return h;
+  };
   $("#kBig").textContent=cap.k.count; $("#kBig").className="big "+(cap.k.count>0?"good":"bad");
-  const on=c=>E.isOn(c), br=c=>state.cfg.parts.find(x=>x.code===c).brand;
-  const rowsC=[];
-  if(on("D")||on("T")){
-    let nm,cnt,opt,sh,b;
-    if(on("D")&&on("T")){ nm="Cilindro (dianteira + traseira)"; cnt=cap.cyl.count; sh=cap.cyl.short; b=br("D")===br("T")?bSpan(br("D")):`D: ${bSpan(br("D"))} · T: ${bSpan(br("T"))}`;
-      opt=`cilindro(s) completo(s) — ou <b>${cap.D.count}</b> só dianteira, ou <b>${cap.T.count}</b> só traseira (os mesmos C1/C2 servem às duas)`; }
-    else if(on("D")){ nm="Metade dianteira"; cnt=cap.D.count; sh=cap.D.short; b=bSpan(br("D")); opt="metade(s) dianteira(s)"; }
-    else { nm="Metade traseira"; cnt=cap.T.count; sh=cap.T.short; b=bSpan(br("T")); opt="metade(s) traseira(s)"; }
-    rowsC.push({chip:chip(PARTS[0]),nm,b,cnt,opt,sh});
-  }
-  [["CD","cone(s)"],["CT","cone(s)"],["I","montagem(ns)"]].forEach(([c,u])=>{ const p=PARTS.find(x=>x.code===c);
-    if(on(c)) rowsC.push({chip:chip(p),nm:p.name,b:bSpan(br(c)),cnt:cap[c].count,opt:u,sh:cap[c].short});
-    else rowsC.push({chip:chip(p),nm:p.name,off:true}); });
-  if(!on("D")&&!on("T")) rowsC.unshift({chip:chip(PARTS[0]),nm:"Cilindro",off:true});
-  t=`<tr><th></th><th>Peça</th><th>Marca</th><th class="c">Dá para fazer</th><th></th><th>O que falta para fazer mais 1</th></tr>`;
-  rowsC.forEach(r=>{
-    if(r.off){ t+=`<tr><td>${r.chip}</td><td class="off">${r.nm}</td><td colspan="4" class="note">não será refeito</td></tr>`; return; }
-    t+=`<tr><td>${r.chip}</td><td>${r.nm}</td><td>${r.b}</td><td class="c"><span class="big ${r.cnt>0?"good":"bad"}" style="font-size:24px">${r.cnt}</span></td><td style="font-size:13.5px">${r.opt}</td><td style="font-size:13.5px" class="bad">${r.sh.length?shortTxt(r.sh):'<span class="good">✓ não falta</span>'}</td></tr>`;
-  });
-  $("#capTable").innerHTML=t;
-  // simulação por peça
-  $("#simN").value=state.cfg.sim;
-  const BR=E.brands;
-  t=`<tr><th></th><th>Peça</th><th>Marca escolhida</th>${BR.map(b=>`<th class="n" style="color:${bColor(b)}">${esc(b)}</th>`).join("")}<th class="n">Falta</th><th>Observação</th></tr>`;
+  $("#kBigCut").textContent=capC.k.count; $("#kBigCut").className="big "+(capC.k.count>0?"good":"bad");
+  $("#capTable").innerHTML=capRows(cap,false);
+  $("#capCutTable").innerHTML=capRows(capC,true);
+
+  // Simulação
+  $("#simN").value=state.cfg.sim; $("#simCuts").checked=simCuts;
+  t=`<tr><th></th><th>Peça</th><th>Marcas</th>${BR.map(b=>`<th class="n" style="color:${bColor(b)}">${esc(b)}</th>`).join("")}<th class="n">Falta</th><th>Observação</th></tr>`;
   const tot={}; BR.forEach(b=>tot[b]=0); let tf=0;
   PARTS.forEach(p=>{ const r=sim.parts[p.code];
-    if(!r){ t+=`<tr><td>${chip(p)}</td><td class="off">${p.name}</td><td class="note" colspan="${BR.length+3}">não será refeito</td></tr>`; return; }
+    if(!E.isOn(p.code)){ t+=`<tr><td>${chip(p)}</td><td class="off">${p.name}</td><td class="note" colspan="${BR.length+3}">${p.code==="I"?"não será retirada":"não será refeito"}</td></tr>`; return; }
     BR.forEach(b=>tot[b]+=r.used[b]); tf+=r.falta;
-    const mixed=BR.filter(b=>r.main[b]>0);
-    const obs=mixed.length>1?`<span class="warn">⚠ mistura de marcas: ${mixed.map(b=>`${b} ${fmt(r.main[b])}`).join(" · ")}</span>`:(r.falta>0?`<span class="bad">falta tijolo — veja abaixo</span>`:`<span class="good">✓ uma marca só</span>`);
-    t+=`<tr><td>${chip(p)}</td><td>${p.name}</td><td>${bSpan(br(p.code))}</td>${BR.map(b=>`<td class="n">${dash(r.used[b])}</td>`).join("")}<td class="n ${r.falta>0?"bad":""}"><b>${dash(r.falta)}</b></td><td style="font-size:13px">${obs}</td></tr>`;
-  });
-  t+=`<tr><td></td><td><b>Total</b></td><td></td>${BR.map(b=>`<td class="n"><b>${dash(tot[b])}</b></td>`).join("")}<td class="n ${tf>0?"bad":""}"><b>${dash(tf)}</b></td><td></td></tr>`;
+    const mixed=BR.filter(b=>r.main[b]>0.5);
+    const obs=mixed.length>1?`<span class="warn">⚠ mistura de marcas: ${mixed.map(b=>`${b} ${fmt(r.main[b])}`).join(" · ")}</span>`:(r.falta>0.5?`<span class="bad">falta tijolo — veja abaixo</span>`:`<span class="good">✓ uma marca só</span>`);
+    t+=`<tr><td>${chip(p)}</td><td>${p.name}</td><td style="font-size:13px">${bList(E.allowed(p.code))}</td>${BR.map(b=>`<td class="n">${dash(r.used[b])}</td>`).join("")}<td class="n ${r.falta>0.5?"bad":""}"><b>${dash(r.falta)}</b></td><td style="font-size:13px">${obs}</td></tr>`; });
+  t+=`<tr><td></td><td><b>Total</b></td><td></td>${BR.map(b=>`<td class="n"><b>${dash(tot[b])}</b></td>`).join("")}<td class="n ${tf>0.5?"bad":""}"><b>${dash(tf)}</b></td><td></td></tr>`;
   $("#simParts").innerHTML=t;
-  const cutsL=E.cuts(sim);
-  const okCuts=cutsL.filter(c=>c.falta>0&&c.free>0);
-  $("#cutLine").innerHTML=okCuts.length?"✂ Dá para cobrir a falta com corte: "+okCuts.map(c=>`${esc(c.g)} ← cortar ${esc(c.k)} (${fmt(Math.min(c.falta,c.free))} pç)`).join(" &nbsp;·&nbsp; ")+" — veja a aba Cortes":"";
+  // opções de corte p/ a simulação
+  const cutRows=state.cutRules.map((r,i)=>{ const from=normFull(r.from), src=E.groupOf(from);
+    const stockK=state.stock.filter(s=>normKey(s.formato,s.medida)===from).reduce((a,s)=>a+(Number(s.qty)||0),0);
+    const byB={}; state.stock.filter(s=>normKey(s.formato,s.medida)===from&&Number(s.qty)>0).forEach(s=>byB[s.brand]=(byB[s.brand]||0)+Number(s.qty));
+    const fica=simNo.R[src]?E.sumPos(simNo.R[src]):stockK, usedSim=(E.S[src]?BR.reduce((a,b)=>a+E.S[src][b],0):stockK)-fica;
+    const falta=simNo.byG[r.need]?Math.ceil(simNo.byG[r.need].miss-1e-6):0;
+    const pn=parseKey(r.need), pf=parseKey(from);
+    const okRule=pn&&pf&&pn.W===pf.W&&pn.T===pf.T&&pf.L>pn.L, diff=pn&&pf&&pn.code[0]!==pf.code[0];
+    return {i,need:r.need,from,stock:stockK,byB,usedSim:Math.round(usedSim),free:Math.round(Math.max(0,Math.min(stockK,fica))),falta,okRule,diff};
+  });
+  const good=cutRows.filter(c=>c.falta>0&&c.free>0);
+  $("#cutLine").innerHTML=!simCuts&&good.length?`<div class="cutbox">✂ Dá para cobrir a falta cortando: ${good.map(c=>`<b>${fmt(Math.min(c.falta,c.free))}</b> ${esc(c.from)} → ${esc(c.need)}`).join(" &nbsp;·&nbsp; ")}. Marque "considerar cortes" para ver a simulação com o corte.</div>`:(simCuts&&sim.cuts.length?`<div class="cutbox">✂ Na simulação foram cortados: ${cutTxt(Object.values(sim.cuts.reduce((a,c)=>{const k=c.need+c.from; a[k]=a[k]||{need:c.need,from:c.from,qty:0}; a[k].qty+=c.qty; return a;},{})))}</div>`:"");
   t=`<tr><th>Tijolo</th><th class="n">Precisa</th>${BR.map(b=>`<th class="n" style="color:${bColor(b)}">${esc(b)}</th>`).join("")}<th class="n">Falta</th><th class="n">Fica no estoque</th><th>Opção de corte</th></tr>`;
   E.groups.forEach(g=>{ const x=sim.byG[g]; if(!x||!x.need) return;
-    const cut=cutsL.filter(c=>c.g===g&&c.free>0&&x.miss>0).map(c=>`✂ ${esc(c.k)} (livre ${fmt(c.free)})`).join("<br>");
-    t+=`<tr><td>${esc(g)}</td><td class="n"><b>${fmt(x.need)}</b></td>${BR.map(b=>`<td class="n">${dash(x.used[b]||0)}</td>`).join("")}<td class="n ${x.miss>0?"bad":""}"><b>${dash(x.miss)}</b></td><td class="n">${dash(E.sumPos(sim.R[g]))}</td><td class="warn" style="font-size:13px">${cut}</td></tr>`;
-  });
+    const cut=(x.cutIn?`<span class="warn">✂ ${fmt(x.cutIn)} vieram de corte</span> `:"")+cutRows.filter(c=>c.need===g&&c.free>0&&x.miss>0.5).map(c=>`<span class="warn">✂ ${esc(c.from)} (livre ${fmt(c.free)})</span>`).join("<br>");
+    t+=`<tr><td>${esc(g)}</td><td class="n"><b>${fmt(x.need)}</b></td>${BR.map(b=>`<td class="n">${dash(x.used[b]||0)}</td>`).join("")}<td class="n ${x.miss>0.5?"bad":""}"><b>${dash(x.miss)}</b></td><td class="n">${dash(E.sumPos(sim.R[g]))}</td><td style="font-size:13px">${cut}</td></tr>`; });
   $("#simBricks").innerHTML=t;
 
-  // cortes
-  t=`<tr><th>Precisa</th><th class="n">Falta na simulação</th><th>Pode cortar de</th><th class="n">Em estoque</th><th>Marcas</th><th class="n">Usado na simulação</th><th class="n">Livre p/ cortar</th><th>Situação</th></tr>`;
-  if(!cutsL.length) t+=`<tr><td colspan="8" class="note">Nenhum tijolo do estoque tem a mesma largura e angulação de um formato da receita com comprimento maior.</td></tr>`;
-  cutsL.forEach(c=>{ const st=c.falta===0?'<span class="note">sem falta</span>':c.free===0?'<span class="bad">sem estoque livre</span>':c.free>=c.falta?'<span class="good"><b>✓ cobre a falta</b></span>':`<span class="warn"><b>cobre ${fmt(c.free)} de ${fmt(c.falta)}</b></span>`;
-    t+=`<tr><td><b>${esc(c.g)}</b></td><td class="n">${dash(c.falta)}</td><td>${esc(c.k)}${c.diff?' <span class="tag pen">tipo diferente (C × A): confirme a face da conicidade</span>':""}</td><td class="n">${dash(c.stock)}</td><td style="font-size:13px">${Object.entries(c.byB).map(([b,q])=>`${bSpan(b)} ${fmt(q)}`).join(" · ")}</td><td class="n">${dash(c.usedSim)}</td><td class="n"><b>${dash(c.free)}</b></td><td>${st}</td></tr>`; });
+  // Cortes (editável)
+  const keys=[...new Set(state.stock.map(s=>normKey(s.formato,s.medida)).filter(Boolean))].sort();
+  const needOpts=[...new Set(state.recipe.map(r=>r.group).filter(Boolean))];
+  const sel=(attr,i,val,opts)=>`<select ${attr}="${i}">${[...(opts.includes(val)||!val?[]:[val]),...opts].map(o=>`<option ${o===val?"selected":""}>${esc(o)}</option>`).join("")}${!val?'<option selected value="">— escolha —</option>':""}</select>`;
+  t=`<tr><th>Precisa</th><th class="n">Falta na simulação</th><th>Pode cortar de</th><th class="n">Em estoque</th><th>Marcas</th><th class="n">Usado na simulação</th><th class="n">Livre p/ cortar</th><th>Situação</th><th></th></tr>`;
+  cutRows.forEach(c=>{ const st=!c.need||!c.from?'<span class="note">preencha</span>':!c.okRule?'<span class="bad">medidas não compatíveis</span>':c.falta===0?'<span class="note">sem falta</span>':c.free===0?'<span class="bad">sem estoque livre</span>':c.free>=c.falta?'<span class="good"><b>✓ cobre a falta</b></span>':`<span class="warn"><b>cobre ${fmt(c.free)} de ${fmt(c.falta)}</b></span>`;
+    t+=`<tr><td>${sel("data-cneed",c.i,c.need,needOpts)}</td><td class="n">${dash(c.falta)}</td><td>${sel("data-cfrom",c.i,c.from,keys)}${c.diff?' <span class="tag pen">tipo diferente (C × A)</span>':""}</td><td class="n">${dash(c.stock)}</td><td style="font-size:13px">${Object.entries(c.byB).map(([b,q])=>`${bSpan(b)} ${fmt(q)}`).join(" · ")}</td><td class="n">${dash(c.usedSim)}</td><td class="n"><b>${dash(c.free)}</b></td><td>${st}</td><td><button class="ghost small" data-cdel="${c.i}" aria-label="Remover regra">×</button></td></tr>`; });
+  if(!cutRows.length) t+=`<tr><td colspan="9" class="note">Nenhuma regra. Use "Adicionar linha" ou "Restaurar regras automáticas".</td></tr>`;
   $("#cutTable").innerHTML=t;
 
-  // uso por marca
+  // Uso por marca
   const mtab=(id,f)=>{ let h=`<tr><th>Tijolo</th>${BR.map(b=>`<th class="n" style="color:${bColor(b)}">${esc(b)}</th>`).join("")}<th class="n">Total</th></tr>`;
-    E.groups.forEach(g=>{ const v=BR.map(b=>f(g,b)); const s=v.reduce((a,b)=>a+b,0); if(!s&&!v.some(x=>x)) return;
-      h+=`<tr><td>${esc(g)}</td>${v.map(x=>`<td class="n ${x<0?"bad":""}">${dash(x)}</td>`).join("")}<td class="n"><b>${dash(s)}</b></td></tr>`; });
+    E.groups.forEach(g=>{ const v=BR.map(b=>f(g,b)); const s=v.reduce((a,b)=>a+b,0); if(!v.some(x=>Math.round(x))) return;
+      h+=`<tr><td>${esc(g)}</td>${v.map(x=>`<td class="n ${x<-0.5?"bad":""}">${dash(x)}</td>`).join("")}<td class="n"><b>${dash(s)}</b></td></tr>`; });
     $(id).innerHTML=h; };
   mtab("#mStock",(g,b)=>E.S[g][b]||0);
-  mtab("#mUsed",(g,b)=>(E.S[g][b]||0)-Math.max(0,sim.R[g][b]||0));
-  mtab("#mLeft",(g,b)=>sim.R[g][b]||0);
+  mtab("#mUsed",(g,b)=>(E.S[g][b]||0)-((sim.R[g]||{})[b]||0));
+  mtab("#mLeft",(g,b)=>(sim.R[g]||{})[b]||0);
 
-  // compra
-  $("#buyN").value=state.buy.n; $("#buyDesc").checked=state.buy.desc;
-  const qty={}; PARTS.forEach(p=>qty[p.code]=(E.isOn(p.code)?Number(state.buy.n)||0:0)+(Number(state.buy.extra[p.code])||0));
-  t=`<tr><th></th><th>Peça</th><th>Marca</th><th class="n">Da reforma</th><th class="n">Avulsas</th><th class="n">Total</th></tr>`;
-  PARTS.forEach(p=>{ t+=`<tr><td>${chip(p)}</td><td>${p.name}</td><td>${bSpan(br(p.code))}</td><td class="n">${E.isOn(p.code)?state.buy.n:"–"}</td><td class="n"><input type="number" min="0" data-ex="${p.code}" value="${state.buy.extra[p.code]||0}" style="width:70px"></td><td class="n"><b>${qty[p.code]}</b></td></tr>`; });
+  // Compra
+  $("#buyDesc").checked=state.buy.desc; $("#presetN").value=state.buy.presetN;
+  t=`<tr><th></th><th>Peça</th><th>Marcas (da Montagem)</th><th class="n">Quantidade</th></tr>`;
+  PARTS.forEach(p=>{ t+=`<tr><td>${chip(p)}</td><td>${p.name}</td><td style="font-size:13px">${bList(E.allowed(p.code))}</td><td class="n"><input type="number" min="0" step="1" data-bq="${p.code}" value="${state.buy.qty[p.code]||0}" style="width:70px"></td></tr>`; });
   $("#buyParts").innerHTML=t;
-  const old={}; DEFAULT_DATA.old.forEach(o=>{ if(o.group) old[o.group]=o.qty; });
-  let bt=0;
-  t=`<tr><th>Tijolo</th><th class="n">Necessário</th><th class="n">Em estoque</th><th class="n">Comprar</th><th>De qual marca</th><th class="n">Sobra após montar</th><th class="n">Ref. antiga</th></tr>`;
-  E.buy(qty,state.buy.desc).forEach(r=>{ bt+=r.buy;
-    const which=[...BR.filter(b=>r.buyB[b]>0).map(b=>`${bSpan(b)} ${fmt(r.buyB[b])}`), r.buyPool>0?`qualquer marca ${fmt(r.buyPool)}`:""].filter(Boolean).join(" · ");
-    t+=`<tr><td>${esc(r.g)}</td><td class="n">${dash(r.need)}</td><td class="n">${dash(r.stock)}</td><td class="n ${r.buy>0?"bad":""}"><b>${dash(r.buy)}</b></td><td style="font-size:13px">${which}</td><td class="n">${dash(r.left)}</td><td class="n note">${old[r.g]!=null?fmt(old[r.g]):""}</td></tr>`; });
-  t+=`<tr><td><b>Total</b></td><td></td><td></td><td class="n bad"><b>${fmt(bt)}</b></td><td></td><td></td><td></td></tr>`;
+  const old={}; state.old.forEach(o=>{ if(o.group) old[o.group]=o.qty; });
+  const rowsB=E.buy(state.buy.qty,state.buy.desc); let bt=0, btc=0;
+  t=`<tr><th>Tijolo</th><th class="n">Necessário</th><th class="n">Em estoque</th><th class="n">Comprar</th><th>De qual marca</th><th>Alternativa cortando</th><th class="n">Ref. antiga</th></tr>`;
+  rowsB.forEach(r=>{ bt+=r.buy; btc+=r.buyCut;
+    const which=Object.entries(r.which).map(([k,q])=>`${k.split(" ou ").map(bSpanSafe).join(" ou ")} ${fmt(Math.ceil(q))}`).join(" · ");
+    const cuts=Object.entries(r.cuts);
+    const alt=r.buy>0&&cuts.length?`<div class="cutbox">✂ cortar ${cuts.map(([k,q])=>`<b>${fmt(Math.ceil(q))}</b> ${esc(k)}`).join(" + ")} → ${r.buyCut>0?`comprar só <b>${fmt(r.buyCut)}</b>`:"<b>não precisa comprar</b>"}</div>`:"";
+    t+=`<tr><td>${esc(r.g)}</td><td class="n">${dash(r.need)}</td><td class="n">${dash(r.stock)}</td><td class="n ${r.buy>0?"bad":""}"><b>${dash(r.buy)}</b></td><td style="font-size:13px">${which}</td><td>${alt}</td><td class="n note">${old[r.g]!=null?fmt(old[r.g]):""}</td></tr>`; });
+  t+=`<tr><td><b>Total</b></td><td></td><td></td><td class="n ${bt>0?"bad":""}"><b>${fmt(bt)}</b></td><td></td><td>${btc<bt?`<span class="warn"><b>cortando: comprar ${fmt(btc)}</b></span>`:""}</td><td></td></tr>`;
   $("#buyTable").innerHTML=t;
 
-  renderStock(E); renderRecipe(E); renderSettings();
-  save();
+  renderStock(); renderRecipe(); renderSettings(); save();
 }
-function renderStock(E){
+function bSpanSafe(k){ return k==="qualquer marca"?k:bSpan(k); }
+function renderStock(){
   const f=($("#stockFilter").value||"").toLowerCase(), only=$("#onlyQty").checked;
   const bopts=state.brands.map(b=>b.name);
   let t=`<tr><th>Item</th><th>Descrição</th><th>Marca</th><th>Formato</th><th>Medida</th><th class="n">Quantidade</th><th>Origem</th><th></th></tr>`;
-  state.stock.forEach((s,i)=>{
-    const txt=[s.item,s.desc,s.brand,s.formato,s.medida,s.origem].join(" ").toLowerCase();
+  state.stock.forEach((s,i)=>{ const txt=[s.item,s.desc,s.brand,s.formato,s.medida,s.origem].join(" ").toLowerCase();
     if(f&&!txt.includes(f)) return; if(only&&!(Number(s.qty)>0)) return;
     t+=`<tr><td><input type="text" data-s="${i}" data-f="item" value="${esc(s.item)}" style="width:80px"></td>
     <td><input type="text" data-s="${i}" data-f="desc" value="${esc(s.desc)}" style="min-width:230px"></td>
-    <td><select data-s="${i}" data-f="brand">${bopts.map(o=>`<option ${o===s.brand?"selected":""}>${esc(o)}</option>`).join("")}</select></td>
+    <td><select data-s="${i}" data-f="brand">${[...(bopts.includes(s.brand)?[]:[s.brand]),...bopts].map(o=>`<option ${o===s.brand?"selected":""}>${esc(o)}</option>`).join("")}</select></td>
     <td><input type="text" data-s="${i}" data-f="formato" value="${esc(s.formato)}" style="width:80px"></td>
     <td><input type="text" data-s="${i}" data-f="medida" value="${esc(s.medida)}" style="width:155px"></td>
     <td class="n"><input type="number" min="0" data-s="${i}" data-f="qty" value="${Number(s.qty)||0}"></td>
-    <td style="font-size:12.5px">${/caneta|etiqueta|anota/i.test(s.origem||"")?`<span class="tag pen">${esc(s.origem)}</span>`:`<span class="note">${esc(s.origem||"")}</span>`}</td>
-    <td><button class="ghost small" data-del="${i}" aria-label="Remover linha">×</button></td></tr>`;
-  });
-  const total=state.stock.reduce((a,s)=>a+(Number(s.qty)||0),0);
-  t+=`<tr><td colspan="5"><b>Total</b></td><td class="n"><b>${fmt(total)}</b></td><td colspan="2"></td></tr>`;
+    <td><input type="text" data-s="${i}" data-f="origem" value="${esc(s.origem||"")}" style="min-width:160px;${/caneta|etiqueta|anota|✎/i.test(s.origem||"")?"background:#F6DFC4;color:#7A4510":""}"></td>
+    <td><button class="ghost small" data-del="${i}" aria-label="Remover linha">×</button></td></tr>`; });
+  t+=`<tr><td colspan="5"><b>Total</b></td><td class="n"><b>${fmt(state.stock.reduce((a,s)=>a+(Number(s.qty)||0),0))}</b></td><td colspan="2"></td></tr>`;
   $("#stockTable").innerHTML=t;
 }
-function renderRecipe(E){
+function renderRecipe(){
   $("#margin").value=state.cfg.margin;
-  let t=`<tr><th>Fase</th><th>Tijolo</th><th class="n">F02·013</th><th class="n">F02·014</th><th class="n">F03·026</th><th class="n">F03·027</th><th class="n">Média</th><th class="n">Ajustada</th><th class="c">Mesma marca?</th><th>Observação</th></tr>`;
-  const pn={F1:"1ª fase",F2D:"Metade dianteira",F2T:"Metade traseira",F3:"Cone traseiro",F4:"Cone dianteiro"};
-  state.recipe.forEach((r,i)=>{ const h=DEFAULT_DATA.hist.find(x=>x.phase===r.phase&&x.group===r.group)||{};
-    const v=x=>x==null?"":fmt(x);
-    t+=`<tr><td>${pn[r.phase]||r.phase}</td><td>${esc(r.group)}</td><td class="n">${v(h.c013)}</td><td class="n">${v(h.c014)}</td><td class="n">${v(h.c026)}</td><td class="n">${v(h.c027)}</td><td class="n"><b>${fmt(histBase(h))}</b></td>
-    <td class="n"><input type="number" min="0" data-adj="${i}" value="${r.adj??""}" placeholder="—"></td><td class="c"><input type="checkbox" data-same="${i}" ${r.same?"checked":""} aria-label="Exigir mesma marca"></td><td class="note" style="font-size:12.5px">${esc(h.obs||"")}</td></tr>`; });
+  const num=(i,f,v)=>`<input type="number" min="0" data-r="${i}" data-f="${f}" value="${v??""}" placeholder="—" style="width:76px">`;
+  let t=`<tr><th>Peça</th><th>Tijolo (formato + medida)</th><th class="n">F02·013</th><th class="n">F02·014</th><th class="n">F03·026</th><th class="n">F03·027</th><th class="n">Média</th><th class="n">Usar</th><th>Marca</th><th>Observação</th><th></th></tr>`;
+  state.recipe.forEach((r,i)=>{ const orig=D0.recipe.find(x=>x.phase===r.phase&&x.group===r.group);
+    const changed=orig&&["c013","c014","c026","c027","adj","same","obs"].some(k=>JSON.stringify(orig[k]??null)!==JSON.stringify(r[k]??null));
+    t+=`<tr><td><select data-r="${i}" data-f="phase">${Object.entries(PHASE_NAME).map(([k,v])=>`<option value="${k}" ${k===r.phase?"selected":""}>${v}</option>`).join("")}</select></td>
+    <td><input type="text" list="dlGroups" data-r="${i}" data-f="group" value="${esc(r.group)}" style="min-width:230px"></td>
+    <td class="n">${num(i,"c013",r.c013)}</td><td class="n">${num(i,"c014",r.c014)}</td><td class="n">${num(i,"c026",r.c026)}</td><td class="n">${num(i,"c027",r.c027)}</td>
+    <td class="n"><b>${fmt(recBase(r))}</b></td><td class="n">${num(i,"adj",r.adj)}</td>
+    <td><select data-r="${i}" data-f="same"><option value="1" ${r.same?"selected":""}>da peça</option><option value="0" ${r.same?"":"selected"}>qualquer</option></select></td>
+    <td><input type="text" data-r="${i}" data-f="obs" value="${esc(r.obs||"")}" style="min-width:220px;font-size:13px"></td>
+    <td style="white-space:nowrap">${changed?`<button class="ghost small" data-rres="${i}" title="Restaurar esta linha">↺</button> `:""}<button class="ghost small" data-rdel="${i}" aria-label="Remover linha">×</button></td></tr>`; });
   $("#recTable").innerHTML=t;
-  let o=`<tr><th>Tijolo</th><th class="n">Quantidade</th></tr>`; DEFAULT_DATA.old.forEach(x=>o+=`<tr><td>${esc(x.name)}</td><td class="n">${fmt(x.qty)}</td></tr>`);
+  let o=`<tr><th>Tijolo</th><th class="n">Quantidade</th><th>Corresponde a</th></tr>`;
+  state.old.forEach((x,i)=>o+=`<tr><td><input type="text" data-o="${i}" data-f="name" value="${esc(x.name)}"></td><td class="n"><input type="number" data-o="${i}" data-f="qty" value="${x.qty}"></td><td><input type="text" list="dlGroups" data-o="${i}" data-f="group" value="${esc(x.group||"")}" style="min-width:230px"></td></tr>`);
   $("#oldTable").innerHTML=o;
 }
 function renderSettings(){
-  let t=`<tr><th>Marca</th><th class="n">Prioridade</th><th>Cor</th></tr>`;
-  state.brands.forEach((b,i)=>t+=`<tr><td class="brand" style="color:${b.color}">${esc(b.name)}</td><td class="n"><input type="number" min="1" data-bp="${i}" value="${b.prio}" style="width:60px"></td><td><input type="color" data-bc="${i}" value="${b.color}"></td></tr>`);
+  let t=`<tr><th>Marca</th><th class="n">Prioridade</th><th>Cor</th><th></th></tr>`;
+  state.brands.forEach((b,i)=>t+=`<tr><td><input type="text" data-bname="${i}" value="${esc(b.name)}" style="color:${b.color};font-weight:600"></td><td class="n"><input type="number" min="1" data-bp="${i}" value="${b.prio}" style="width:60px"></td><td><input type="color" data-bc="${i}" value="${b.color}"></td><td><button class="ghost small" data-bdel="${i}" aria-label="Remover marca">×</button></td></tr>`);
   $("#brandTable").innerHTML=t;
   let e=`<tr><th>Formato + medida</th><th>Conta como</th><th>Por quê</th><th></th></tr>`;
-  state.equiv.forEach((q,i)=>e+=`<tr><td><input type="text" data-eq="${i}" data-f="key" value="${esc(q.key)}"></td><td><input type="text" data-eq="${i}" data-f="group" value="${esc(q.group)}"></td><td><input type="text" data-eq="${i}" data-f="why" value="${esc(q.why||"")}"></td><td><button class="ghost small" data-eqdel="${i}" aria-label="Remover">×</button></td></tr>`);
+  state.equiv.forEach((q,i)=>e+=`<tr><td><input type="text" data-eq="${i}" data-f="key" value="${esc(q.key)}"></td><td><input type="text" list="dlGroups" data-eq="${i}" data-f="group" value="${esc(q.group)}" style="min-width:260px"></td><td><input type="text" data-eq="${i}" data-f="why" value="${esc(q.why||"")}" style="width:100%"></td><td><button class="ghost small" data-eqdel="${i}" aria-label="Remover">×</button></td></tr>`);
   $("#eqTable").innerHTML=e;
 }
 
 // ---------- eventos ----------
 document.addEventListener("change",ev=>{
   const el=ev.target, d=el.dataset;
+  if(el.closest("#login")) return;
   if(d.on){ state.cfg.parts.find(x=>x.code===d.on).on=el.checked; }
-  else if(d.br){ state.cfg.parts.find(x=>x.code===d.br).brand=el.value; }
-  else if(d.s!=null){ const s=state.stock[+d.s]; s[d.f]=d.f==="qty"?(Number(el.value)||0):el.value; }
-  else if(d.adj!=null){ state.recipe[+d.adj].adj=el.value===""?null:Number(el.value); }
-  else if(d.same!=null){ state.recipe[+d.same].same=el.checked; }
+  else if(d.pb){ const cp=state.cfg.parts.find(x=>x.code===d.pb); cp.brands=cp.brands||[]; if(el.checked){ if(!cp.brands.includes(d.bn)) cp.brands.push(d.bn); } else cp.brands=cp.brands.filter(b=>b!==d.bn); }
+  else if(d.s!=null){ const s=state.stock[+d.s]; s[d.f]=d.f==="qty"?(Number(el.value)||0):el.value; if(d.f==="desc"&&!s.brandSet) {} }
+  else if(d.r!=null){ const r=state.recipe[+d.r];
+    if(d.f==="same") r.same=el.value==="1"; else if(["c013","c014","c026","c027","adj"].includes(d.f)) r[d.f]=el.value===""?null:Number(el.value); else r[d.f]=el.value; }
+  else if(d.o!=null){ const o=state.old[+d.o]; o[d.f]=d.f==="qty"?(Number(el.value)||0):el.value; }
+  else if(d.bname!=null){ const old=state.brands[+d.bname].name, nw=el.value.trim()||old; state.brands[+d.bname].name=nw;
+    state.stock.forEach(s=>{ if(s.brand===old) s.brand=nw; }); state.cfg.parts.forEach(p=>p.brands=(p.brands||[]).map(b=>b===old?nw:b)); }
   else if(d.bp!=null){ state.brands[+d.bp].prio=Number(el.value)||1; }
   else if(d.bc!=null){ state.brands[+d.bc].color=el.value; }
   else if(d.eq!=null){ state.equiv[+d.eq][d.f]=el.value; }
-  else if(d.ex){ state.buy.extra[d.ex]=Number(el.value)||0; }
+  else if(d.cneed!=null){ state.cutRules[+d.cneed].need=el.value; }
+  else if(d.cfrom!=null){ state.cutRules[+d.cfrom].from=el.value; }
+  else if(d.bq){ state.buy.qty[d.bq]=Math.max(0,Number(el.value)||0); }
   else if(el.id==="simN"){ state.cfg.sim=Math.max(1,Number(el.value)||1); }
+  else if(el.id==="simCuts"){ state.cfg.simCuts=el.checked; }
+  else if(el.id==="fornoCuts"){ state.cfg.fornoCuts=el.checked; }
   else if(el.id==="margin"){ state.cfg.margin=Number(el.value)||0; }
-  else if(el.id==="buyN"){ state.buy.n=Number(el.value)||0; }
   else if(el.id==="buyDesc"){ state.buy.desc=el.checked; }
+  else if(el.id==="presetN"){ state.buy.presetN=Math.max(0,Number(el.value)||0); }
   else if(el.id==="onlyQty"){ renderStock(); return; }
   else return;
   render();
@@ -664,21 +709,38 @@ document.addEventListener("change",ev=>{
 $("#stockFilter").addEventListener("input",()=>renderStock());
 document.addEventListener("click",ev=>{
   const el=ev.target.closest("button"); if(!el) return; const d=el.dataset;
-  if(d.m){ state.cfg.mode=d.m; render(); }
-  else if(d.del!=null){ state.stock.splice(+d.del,1); render(); }
-  else if(d.eqdel!=null){ state.equiv.splice(+d.eqdel,1); render(); }
+  if(d.m){ state.cfg.mode=d.m; }
+  else if(d.del!=null){ state.stock.splice(+d.del,1); }
+  else if(d.eqdel!=null){ state.equiv.splice(+d.eqdel,1); }
+  else if(d.cdel!=null){ state.cutRules.splice(+d.cdel,1); }
+  else if(d.rdel!=null){ state.recipe.splice(+d.rdel,1); }
+  else if(d.rres!=null){ const r=state.recipe[+d.rres]; const o=D0.recipe.find(x=>x.phase===r.phase&&x.group===r.group); if(o) state.recipe[+d.rres]=clone(o); toast("Linha restaurada"); }
+  else if(d.bdel!=null){ if(state.brands.length<=1) return; const nm=state.brands[+d.bdel].name; state.brands.splice(+d.bdel,1); state.cfg.parts.forEach(p=>p.brands=(p.brands||[]).filter(b=>b!==nm)); }
+  else if(d.preset){ const n=state.buy.presetN; PARTS.forEach(p=>state.buy.qty[p.code]=d.preset==="zero"?0:(d.preset==="semT51"&&p.code==="I"?0:n)); }
+  else return;
+  render();
 });
 $("#nMinus").onclick=()=>{ state.cfg.n=Math.max(1,state.cfg.n-1); render(); };
 $("#nPlus").onclick=()=>{ state.cfg.n=Math.min(20,state.cfg.n+1); render(); };
 $("#addRow").onclick=()=>{ state.stock.unshift({item:"",desc:"",brand:"Sem marca",formato:"",medida:"",qty:0,origem:"manual"}); $("#stockFilter").value=""; render(); };
 $("#addEq").onclick=()=>{ state.equiv.push({key:"",group:"",why:""}); render(); };
+$("#addCut").onclick=()=>{ state.cutRules.push({need:"",from:""}); render(); };
+$("#addRec").onclick=()=>{ state.recipe.push({phase:"F4",group:"",c013:null,c014:null,c026:null,c027:null,adj:null,same:true,obs:""}); render(); };
+$("#addBrand").onclick=()=>{ let i=1; while(state.brands.some(b=>b.name==="Nova marca "+i)) i++; state.brands.push({name:"Nova marca "+i,prio:state.brands.length+1,color:"#888888"}); render(); };
+const confirmReset=(msg,fn)=>{ if(confirm(msg)){ fn(); render(); toast("Valores originais restaurados"); } };
+$("#resetRec").onclick=()=>confirmReset("Restaurar a receita original (campanhas e quantidades)?",()=>{ state.recipe=clone(D0.recipe); state.cfg.margin=0; });
+$("#resetOld").onclick=()=>confirmReset("Restaurar a referência antiga?",()=>{ state.old=clone(D0.old); });
+$("#resetCuts").onclick=()=>confirmReset("Substituir as regras de corte pelas automáticas?",()=>{ state.cutRules=autoCuts(state); });
+$("#resetBrands").onclick=()=>confirmReset("Restaurar marcas, prioridades e cores?",()=>{ state.brands=clone(DEFAULT_BRANDS); state.cfg.parts.forEach(p=>p.brands=(p.brands||[]).filter(b=>DEFAULT_BRANDS.some(x=>x.name===b))); });
+$("#resetEq").onclick=()=>confirmReset("Restaurar as equivalências originais?",()=>{ state.equiv=clone(D0.equiv); });
+$("#resetStock").onclick=()=>confirmReset("Restaurar o estoque original (contagem de 17/11/2026)? As quantidades atuais serão substituídas.",()=>{ state.stock=clone(D0.stock); });
+$("#resetAll").onclick=()=>confirmReset("Restaurar TUDO para os valores originais?",()=>{ state=defaultState(); });
 const download=(name,text,type)=>{ const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([text],{type})); a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000); };
 $("#expJson").onclick=()=>download("refratario-backup.json",JSON.stringify(state,null,1),"application/json");
 $("#expCsv").onclick=()=>{ const rows=[["Item","Descrição","Marca","Formato","Medida","Quantidade","Origem"],...state.stock.map(s=>[s.item,s.desc,s.brand,s.formato,s.medida,s.qty,s.origem])];
   download("estoque-refratario.csv","\ufeff"+rows.map(r=>r.map(x=>`"${String(x??"").replace(/"/g,'""')}"`).join(";")).join("\n"),"text/csv"); };
 $("#impJsonBtn").onclick=()=>$("#impJson").click();
-$("#impJson").onchange=async e=>{ try{ const s=JSON.parse(await e.target.files[0].text()); if(!s.stock||!s.cfg) throw 0; state=s; render(); toast("Backup importado"); }catch(_){ toast("Arquivo inválido"); } };
-$("#resetAll").onclick=()=>{ if(confirm("Restaurar os dados de exemplo? O estoque atual será substituído.")){ state=defaultState(); render(); toast("Dados restaurados"); } };
+$("#impJson").onchange=async e=>{ try{ const s=JSON.parse(await e.target.files[0].text()); if(!s.stock||!s.cfg||!s.recipe) throw 0; state=s; render(); toast("Backup importado"); }catch(_){ toast("Arquivo inválido"); } };
 
 // ---------- leitura por IA ----------
 let pending=[];
@@ -693,7 +755,7 @@ drop.onclick=()=>fileIn.click(); drop.onkeydown=e=>{ if(e.key==="Enter"||e.key==
 drop.addEventListener("drop",e=>addFiles(e.dataTransfer.files));
 fileIn.onchange=e=>addFiles(e.target.files);
 function addFiles(list){ [...list].forEach(f=>{ if(/^image\/|application\/pdf/.test(f.type)) pending.push(f); }); $("#thumbs").innerHTML=pending.map((f,i)=>`<div>${esc(f.name)} <button class="ghost small" data-rm="${i}" aria-label="Remover arquivo">×</button></div>`).join(""); }
-$("#thumbs").addEventListener("click",e=>{ const b=e.target.closest("[data-rm]"); if(b){ pending.splice(+b.dataset.rm,1); addFiles([]); } });
+$("#thumbs").addEventListener("click",e=>{ const b=e.target.closest("[data-rm]"); if(b){ e.stopPropagation(); pending.splice(+b.dataset.rm,1); addFiles([]); } });
 const toB64=f=>new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result.split(",")[1]); r.onerror=rej; r.readAsDataURL(f); });
 $("#readBtn").onclick=async ()=>{
   if(!pending.length){ $("#readMsg").textContent="Escolha pelo menos uma foto ou PDF."; return; }
@@ -704,14 +766,14 @@ $("#readBtn").onclick=async ()=>{
     for(const f of pending){ const data=await toB64(f);
       content.push(f.type==="application/pdf"?{type:"document",source:{type:"base64",media_type:"application/pdf",data}}:{type:"image",source:{type:"base64",media_type:f.type,data}}); }
     const catalog=state.stock.map(s=>`${s.item} | ${s.desc} | ${s.formato} ${s.medida}`).join("\n");
-    content.push({type:"text",text:`Estas são fichas de contagem de estoque de tijolos refratários de uma refinaria (tabela impressa "LIGA/NOME | ITEM | QUANTIDADE", com quantidades escritas à caneta), podendo ter anotações à caneta fora da tabela e etiquetas coladas.
-Extraia TODOS os itens que têm quantidade escrita, inclusive anotações à caneta e etiquetas. Atenção: as linhas impressas costumam estar tortas na foto; alinhe cada número escrito à mão com o CÓDIGO DO ITEM da mesma linha (coluna ITEM), não com o nome. Se um número estiver rasurado, use o valor legível e avise em "obs".
-Tijolo: formato é o código antes da medida (C1, C2, C3, A1, A2, A3, A4, AX-1, PARALELO, P = PARALELO) e medida no padrão 229x152x(76-70) ou 229x114x76 para paralelos.
+    content.push({type:"text",text:`Estas são fichas de contagem de estoque de tijolos refratários (tabela impressa "LIGA/NOME | ITEM | QUANTIDADE", com quantidades escritas à caneta), podendo ter anotações à caneta fora da tabela e etiquetas coladas.
+Extraia TODOS os itens com quantidade escrita, inclusive anotações à caneta e etiquetas. As linhas impressas costumam estar tortas na foto: alinhe cada número escrito à mão com o CÓDIGO DO ITEM da mesma linha (coluna ITEM). Se houver rasura, use o valor legível e avise em "obs".
+Formato = código antes da medida (C1, C2, C3, A1, A2, A3, A4, AX-1, PARALELO; "P." = PARALELO). Medida no padrão 229x152x(76-70), ou 229x114x76 para paralelos.
 Catálogo conhecido (item | descrição | formato medida):
 ${catalog}
-Responda SOMENTE com JSON, sem texto extra, no formato:
+Responda SOMENTE com JSON:
 {"itens":[{"item":"I05555","descricao":"TIJOLO MACRO-MAG-RH-M","formato":"C1","medida":"229x152x(76-70)","quantidade":6440,"tipo":"tijolo","fonte":"tabela|caneta|etiqueta","obs":""}]}
-Para massas/concretos use "tipo":"massa" e coloque a unidade em obs.`});
+Para massas/concretos use "tipo":"massa".`});
     const resp=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"content-type":"application/json","x-api-key":keyEl.value,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
       body:JSON.stringify({model:modelEl.value||"claude-sonnet-5-5",max_tokens:8000,messages:[{role:"user",content}]})});
     const data=await resp.json();
@@ -731,21 +793,22 @@ function matchIdx(it){
 }
 function showReview(items){
   items=items.filter(x=>(x.tipo||"tijolo")==="tijolo");
-  let t=`<h3>Conferência da leitura</h3><div class="scroll"><table><tr><th class="c">Usar</th><th>Item</th><th>Descrição</th><th>Formato</th><th>Medida</th><th class="n">Lido</th><th class="n">Atual</th><th>Fonte</th><th>Obs.</th></tr>`;
+  let t=`<h3 style="margin-top:16px">Conferência da leitura</h3><div class="scroll"><table><tr><th class="c">Usar</th><th>Item</th><th>Descrição</th><th>Formato</th><th>Medida</th><th class="n">Lido</th><th class="n">Atual</th><th>Fonte</th><th>Obs.</th></tr>`;
   items.forEach((it,i)=>{ const j=matchIdx(it); const cur=j>=0?state.stock[j].qty:null;
-    t+=`<tr><td class="c"><input type="checkbox" data-ri="${i}" checked aria-label="Usar este item"></td><td>${esc(it.item)}</td><td>${esc(it.descricao)}</td><td>${esc(it.formato)}</td><td>${esc(it.medida)}</td>
-    <td class="n"><input type="number" data-rq="${i}" value="${Number(it.quantidade)||0}"></td><td class="n">${cur==null?'<span class="tag">novo</span>':fmt(cur)}</td><td>${esc(it.fonte||"")}</td><td class="note">${esc(it.obs||"")}</td></tr>`; });
+    t+=`<tr><td class="c"><input type="checkbox" data-ri="${i}" checked aria-label="Usar este item"></td><td><input type="text" data-rv="${i}" data-k="item" value="${esc(it.item)}" style="width:80px"></td><td><input type="text" data-rv="${i}" data-k="descricao" value="${esc(it.descricao)}"></td><td><input type="text" data-rv="${i}" data-k="formato" value="${esc(it.formato)}" style="width:70px"></td><td><input type="text" data-rv="${i}" data-k="medida" value="${esc(it.medida)}" style="width:140px"></td>
+    <td class="n"><input type="number" data-rv="${i}" data-k="quantidade" value="${Number(it.quantidade)||0}"></td><td class="n">${cur==null?'<span class="tag">novo</span>':fmt(cur)}</td><td>${esc(it.fonte||"")}</td><td class="note">${esc(it.obs||"")}</td></tr>`; });
   t+=`</table></div><div class="row" style="margin-top:10px"><label><input type="radio" name="mm" value="rep" checked> substituir a quantidade</label><label><input type="radio" name="mm" value="add"> somar</label><label><input type="checkbox" id="zeroOthers"> zerar os itens que não aparecem na leitura</label><button id="applyRead">Aplicar ao estoque</button></div>`;
-  $("#review").innerHTML=t; $("#review").items=items;
+  const box=$("#review"); box.innerHTML=t;
+  box.querySelectorAll("[data-rv]").forEach(inp=>inp.addEventListener("change",e=>{ e.stopPropagation(); const it=items[+inp.dataset.rv]; it[inp.dataset.k]=inp.dataset.k==="quantidade"?Number(inp.value)||0:inp.value; }));
   $("#applyRead").onclick=()=>{
     const add=document.querySelector("input[name=mm]:checked").value==="add"; const seen=new Set();
-    items.forEach((it,i)=>{ if(!document.querySelector(`[data-ri="${i}"]`).checked) return;
-      const q=Number(document.querySelector(`[data-rq="${i}"]`).value)||0; const j=matchIdx(it);
+    items.forEach((it,i)=>{ if(!box.querySelector(`[data-ri="${i}"]`).checked) return;
+      const q=Number(it.quantidade)||0; const j=matchIdx(it);
       if(j>=0){ state.stock[j].qty=add?(Number(state.stock[j].qty)||0)+q:q; state.stock[j].origem="leitura IA"+(it.fonte&&it.fonte!=="tabela"?" ("+it.fonte+")":""); seen.add(j); }
       else { state.stock.push({item:it.item||"s/ cód.",desc:it.descricao||"",brand:brandOf(it.descricao),formato:(it.formato||"").toUpperCase(),medida:it.medida||"",qty:q,origem:"leitura IA"+(it.fonte?" ("+it.fonte+")":"")}); seen.add(state.stock.length-1); }
     });
     if($("#zeroOthers").checked) state.stock.forEach((s,i)=>{ if(!seen.has(i)) s.qty=0; });
-    $("#review").innerHTML=""; pending=[]; addFiles([]); render(); toast("Estoque atualizado");
+    box.innerHTML=""; pending=[]; addFiles([]); render(); toast("Estoque atualizado");
   };
 }
 buildKiln(); render();
