@@ -230,11 +230,11 @@ body.locked header, body.locked main{visibility:hidden}
 
 <section class="view" id="v-cortes">
   <h2>Cortes</h2>
-  <p class="lead">Um tijolo pode ser cortado no comprimento para virar outro de mesma largura e angulação. Ex.: A1 343x152x(76-70) → A1 305x152x(76-70). Cada linha é uma regra de corte usada nas contas "cortando tijolos".</p>
+  <p class="lead">Um tijolo pode ser cortado no comprimento para virar outro de mesma largura e angulação. Só dentro do mesmo tipo (A com A, C com C). Ex.: A1 343x152x(76-70) → A1 305x152x(76-70). Cada linha é uma regra de corte usada nas contas "cortando tijolos".</p>
   <div class="panel">
     <div class="phead"><h3>Regras de corte</h3><div class="row"><button class="ghost small" id="addCut">Adicionar linha</button><button class="ghost small" id="resetCuts">Restaurar regras automáticas</button></div></div>
     <div class="scroll"><table id="cutTable"></table></div>
-    <p class="note">"Livre" = sobra do tijolo maior depois da simulação da aba Montagem. Regras com tipo diferente (C × A) estão marcadas: confirme se a conicidade está na mesma face.</p>
+    <p class="note">"Livre" = sobra do tijolo maior depois da simulação da aba Montagem. Só vale cortar dentro do mesmo tipo: A só substitui A, C só substitui C. Regras fora disso ficam marcadas e não entram nas contas.</p>
   </div>
 </section>
 
@@ -328,7 +328,7 @@ function autoCuts(st){
   const accG=new Set(st.recipe.filter(r=>!r.same).map(r=>r.group));
   const needs=[...new Set(st.recipe.map(r=>r.group))].filter(g=>parseKey(g)&&(!accG.has(g)||parseKey(g)));
   const out=[];
-  needs.forEach(g=>{ const pg=parseKey(g); keys.forEach(k=>{ const pk=parseKey(k); if(pk&&pk.W===pg.W&&pk.T===pg.T&&pk.L>pg.L) out.push({need:g,from:k}); }); });
+  needs.forEach(g=>{ const pg=parseKey(g); keys.forEach(k=>{ const pk=parseKey(k); if(pk&&pk.code[0]===pg.code[0]&&pk.W===pg.W&&pk.T===pg.T&&pk.L>pg.L) out.push({need:g,from:k}); }); });
   return out;
 }
 function defaultState(){
@@ -364,7 +364,8 @@ function Engine(state){
   const sumPos=row=>brands.reduce((a,b)=>a+pos((row||{})[b]||0),0);
   const copyR=R=>{const o={}; for(const g in R) o[g]={...R[g]}; return o;};
   const perPart=c=>{ const n=need[c]; let t=0; for(const g in n.main)t+=n.main[g]; for(const g in n.acc)t+=n.acc[g]; return t; };
-  const rules=state.cutRules.filter(r=>r.need&&r.from).map(r=>({need:r.need,from:normFull(r.from),src:groupOf(normFull(r.from))}));
+  const cutOK=(need,from)=>{ const a=parseKey(need), b=parseKey(from); return !!(a&&b&&a.code[0]===b.code[0]&&a.W===b.W&&a.T===b.T&&b.L>a.L); };
+  const rules=state.cutRules.filter(r=>r.need&&r.from&&cutOK(r.need,normFull(r.from))).map(r=>({need:r.need,from:normFull(r.from),src:groupOf(normFull(r.from))}));
 
   // aloca tijolos para quantidades por peça (q pode ser fracionária)
   function allocate(R0,qty,useCuts){
@@ -585,14 +586,14 @@ function render(){
     const fica=simNo.R[src]?E.sumPos(simNo.R[src]):stockK, usedSim=(E.S[src]?BR.reduce((a,b)=>a+E.S[src][b],0):stockK)-fica;
     const falta=simNo.byG[r.need]?Math.ceil(simNo.byG[r.need].miss-1e-6):0;
     const pn=parseKey(r.need), pf=parseKey(from);
-    const okRule=pn&&pf&&pn.W===pf.W&&pn.T===pf.T&&pf.L>pn.L, diff=pn&&pf&&pn.code[0]!==pf.code[0];
+    const diff=pn&&pf&&pn.code[0]!==pf.code[0], okRule=pn&&pf&&!diff&&pn.W===pf.W&&pn.T===pf.T&&pf.L>pn.L;
     return {i,need:r.need,from,stock:stockK,byB,usedSim:Math.round(usedSim),free:Math.round(Math.max(0,Math.min(stockK,fica))),falta,okRule,diff};
   });
-  const good=cutRows.filter(c=>c.falta>0&&c.free>0);
+  const good=cutRows.filter(c=>c.okRule&&c.falta>0&&c.free>0);
   $("#cutLine").innerHTML=!simCuts&&good.length?`<div class="cutbox">✂ Dá para cobrir a falta cortando: ${good.map(c=>`<b>${fmt(Math.min(c.falta,c.free))}</b> ${esc(c.from)} → ${esc(c.need)}`).join(" &nbsp;·&nbsp; ")}. Marque "considerar cortes" para ver a simulação com o corte.</div>`:(simCuts&&sim.cuts.length?`<div class="cutbox">✂ Na simulação foram cortados: ${cutTxt(Object.values(sim.cuts.reduce((a,c)=>{const k=c.need+c.from; a[k]=a[k]||{need:c.need,from:c.from,qty:0}; a[k].qty+=c.qty; return a;},{})))}</div>`:"");
   t=`<tr><th>Tijolo</th><th class="n">Precisa</th>${BR.map(b=>`<th class="n" style="color:${bColor(b)}">${esc(b)}</th>`).join("")}<th class="n">Falta</th><th class="n">Fica no estoque</th><th>Opção de corte</th></tr>`;
   E.groups.forEach(g=>{ const x=sim.byG[g]; if(!x||!x.need) return;
-    const cut=(x.cutIn?`<span class="warn">✂ ${fmt(x.cutIn)} vieram de corte</span> `:"")+cutRows.filter(c=>c.need===g&&c.free>0&&x.miss>0.5).map(c=>`<span class="warn">✂ ${esc(c.from)} (livre ${fmt(c.free)})</span>`).join("<br>");
+    const cut=(x.cutIn?`<span class="warn">✂ ${fmt(x.cutIn)} vieram de corte</span> `:"")+cutRows.filter(c=>c.okRule&&c.need===g&&c.free>0&&x.miss>0.5).map(c=>`<span class="warn">✂ ${esc(c.from)} (livre ${fmt(c.free)})</span>`).join("<br>");
     t+=`<tr><td>${esc(g)}</td><td class="n"><b>${fmt(x.need)}</b></td>${BR.map(b=>`<td class="n">${dash(x.used[b]||0)}</td>`).join("")}<td class="n ${x.miss>0.5?"bad":""}"><b>${dash(x.miss)}</b></td><td class="n">${dash(E.sumPos(sim.R[g]))}</td><td style="font-size:13px">${cut}</td></tr>`; });
   $("#simBricks").innerHTML=t;
 
@@ -601,8 +602,8 @@ function render(){
   const needOpts=[...new Set(state.recipe.map(r=>r.group).filter(Boolean))];
   const sel=(attr,i,val,opts)=>`<select ${attr}="${i}">${[...(opts.includes(val)||!val?[]:[val]),...opts].map(o=>`<option ${o===val?"selected":""}>${esc(o)}</option>`).join("")}${!val?'<option selected value="">— escolha —</option>':""}</select>`;
   t=`<tr><th>Precisa</th><th class="n">Falta na simulação</th><th>Pode cortar de</th><th class="n">Em estoque</th><th>Marcas</th><th class="n">Usado na simulação</th><th class="n">Livre p/ cortar</th><th>Situação</th><th></th></tr>`;
-  cutRows.forEach(c=>{ const st=!c.need||!c.from?'<span class="note">preencha</span>':!c.okRule?'<span class="bad">medidas não compatíveis</span>':c.falta===0?'<span class="note">sem falta</span>':c.free===0?'<span class="bad">sem estoque livre</span>':c.free>=c.falta?'<span class="good"><b>✓ cobre a falta</b></span>':`<span class="warn"><b>cobre ${fmt(c.free)} de ${fmt(c.falta)}</b></span>`;
-    t+=`<tr><td>${sel("data-cneed",c.i,c.need,needOpts)}</td><td class="n">${dash(c.falta)}</td><td>${sel("data-cfrom",c.i,c.from,keys)}${c.diff?' <span class="tag pen">tipo diferente (C × A)</span>':""}</td><td class="n">${dash(c.stock)}</td><td style="font-size:13px">${Object.entries(c.byB).map(([b,q])=>`${bSpan(b)} ${fmt(q)}`).join(" · ")}</td><td class="n">${dash(c.usedSim)}</td><td class="n"><b>${dash(c.free)}</b></td><td>${st}</td><td><button class="ghost small" data-cdel="${c.i}" aria-label="Remover regra">×</button></td></tr>`; });
+  cutRows.forEach(c=>{ const st=!c.need||!c.from?'<span class="note">preencha</span>':c.diff?'<span class="bad">não permitido: tipo A só com A, C só com C</span>':!c.okRule?'<span class="bad">medidas não compatíveis</span>':c.falta===0?'<span class="note">sem falta</span>':c.free===0?'<span class="bad">sem estoque livre</span>':c.free>=c.falta?'<span class="good"><b>✓ cobre a falta</b></span>':`<span class="warn"><b>cobre ${fmt(c.free)} de ${fmt(c.falta)}</b></span>`;
+    t+=`<tr><td>${sel("data-cneed",c.i,c.need,needOpts)}</td><td class="n">${dash(c.falta)}</td><td>${sel("data-cfrom",c.i,c.from,keys)}</td><td class="n">${dash(c.stock)}</td><td style="font-size:13px">${Object.entries(c.byB).map(([b,q])=>`${bSpan(b)} ${fmt(q)}`).join(" · ")}</td><td class="n">${dash(c.usedSim)}</td><td class="n"><b>${dash(c.free)}</b></td><td>${st}</td><td><button class="ghost small" data-cdel="${c.i}" aria-label="Remover regra">×</button></td></tr>`; });
   if(!cutRows.length) t+=`<tr><td colspan="9" class="note">Nenhuma regra. Use "Adicionar linha" ou "Restaurar regras automáticas".</td></tr>`;
   $("#cutTable").innerHTML=t;
 
