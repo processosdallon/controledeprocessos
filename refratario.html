@@ -378,7 +378,7 @@ function Engine(state){
     const byG={}; const G=g=>byG[g]||(byG[g]={need:0,used:{},miss:0,cutIn:0,cutOut:0});
     const dem=[];
     PARTS.forEach((p,pi)=>{ const q=qty[p.code]||0; if(q<=0) return;
-      need[p.code].lines.forEach(l=>{ const v=q*l.n; dem.push({p:p.code,pi,g:l.g,qty:v,allow:l.main?allowed(p.code):brands,main:l.main,alt:l.alt}); });
+      need[p.code].lines.forEach(l=>{ const v=q*l.n; if(v>1e-9) dem.push({p:p.code,pi,g:l.g,qty:v,allow:l.main?allowed(p.code):brands,main:l.main,alt:l.alt}); });
     });
     dem.sort((a,b)=>a.allow.length-b.allow.length||a.pi-b.pi);
     const take=(d,k,src)=>{ const row=R[k]||(R[k]={});
@@ -386,7 +386,7 @@ function Engine(state){
     dem.forEach(d=>{ d.miss=d.qty; d.subs=[]; d.k0=d.g; take(d,d.g,false); parts[d.p].need+=d.qty; parts[d.p].dem.push(d); });
     // troca entre tijolos do mesmo conjunto (mesma peça)
     dem.forEach(d=>{ if(d.miss<=1e-9||!d.alt) return;
-      dem.filter(o=>o.p===d.p&&o.alt===d.alt&&o.g!==d.g).forEach(o=>take(d,o.g,true)); });
+      [...new Set(need[d.p].lines.filter(o=>o.alt===d.alt&&o.g!==d.g).map(o=>o.g))].forEach(g=>take(d,g,true)); });
     const cuts=[];
     if(useCuts) dem.forEach(d=>{ if(d.miss<=1e-9) return;
       rules.filter(r=>r.need===d.g&&r.src!==r.need).forEach(r=>{ const row=R[r.src]; if(!row) return;
@@ -423,7 +423,7 @@ function Engine(state){
     const out={};
     PARTS.forEach(p=>{ if(!isOn(p.code)){ out[p.code]=null; return; }
       const pp=r.parts[p.code]; let f=1; const miss=[];
-      pp.dem.forEach(d=>{ f=Math.min(f,(d.qty-d.miss)/d.qty); if(d.miss>1e-6) miss.push({g:d.g,qty:Math.ceil(d.miss-1e-6),brands:d.main&&d.allow.length<brands.length?d.allow:[]}); });
+      pp.dem.forEach(d=>{ if(d.qty>0) f=Math.min(f,(d.qty-d.miss)/d.qty); if(d.miss>1e-6) miss.push({g:d.g,qty:Math.ceil(d.miss-1e-6),brands:d.main&&d.allow.length<brands.length?d.allow:[]}); });
       const pc=r.cuts.filter(c=>c.p===p.code);
       out[p.code]={f:Math.max(0,Math.min(1,f)),miss,bricks:Math.round(pp.need-pp.falta),cuts:pc};
     });
