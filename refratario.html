@@ -105,6 +105,17 @@ th.sortable.asc::after{content:" ▲";opacity:.9}
 th.sortable.desc::after{content:" ▼";opacity:.9}
 tr.flt td{padding:3px 4px;background:var(--bg)}
 tr.flt input,tr.flt select{width:100%;font-size:13px;background:var(--panel)}
+.bricks{display:flex;gap:28px;flex-wrap:wrap;justify-content:center}
+.brk{text-align:center;font-size:13px}
+.brk svg{width:170px;height:auto;display:block;margin:0 auto 6px}
+.brk .fillr{transition:transform .7s cubic-bezier(.3,.7,.2,1);transform-box:fill-box;transform-origin:top}
+.brk b{font-size:15px}
+table.form td{border:0;padding:4px 6px}
+table.form td:first-child{color:var(--muted);font-size:13.5px}
+.kpis{display:flex;gap:26px;flex-wrap:wrap}
+.kpi .big{font-size:28px}
+.kpi span{display:block;color:var(--muted);font-size:13px}
+@media (prefers-reduced-motion: reduce){ .brk .fillr{transition:none} }
 </style>
 </head>
 <body class="locked">
@@ -131,6 +142,7 @@ tr.flt input,tr.flt select{width:100%;font-size:13px;background:var(--panel)}
     <button class="tab" role="tab" data-v="cortes">Cortes</button>
     <button class="tab" role="tab" data-v="marcas">Uso por marca</button>
     <button class="tab" role="tab" data-v="receita">Receita e campanhas</button>
+    <button class="tab" role="tab" data-v="prev">Previsão de produção</button>
     <button class="tab" role="tab" data-v="ajustes">Ajustes</button>
   </nav>
 </header>
@@ -266,6 +278,29 @@ tr.flt input,tr.flt select{width:100%;font-size:13px;background:var(--panel)}
   <div class="panel"><div class="phead"><h3>Referência antiga (campanha completa)</h3><button class="ghost small" id="resetOld">Restaurar valores originais</button></div><div class="scroll"><table id="oldTable"></table></div></div>
 </section>
 
+<section class="view" id="v-prev">
+  <h2>Previsão de produção</h2>
+  <p class="lead">Com a medição do tijolo no meio da campanha, calcula quanto o refratário ainda deve produzir: produção até agora ÷ tijolo consumido = kg por mm; isso × o que ainda falta gastar até a medida de queda.</p>
+  <div class="grid2">
+    <div class="panel">
+      <h3>Dados da campanha</h3>
+      <table class="form" id="prevForm"></table>
+    </div>
+    <div class="panel">
+      <div class="phead"><h3>Medições</h3><div class="row"><button class="ghost small" id="addPt">Adicionar ponto</button><button class="ghost small" id="resetPrev">Restaurar exemplo</button></div></div>
+      <div class="scroll"><table id="prevPts"></table></div>
+      <p class="note" id="prevModeNote"></p>
+    </div>
+  </div>
+  <div class="panel" id="prevSummary"></div>
+  <div class="panel">
+    <h3>Tijolo em cada ponto</h3>
+    <div class="bricks" id="bricks"></div>
+    <p class="note">Face fria em cima (encosta na carcaça), face quente embaixo (lado da carga). A parte apagada é o que já desgastou; a linha vermelha é a medida de queda.</p>
+  </div>
+  <div class="panel"><div class="scroll"><table id="prevTable"></table></div></div>
+</section>
+
 <section class="view" id="v-ajustes">
   <h2>Ajustes</h2>
   <div class="grid2">
@@ -333,10 +368,12 @@ function autoCuts(st){
   needs.forEach(g=>{ const pg=parseKey(g); keys.forEach(k=>{ const pk=parseKey(k); if(pk&&pk.code[0]===pg.code[0]&&pk.W===pg.W&&pk.T===pg.T&&pk.L>pg.L) out.push({need:g,from:k}); }); });
   return out;
 }
+function defaultPrev(){ return {label:"Forno 03 · Campanha 027", data:"2026-11-04", mode:"esp", ini:229, fim:70, prod:13066, dia:120000, corrida:28684, unit:"kg",
+  pts:[{nome:"Traseira",nova:179,dIni:3400,dAtu:3500},{nome:"Meio",nova:129,dIni:3400,dAtu:3600},{nome:"Frente",nova:84,dIni:3400,dAtu:3690}]}; }
 function defaultState(){
   const st={ stock:clone(D0.stock), recipe:clone(D0.recipe), old:clone(D0.old), brands:clone(DEFAULT_BRANDS),
     cfg:{mode:"completa", parts:PARTS.map(p=>({code:p.code,on:true,brands:["Togni"]})), sim:1, n:1, margin:0, simCuts:false, fornoCuts:false},
-    buy:{qty:{D:1,T:1,CD:1,CT:1,I:1}, desc:true, presetN:1} };
+    buy:{qty:{D:1,T:1,CD:1,CT:1,I:1}, desc:true, presetN:1}, prev:defaultPrev() };
   st.cutRules=autoCuts(st);
   return st;
 }
@@ -458,6 +495,7 @@ document.getElementById("logout").onclick=()=>{ try{sessionStorage.removeItem(AU
 const LS="refratario-dallon-v4";
 let state;
 try{ state=JSON.parse(localStorage.getItem(LS))||defaultState(); }catch(e){ state=defaultState(); }
+if(!state.prev) state.prev=defaultPrev();
 if(!state.mig_a3_100){ const it=state.stock.find(s=>s.item==="I05563"); if(it&&!(Number(it.qty)>0)){ it.qty=100; it.origem="Lançado manualmente (19/11/2026)"; } state.mig_a3_100=true; }
 function save(){ try{ localStorage.setItem(LS,JSON.stringify(state)); }catch(e){} }
 const $=s=>document.querySelector(s);
@@ -636,9 +674,64 @@ function render(){
   t+=`<tr class="tot"><td><b>Total</b></td><td></td><td></td><td class="n ${bt>0?"bad":""}"><b>${fmt(bt)}</b></td><td></td><td>${btc<bt?`<span class="warn"><b>cortando: comprar ${fmt(btc)}</b></span>`:""}</td><td></td></tr>`;
   $("#buyTable").innerHTML=t;
 
-  renderStock(); renderRecipe(); renderSettings();
+  renderStock(); renderRecipe(); renderSettings(); renderPrev();
   document.querySelectorAll("main table[id]").forEach(tb=>{ if(tb.id!=="stockTable") makeSortable(tb); });
   save();
+}
+function prevCalc(P){
+  const ini=+P.ini||0, fim=+P.fim||0, prod=+P.prod||0;
+  return P.pts.map(p=>{
+    const cons=P.mode==="diam"?((+p.dAtu||0)-(+p.dIni||0))/2:ini-(+p.nova||0);
+    const rest=ini-cons, util=Math.max(0,rest-fim), porMm=cons>0?prod/cons:0, ainda=porMm*util;
+    const usedPct=(ini-fim)>0?Math.max(0,Math.min(1,cons/(ini-fim))):0;
+    return {...p,cons,rest,util,porMm,ainda,total:prod+ainda,usedPct,restPct:ini>0?Math.max(0,Math.min(1,rest/ini)):0,
+      dias:(+P.dia>0?ainda/P.dia:null),corr:(+P.corrida>0?ainda/P.corrida:null)};
+  });
+}
+const f1=x=>(x==null||!isFinite(x))?"–":x.toLocaleString("pt-BR",{maximumFractionDigits:(x>0&&x<1)?2:1});
+function brickSVG(r,P,lim){
+  const H=230, top=118, bot=92, x0=20, W=top, ini=+P.ini||1, fim=+P.fim||0;
+  const sc=H/ini, yRest=Math.max(0,r.rest)*sc, yFim=fim*sc;
+  const pts=`${x0},10 ${x0+top},10 ${x0+top-(top-bot)/2},${10+H} ${x0+(top-bot)/2},${10+H}`;
+  const col=r.util<=0?"#B4362B":(1-r.usedPct)<.25?"#D9822B":(1-r.usedPct)<.5?"#E3A33F":"#C2683A";
+  const id="clip"+Math.random().toString(36).slice(2,8);
+  return `<svg viewBox="0 0 160 ${H+30}" role="img" aria-label="Tijolo ${esc(r.nome)}: restam ${f1(r.rest)} mm">
+  <defs><clipPath id="${id}"><polygon points="${pts}"/></clipPath>
+  <pattern id="w${id}" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="var(--line)"/><line x1="0" y1="0" x2="0" y2="6" stroke="var(--muted)" stroke-opacity=".25" stroke-width="2"/></pattern></defs>
+  <polygon points="${pts}" fill="url(#w${id})"/>
+  <g clip-path="url(#${id})"><rect class="fillr" x="0" y="10" width="160" height="${H}" fill="${col}" style="transform:scaleY(${Math.max(0,Math.min(1,yRest/H))})"/></g>
+  <polygon points="${pts}" fill="none" stroke="var(--ink)" stroke-width="1.5"/>
+  <line x1="6" x2="154" y1="${10+yFim}" y2="${10+yFim}" stroke="#B4362B" stroke-width="2" stroke-dasharray="5 4"/>
+  <text x="152" y="${6+yFim}" font-size="10" fill="#B4362B" text-anchor="end">queda ${f1(fim)} mm</text>
+  ${lim?`<text x="80" y="${H+26}" font-size="11" fill="#B4362B" text-anchor="middle" font-weight="600">ponto que limita</text>`:""}
+  </svg>`;
+}
+function renderPrev(){
+  const P=state.prev, u=P.unit||"kg";
+  const fld=(lbl,k,type="number",extra="")=>`<tr><td>${lbl}</td><td><input type="${type}" data-pv="${k}" value="${esc(P[k]??"")}" ${extra}></td></tr>`;
+  $("#prevForm").innerHTML=fld("Forno / campanha","label","text",'style="width:220px"')+fld("Data da medição","data","date")+
+    `<tr><td>Como mediu</td><td><select data-pv="mode"><option value="esp" ${P.mode==="esp"?"selected":""}>espessura do tijolo (mm)</option><option value="diam" ${P.mode==="diam"?"selected":""}>diâmetro interno do forno (mm)</option></select></td></tr>`+
+    fld("Tamanho inicial do tijolo (mm)","ini")+fld("Medida em que costuma finalizar (mm)","fim")+fld(`Produção da campanha até a medição (${esc(u)})`,"prod",'number','style="width:130px"')+
+    fld(`Média de produção por dia (${esc(u)})`,"dia",'number','style="width:130px"')+fld(`Média por corrida (${esc(u)})`,"corrida",'number','style="width:130px"')+
+    `<tr><td>Unidade de produção</td><td><select data-pv="unit">${["kg","t"].map(x=>`<option ${u===x?"selected":""}>${x}</option>`).join("")}</select></td></tr>`;
+  const diam=P.mode==="diam";
+  let t=`<tr><th>Ponto</th>${diam?'<th class="n">Diâm. inicial (mm)</th><th class="n">Diâm. atual (mm)</th>':'<th class="n">Nova medida (mm)</th>'}<th></th></tr>`;
+  P.pts.forEach((p,i)=>{ t+=`<tr><td><input type="text" data-pp="${i}" data-f="nome" value="${esc(p.nome)}" style="width:110px"></td>${diam?`<td class="n"><input type="number" data-pp="${i}" data-f="dIni" value="${p.dIni??""}"></td><td class="n"><input type="number" data-pp="${i}" data-f="dAtu" value="${p.dAtu??""}"></td>`:`<td class="n"><input type="number" data-pp="${i}" data-f="nova" value="${p.nova??""}"></td>`}<td><button class="ghost small" data-ppdel="${i}" aria-label="Remover ponto">×</button></td></tr>`; });
+  $("#prevPts").innerHTML=t;
+  $("#prevModeNote").textContent=diam?"No modo diâmetro, o tijolo consumido é metade do quanto o diâmetro interno cresceu.":"Meça a espessura que sobrou do tijolo em cada ponto.";
+  const R=prevCalc(P); if(!R.length){ $("#prevSummary").innerHTML='<p class="note">Adicione um ponto de medição.</p>'; $("#bricks").innerHTML=""; $("#prevTable").innerHTML=""; return; }
+  const lim=R.reduce((a,b)=>b.ainda<a.ainda?b:a,R[0]);
+  $("#prevSummary").innerHTML=`<div class="phead"><h3>Previsão ${esc(P.label||"")}</h3><span class="note">medição de ${P.data?P.data.split("-").reverse().join("/"):"—"} · ponto que limita: <b>${esc(lim.nome)}</b></span></div>
+   <div class="kpis"><div class="kpi"><div class="big ${lim.ainda>0?"good":"bad"}">${fmt(lim.ainda)} ${esc(u)}</div><span>ainda deve produzir</span></div>
+   <div class="kpi"><div class="big">${f1(lim.dias)}</div><span>dias (na média de ${fmt(P.dia||0)} ${esc(u)}/dia)</span></div>
+   <div class="kpi"><div class="big">${f1(lim.corr)}</div><span>corridas</span></div>
+   <div class="kpi"><div class="big">${fmt(lim.total)} ${esc(u)}</div><span>produção prevista da campanha</span></div>
+   <div class="kpi"><div class="big">${f1(lim.util)} mm</div><span>de tijolo até a queda</span></div></div>
+   ${lim.util<=0?'<p class="bad" style="font-weight:600;margin-bottom:0">O tijolo já chegou na medida de queda neste ponto.</p>':""}`;
+  $("#bricks").innerHTML=R.map(r=>`<div class="brk">${brickSVG(r,P,r===lim&&R.length>1)}<b>${esc(r.nome)}</b><br>restam ${f1(r.rest)} mm (${Math.round(r.restPct*100)}%)<br>desgaste até a queda: <b>${Math.round(r.usedPct*100)}%</b><br>ainda produz <b>${fmt(r.ainda)} ${esc(u)}</b></div>`).join("");
+  let h=`<tr><th>Ponto</th><th class="n">Consumido (mm)</th><th class="n">Restante (mm)</th><th class="n">Até a queda (mm)</th><th class="n">Produção por cm (${esc(u)})</th><th class="n">Ainda produz (${esc(u)})</th><th class="n">Dias</th><th class="n">Corridas</th><th class="n">Final da campanha (${esc(u)})</th></tr>`;
+  R.forEach(r=>h+=`<tr${r===lim?' style="font-weight:600"':""}><td>${esc(r.nome)}${r===lim?' <span class="tag">limita</span>':""}</td><td class="n">${f1(r.cons)}</td><td class="n">${f1(r.rest)}</td><td class="n">${f1(r.util)}</td><td class="n">${fmt(r.porMm*10)}</td><td class="n">${fmt(r.ainda)}</td><td class="n">${f1(r.dias)}</td><td class="n">${f1(r.corr)}</td><td class="n">${fmt(r.total)}</td></tr>`);
+  $("#prevTable").innerHTML=h; makeSortable($("#prevTable"));
 }
 function bSpanSafe(k){ return k==="qualquer marca"?k:bSpan(k); }
 const sortState={}; let stockFlt={};
@@ -722,6 +815,8 @@ document.addEventListener("change",ev=>{
   else if(d.cneed!=null){ state.cutRules[+d.cneed].need=el.value; }
   else if(d.cfrom!=null){ state.cutRules[+d.cfrom].from=el.value; }
   else if(d.bq){ state.buy.qty[d.bq]=Math.max(0,Number(el.value)||0); }
+  else if(d.pv){ const P=state.prev; P[d.pv]=(el.type==="number")?(el.value===""?"":Number(el.value)):el.value; }
+  else if(d.pp!=null){ const p=state.prev.pts[+d.pp]; p[d.f]=d.f==="nome"?el.value:(el.value===""?"":Number(el.value)); }
   else if(el.id==="simN"){ state.cfg.sim=Math.max(1,Number(el.value)||1); }
   else if(el.id==="simCuts"){ state.cfg.simCuts=el.checked; }
   else if(el.id==="fornoCuts"){ state.cfg.fornoCuts=el.checked; }
@@ -743,6 +838,7 @@ document.addEventListener("click",ev=>{
   else if(d.rdel!=null){ state.recipe.splice(+d.rdel,1); }
   else if(d.rres!=null){ const r=state.recipe[+d.rres]; const o=D0.recipe.find(x=>x.phase===r.phase&&x.group===r.group); if(o) state.recipe[+d.rres]=clone(o); toast("Linha restaurada"); }
   else if(d.bdel!=null){ if(state.brands.length<=1) return; const nm=state.brands[+d.bdel].name; state.brands.splice(+d.bdel,1); state.cfg.parts.forEach(p=>p.brands=(p.brands||[]).filter(b=>b!==nm)); }
+  else if(d.ppdel!=null){ state.prev.pts.splice(+d.ppdel,1); }
   else if(d.fltclear){ stockFlt={}; renderStock(); return; }
   else if(d.preset){ const n=state.buy.presetN; PARTS.forEach(p=>state.buy.qty[p.code]=d.preset==="zero"?0:(d.preset==="semT51"&&p.code==="I"?0:n)); }
   else return;
@@ -751,6 +847,8 @@ document.addEventListener("click",ev=>{
 $("#nMinus").onclick=()=>{ state.cfg.n=Math.max(1,state.cfg.n-1); render(); };
 $("#nPlus").onclick=()=>{ state.cfg.n=Math.min(20,state.cfg.n+1); render(); };
 $("#addRow").onclick=()=>{ state.stock.unshift({item:"",desc:"",brand:"Sem marca",formato:"",medida:"",qty:0,origem:"manual"}); $("#stockFilter").value=""; render(); };
+$("#addPt").onclick=()=>{ state.prev.pts.push({nome:"Ponto "+(state.prev.pts.length+1),nova:"",dIni:"",dAtu:""}); render(); };
+$("#resetPrev").onclick=()=>confirmReset("Voltar para o exemplo da campanha 027?",()=>{ state.prev=defaultPrev(); });
 $("#addCut").onclick=()=>{ state.cutRules.push({need:"",from:""}); render(); };
 $("#addRec").onclick=()=>{ state.recipe.push({phase:"F4",group:"",c013:null,c014:null,c026:null,c027:null,adj:null,same:true,alt:"",obs:""}); render(); };
 $("#addBrand").onclick=()=>{ let i=1; while(state.brands.some(b=>b.name==="Nova marca "+i)) i++; state.brands.push({name:"Nova marca "+i,prio:state.brands.length+1,color:"#888888"}); render(); };
